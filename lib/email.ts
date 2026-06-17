@@ -1,15 +1,16 @@
 import { Resend } from 'resend'
 
-const resend = new Resend(process.env.RESEND_API_KEY)
-
 const FROM = 'シャトルハイヤー予約システム <noreply@tokyomk-shuttle.jp>'
 
-// RESEND_API_KEY未設定時はログだけ出してスキップ
-async function send(opts: Parameters<typeof resend.emails.send>[0]) {
+type SendOpts = Parameters<Resend['emails']['send']>[0]
+
+// RESEND_API_KEY未設定時はログだけ出してスキップ（モジュール初期化時にクラッシュしない）
+async function send(opts: SendOpts) {
   if (!process.env.RESEND_API_KEY) {
     console.log('[email] RESEND_API_KEY未設定 - 送信スキップ:', opts.subject)
     return { id: 'skipped' }
   }
+  const resend = new Resend(process.env.RESEND_API_KEY)
   const { data, error } = await resend.emails.send(opts)
   if (error) console.error('[email] 送信エラー:', error)
   return data
