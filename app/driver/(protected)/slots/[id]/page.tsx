@@ -82,13 +82,17 @@ export default async function DriverSlotPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <Link
-        href="/driver"
-        className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 w-full"
-      >
-        <span className="text-lg leading-none">←</span>
-        <span className="font-medium">担当便一覧に戻る</span>
-      </Link>
+      {/* ナビゲーションバー */}
+      <div className="flex items-center gap-2">
+        <Link
+          href="/driver"
+          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 flex-1"
+        >
+          <span className="text-lg leading-none">←</span>
+          <span className="font-medium">担当便一覧</span>
+        </Link>
+        <RefreshButton dark />
+      </div>
 
       {/* 便情報ヘッダー */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
@@ -136,24 +140,15 @@ export default async function DriverSlotPage({ params }: Props) {
         )}
       </div>
 
-      {/* QRスキャン入力 */}
-      {isAssigned && <QRScanInput slotId={id} />}
-      {!isAssigned && (
-        <div className="bg-yellow-900/40 border border-yellow-700 rounded-2xl px-4 py-3 text-xs text-yellow-400">
-          この便はまだアサインされていません。管理者にご確認ください。
-        </div>
-      )}
-
-      {/* 乗車リスト */}
+      {/* 乗客リスト（QRスキャンより先に表示） */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
+        <div className="px-4 py-3 border-b border-gray-700">
           <h2 className="text-sm font-semibold text-white">
-            乗車リスト
+            乗客名簿
             <span className="ml-2 text-xs text-gray-400 font-normal">
-              {bookings.length}件 / {totalPax}名
+              {bookings.length}件 / {totalPax}名 — タップで搭乗確認
             </span>
           </h2>
-          <RefreshButton dark />
         </div>
 
         {bookings.length === 0 ? (
@@ -170,6 +165,14 @@ export default async function DriverSlotPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* QRスキャン入力（名簿確認後に使用） */}
+      {isAssigned && <QRScanInput slotId={id} />}
+      {!isAssigned && (
+        <div className="bg-yellow-900/40 border border-yellow-700 rounded-2xl px-4 py-3 text-xs text-yellow-400">
+          この便はまだアサインされていません。管理者にご確認ください。
+        </div>
+      )}
     </div>
   )
 }

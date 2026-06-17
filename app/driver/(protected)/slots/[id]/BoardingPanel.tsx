@@ -123,7 +123,8 @@ export function QRScanInput({ slotId }: { slotId: string }) {
           placeholder="例: TMK-202606-0001"
           autoComplete="off"
           autoCapitalize="characters"
-          className="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+          className="flex-1 border border-gray-600 rounded-xl px-3 py-2.5 text-sm placeholder-gray-400 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
+          style={{ backgroundColor: '#374151', color: '#ffffff', WebkitTextFillColor: '#ffffff' }}
         />
         <button
           type="submit"
