@@ -9,6 +9,9 @@ type Props = {
   capacity: number
 }
 
+const inputCls = "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+const selectCls = "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+
 export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
   const [state, formAction, pending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
@@ -33,7 +36,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           name="guestName"
           required
           placeholder="例：山田 太郎 / YAMADA, Taro"
-          className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={inputCls}
         />
       </div>
 
@@ -42,11 +45,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             人数 <span className="text-red-500">*</span>
           </label>
-          <select
-            name="partySize"
-            required
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
+          <select name="partySize" required className={selectCls}>
             {Array.from({ length: capacity }, (_, i) => i + 1).map(n => (
               <option key={n} value={n}>{n}名</option>
             ))}
@@ -56,11 +55,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             お荷物の個数 <span className="text-red-500">*</span>
           </label>
-          <select
-            name="luggageCount"
-            required
-            className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
-          >
+          <select name="luggageCount" required className={selectCls}>
             {Array.from({ length: 13 }, (_, i) => i).map(n => (
               <option key={n} value={n}>{n}個</option>
             ))}
@@ -76,7 +71,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           name="flightNumber"
           required
           placeholder="例：NH832"
-          className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={inputCls}
         />
       </div>
 
@@ -86,7 +81,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           name="notes"
           rows={2}
           placeholder="ベビーカーあり、車椅子対応等"
-          className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          className={`${inputCls} resize-none`}
         />
       </div>
 
@@ -95,7 +90,7 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
         <input
           name="bookedByName"
           placeholder="例：鈴木（ベルデスク）"
-          className="w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          className={inputCls}
         />
       </div>
 

@@ -38,7 +38,7 @@ export default function AdminCancelButton({ bookingId }: { bookingId: string }) 
           type="text"
           name="reason"
           placeholder="例: 運休のため"
-          className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm bg-white"
+          className="w-full border border-red-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 bg-white"
         />
       </div>
       <div className="flex gap-3">

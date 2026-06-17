@@ -23,6 +23,8 @@ const STATUS_OPTIONS = [
   { value: 'suspended', label: '運休',     cls: 'bg-red-600 hover:bg-red-700' },
 ]
 
+const fieldCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400"
+
 // datetime-local は "YYYY-MM-DDTHH:mm" 形式が必要
 function toCutoffLocal(iso: string) {
   const d = new Date(iso)
@@ -104,25 +106,25 @@ export function SlotEditForm({ slot }: { slot: Slot }) {
           <label className="text-xs text-gray-500">定員（名）</label>
           <input type="number" name="capacity" required min={1} max={20}
             defaultValue={slot.capacity}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            className={fieldCls} />
         </div>
         <div className="space-y-1">
           <label className="text-xs text-gray-500">1席あたり単価（円）</label>
           <input type="number" name="price_per_seat_yen" required min={0}
             defaultValue={slot.price_per_seat_yen}
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+            className={fieldCls} />
         </div>
       </div>
       <div className="space-y-1">
         <label className="text-xs text-gray-500">受付締切日時</label>
         <input type="datetime-local" name="cutoff_at" required
           defaultValue={toCutoffLocal(slot.cutoff_at)}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm" />
+          className={fieldCls} />
       </div>
       <div className="space-y-1">
         <label className="text-xs text-gray-500">備考</label>
         <textarea name="notes" rows={2} defaultValue={slot.notes ?? ''}
-          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm resize-none" />
+          className={`${fieldCls} resize-none`} />
       </div>
       <div className="flex gap-2">
         <button type="submit" disabled={pending}
@@ -168,7 +170,7 @@ export function DriverAssignForm({
             name="employee_code"
             defaultValue={currentEmployeeCode ?? ''}
             placeholder="例: DRV001"
-            className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm"
+            className={fieldCls}
           />
         </div>
         <button type="submit" disabled={pending}

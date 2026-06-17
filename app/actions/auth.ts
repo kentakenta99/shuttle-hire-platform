@@ -8,18 +8,17 @@ type LoginResult = { error: string } | never
 export async function loginAsHotelStaff(formData: FormData): Promise<LoginResult> {
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data: { user } } = await supabase.auth.signInWithPassword({
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
 
-  if (error) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
+  if (error || !user) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
 
-  // ホテルスタッフかどうか確認
   const { data: hotel } = await supabase
     .from('hotels')
     .select('id')
-    .not('auth_user_id', 'is', null)
+    .eq('auth_user_id', user.id)
     .single()
 
   if (!hotel) {
@@ -33,16 +32,17 @@ export async function loginAsHotelStaff(formData: FormData): Promise<LoginResult
 export async function loginAsAdmin(formData: FormData): Promise<LoginResult> {
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data: { user } } = await supabase.auth.signInWithPassword({
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
 
-  if (error) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
+  if (error || !user) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
 
   const { data: admin } = await supabase
     .from('tmk_admin_users')
     .select('id')
+    .eq('user_id', user.id)
     .eq('is_active', true)
     .single()
 
@@ -51,22 +51,23 @@ export async function loginAsAdmin(formData: FormData): Promise<LoginResult> {
     return { error: 'このアカウントに管理者権限がありません。' }
   }
 
-  redirect('/admin/dashboard')
+  redirect('/admin')
 }
 
 export async function loginAsDriver(formData: FormData): Promise<LoginResult> {
   const supabase = await createClient()
 
-  const { error } = await supabase.auth.signInWithPassword({
+  const { error, data: { user } } = await supabase.auth.signInWithPassword({
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   })
 
-  if (error) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
+  if (error || !user) return { error: 'メールアドレスまたはパスワードが正しくありません。' }
 
   const { data: driver } = await supabase
     .from('driver_users')
     .select('id')
+    .eq('user_id', user.id)
     .eq('is_active', true)
     .single()
 
@@ -75,7 +76,7 @@ export async function loginAsDriver(formData: FormData): Promise<LoginResult> {
     return { error: 'このアカウントにドライバー権限がありません。' }
   }
 
-  redirect('/driver/today')
+  redirect('/driver')
 }
 
 export async function logout(redirectTo: string = '/') {

@@ -10,6 +10,8 @@ type BulkResult = { error?: string; created?: number }
 
 const initialBulkState: BulkResult = {}
 
+const fieldCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-800"
+
 export default function SlotNewForm() {
   const [tab, setTab] = useState<'single' | 'bulk'>('single')
   const [singleState, singleAction, singlePending] = useActionState<{ error: string } | null, FormData>(
@@ -56,23 +58,19 @@ export default function SlotNewForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="出発日 *">
-              <input type="date" name="date" required min={today}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="date" name="date" required min={today} className={fieldCls} />
             </Field>
             <Field label="出発時刻 *">
-              <input type="time" name="departure_time" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="time" name="departure_time" required className={fieldCls} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="定員（名） *">
-              <input type="number" name="capacity" required min={1} max={20} defaultValue={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="number" name="capacity" required min={1} max={20} defaultValue={3} className={fieldCls} />
             </Field>
             <Field label="車両種別 *">
-              <select name="vehicle_type" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800">
+              <select name="vehicle_type" required className={fieldCls}>
                 {VEHICLE_TYPES.map(v => <option key={v}>{v}</option>)}
               </select>
             </Field>
@@ -80,18 +78,15 @@ export default function SlotNewForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="受付締切日時 *">
-              <input type="datetime-local" name="cutoff_at" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="datetime-local" name="cutoff_at" required className={fieldCls} />
             </Field>
             <Field label="1席あたり単価（円） *">
-              <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
             </Field>
           </div>
 
           <Field label="備考">
-            <textarea name="notes" rows={2} placeholder="任意"
-              className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800 resize-none" />
+            <textarea name="notes" rows={2} placeholder="任意" className={`${fieldCls} resize-none`} />
           </Field>
 
           <button
@@ -119,12 +114,10 @@ export default function SlotNewForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="開始日 *">
-              <input type="date" name="start_date" required min={today}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="date" name="start_date" required min={today} className={fieldCls} />
             </Field>
             <Field label="終了日 *">
-              <input type="date" name="end_date" required min={today}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="date" name="end_date" required min={today} className={fieldCls} />
             </Field>
           </div>
 
@@ -147,25 +140,21 @@ export default function SlotNewForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="出発時刻 *">
-              <input type="time" name="departure_time" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="time" name="departure_time" required className={fieldCls} />
             </Field>
             <Field label="定員（名） *">
-              <input type="number" name="capacity" required min={1} max={20} defaultValue={3}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="number" name="capacity" required min={1} max={20} defaultValue={3} className={fieldCls} />
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="車両種別 *">
-              <select name="vehicle_type" required
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800">
+              <select name="vehicle_type" required className={fieldCls}>
                 {VEHICLE_TYPES.map(v => <option key={v}>{v}</option>)}
               </select>
             </Field>
             <Field label="1席あたり単価（円） *">
-              <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000}
-                className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-slate-800" />
+              <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
             </Field>
           </div>
           <p className="text-xs text-gray-400">※ 受付締切は各便の前日17:00に自動設定されます</p>
