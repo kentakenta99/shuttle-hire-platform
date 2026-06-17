@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import { sendSuspensionNotice } from '@/lib/email'
 
 export async function createSlot(formData: FormData): Promise<{ error: string } | never> {
   const supabase = await createClient()
@@ -133,7 +134,61 @@ export async function updateSlotStatus(
     .update({ status })
     .eq('id', slotId)
   if (error) return { error: error.message }
+
+  // 運休確定時: 予約済みホテルへ通知メール
+  if (status === 'suspended') {
+    sendSuspensionEmails(supabase, slotId).catch(e =>
+      console.error('[email] 運休通知メール送信失敗:', e)
+    )
+  }
+
   return {}
+}
+
+async function sendSuspensionEmails(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  slotId: string
+) {
+  const [slotRes, bookingsRes] = await Promise.all([
+    supabase.from('shuttle_slots').select('date, departure_time').eq('id', slotId).single(),
+    supabase
+      .from('bookings')
+      .select('guest_name, confirmation_code, party_size, hotel_id')
+      .eq('slot_id', slotId)
+      .eq('status', 'confirmed'),
+  ])
+
+  if (!slotRes.data || !bookingsRes.data?.length) return
+
+  const slot = slotRes.data
+  const bookings = bookingsRes.data
+
+  // ホテルごとにグループ化して1通ずつ送信
+  const byHotel: Record<string, typeof bookings> = {}
+  for (const b of bookings) {
+    byHotel[b.hotel_id] = byHotel[b.hotel_id] ?? []
+    byHotel[b.hotel_id]!.push(b)
+  }
+
+  const hotelIds = Object.keys(byHotel)
+  const { data: hotels } = await supabase
+    .from('hotels')
+    .select('id, name, contact_email')
+    .in('id', hotelIds)
+
+  for (const hotel of hotels ?? []) {
+    if (!hotel.contact_email) continue
+    await sendSuspensionNotice(hotel.contact_email, {
+      hotelName: hotel.name,
+      date: slot.date,
+      departureTime: slot.departure_time,
+      affectedBookings: (byHotel[hotel.id] ?? []).map(b => ({
+        guestName: b.guest_name,
+        confirmationCode: b.confirmation_code,
+        partySize: b.party_size,
+      })),
+    })
+  }
 }
 
 export async function cancelBookingByAdmin(

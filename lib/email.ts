@@ -1,0 +1,181 @@
+import { Resend } from 'resend'
+
+const resend = new Resend(process.env.RESEND_API_KEY)
+
+const FROM = 'シャトルハイヤー予約システム <noreply@tokyomk-shuttle.jp>'
+
+// RESEND_API_KEY未設定時はログだけ出してスキップ
+async function send(opts: Parameters<typeof resend.emails.send>[0]) {
+  if (!process.env.RESEND_API_KEY) {
+    console.log('[email] RESEND_API_KEY未設定 - 送信スキップ:', opts.subject)
+    return { id: 'skipped' }
+  }
+  const { data, error } = await resend.emails.send(opts)
+  if (error) console.error('[email] 送信エラー:', error)
+  return data
+}
+
+type BookingInfo = {
+  guestName: string
+  confirmationCode: string
+  confirmUrl: string
+  date: string
+  departureTime: string
+  partySize: number
+  luggageCount: number
+  flightNumber: string
+  notes?: string | null
+  hotelName: string
+}
+
+export async function sendBookingConfirmation(to: string, info: BookingInfo) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  return send({
+    from: FROM,
+    to,
+    subject: `【予約確定】${info.guestName} 様 / ${departureLabel}`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#2563eb;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#bfdbfe;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">予約が確定しました</h1>
+  </div>
+
+  <p style="color:#475569;font-size:14px">以下の予約が確定しました。お客様にゲスト確認URLをお伝えください。</p>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    ${[
+      ['確認番号', `<strong style="font-family:monospace;font-size:18px;color:#2563eb">${info.confirmationCode}</strong>`],
+      ['お客様名', `${info.guestName} 様`],
+      ['出発日時', departureLabel],
+      ['人数', `${info.partySize}名`],
+      ['お荷物', `${info.luggageCount}個`],
+      ['フライト番号', info.flightNumber],
+      ...(info.notes ? [['備考', info.notes]] : []),
+    ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b;width:35%">${label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px">${value}</td>
+    </tr>`).join('')}
+  </table>
+
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin:20px 0">
+    <p style="font-size:13px;color:#0369a1;margin:0 0 8px"><strong>ゲスト確認URL（QRコード）</strong></p>
+    <a href="${info.confirmUrl}" style="font-size:14px;color:#2563eb;word-break:break-all">${info.confirmUrl}</a>
+    <p style="font-size:12px;color:#64748b;margin:8px 0 0">このURLをお客様のスマートフォンで読み込むと、乗車案内が表示されます。</p>
+  </div>
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    東京エムケイ株式会社 シャトルハイヤー予約システム
+  </p>
+</body>
+</html>`,
+  })
+}
+
+export async function sendCancellationNotice(to: string, info: {
+  guestName: string
+  confirmationCode: string
+  date: string
+  departureTime: string
+  reason?: string | null
+  hotelName: string
+}) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  return send({
+    from: FROM,
+    to,
+    subject: `【キャンセル確認】${info.guestName} 様 / ${departureLabel}`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#ef4444;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#fecaca;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">予約がキャンセルされました</h1>
+  </div>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    ${[
+      ['確認番号', `<span style="font-family:monospace">${info.confirmationCode}</span>`],
+      ['お客様名', `${info.guestName} 様`],
+      ['出発日時', departureLabel],
+      ...(info.reason ? [['キャンセル理由', info.reason]] : []),
+    ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b;width:35%">${label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px">${value}</td>
+    </tr>`).join('')}
+  </table>
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    東京エムケイ株式会社 シャトルハイヤー予約システム
+  </p>
+</body>
+</html>`,
+  })
+}
+
+export async function sendSuspensionNotice(to: string, info: {
+  hotelName: string
+  date: string
+  departureTime: string
+  affectedBookings: { guestName: string; confirmationCode: string; partySize: number }[]
+}) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  return send({
+    from: FROM,
+    to,
+    subject: `【運休のお知らせ】${departureLabel} シャトルハイヤー便`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#f59e0b;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#fef3c7;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">便の運休をお知らせします</h1>
+  </div>
+
+  <p style="font-size:14px;color:#475569">
+    ${info.hotelName} ご担当者様<br><br>
+    大変申し訳ございませんが、以下の便が運休となりました。<br>
+    対象のご予約については、別便または代替交通手段をご案内ください。
+  </p>
+
+  <div style="background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;padding:16px;margin:16px 0">
+    <p style="font-size:14px;font-weight:bold;margin:0 0 4px">運休便</p>
+    <p style="font-size:18px;font-weight:bold;color:#b45309;margin:0">${departureLabel}</p>
+  </div>
+
+  <p style="font-size:13px;font-weight:bold;margin:20px 0 8px">影響を受けるご予約 (${info.affectedBookings.length}件)</p>
+  <table style="width:100%;border-collapse:collapse">
+    <thead>
+      <tr style="background:#f8fafc">
+        <th style="text-align:left;padding:8px 12px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">確認番号</th>
+        <th style="text-align:left;padding:8px 12px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">お客様名</th>
+        <th style="text-align:center;padding:8px 12px;font-size:12px;color:#64748b;border-bottom:1px solid #e2e8f0">人数</th>
+      </tr>
+    </thead>
+    <tbody>
+      ${info.affectedBookings.map(b => `
+      <tr>
+        <td style="padding:8px 12px;font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9">${b.confirmationCode}</td>
+        <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9">${b.guestName} 様</td>
+        <td style="padding:8px 12px;text-align:center;font-size:13px;border-bottom:1px solid #f1f5f9">${b.partySize}名</td>
+      </tr>`).join('')}
+    </tbody>
+  </table>
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    ご不便をおかけして大変申し訳ございません。<br>
+    東京エムケイ株式会社 配車センター
+  </p>
+</body>
+</html>`,
+  })
+}
