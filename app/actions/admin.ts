@@ -136,6 +136,25 @@ export async function updateSlotStatus(
   return {}
 }
 
+export async function cancelBookingByAdmin(
+  bookingId: string,
+  reason?: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+
+  // 既存の cancel_booking_by_hotel RPC を利用（残席復元込み）
+  const { data, error } = await supabase.rpc('cancel_booking_by_hotel', {
+    p_booking_id: bookingId,
+    p_reason: reason ?? null,
+  })
+
+  if (error) return { error: error.message }
+  if (data && typeof data === 'object' && 'error' in data) {
+    return { error: (data as { error: string }).error }
+  }
+  return {}
+}
+
 export async function assignDriver(
   slotId: string,
   formData: FormData
