@@ -3,6 +3,7 @@
 import { useState, useActionState, useRef } from 'react'
 import { markBoarded, markBoardedByCode, markArrived } from '@/app/actions/driver'
 import { useRouter } from 'next/navigation'
+import type { FlightInfo } from '@/lib/flight'
 
 type Booking = {
   id: string
@@ -15,13 +16,27 @@ type Booking = {
   status: string
 }
 
+function formatJST(iso: string) {
+  return new Date(iso).toLocaleTimeString('ja-JP', {
+    hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo',
+  })
+}
+
 const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   confirmed: { label: '予約OK',  cls: 'bg-green-900 text-green-400' },
   completed: { label: '搭乗済',  cls: 'bg-blue-900 text-blue-400' },
   arrived:   { label: '到着済',  cls: 'bg-purple-900 text-purple-400' },
 }
 
-export function BoardingRow({ booking, canBoard }: { booking: Booking; canBoard: boolean }) {
+export function BoardingRow({
+  booking,
+  canBoard,
+  flightInfo,
+}: {
+  booking: Booking
+  canBoard: boolean
+  flightInfo?: FlightInfo | null
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const isBoarded  = booking.status === 'completed'
@@ -48,9 +63,27 @@ export function BoardingRow({ booking, canBoard }: { booking: Booking; canBoard:
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">
-            {booking.party_size}名 / 荷物{booking.luggage_count}個 / {booking.flight_number}
-          </p>
+          <div className="flex flex-wrap items-center gap-x-2 mt-0.5">
+            <span className="text-xs text-gray-400">
+              {booking.party_size}名 / 荷物{booking.luggage_count}個
+            </span>
+            <span className="text-xs text-gray-500">·</span>
+            {/* フライト番号 + 出発時刻（API取得時） */}
+            <span className="text-xs font-mono text-gray-300">{booking.flight_number}</span>
+            {flightInfo?.scheduledDeparture && (
+              <>
+                <span className="text-xs text-gray-600">→</span>
+                <span className={`text-xs font-semibold ${
+                  flightInfo.delayMinutes ? 'text-orange-400' : 'text-sky-400'
+                }`}>
+                  {formatJST(flightInfo.estimatedDeparture ?? flightInfo.scheduledDeparture)}発
+                  {flightInfo.delayMinutes
+                    ? ` ⚠+${flightInfo.delayMinutes}分遅延`
+                    : ' ✓定刻'}
+                </span>
+              </>
+            )}
+          </div>
           <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.confirmation_code}</p>
           {booking.notes && (
             <p className="text-xs text-yellow-400 mt-0.5">⚠ {booking.notes}</p>

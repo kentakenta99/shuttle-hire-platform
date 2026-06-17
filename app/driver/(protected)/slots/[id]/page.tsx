@@ -4,6 +4,7 @@ import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
 import { BoardingRow, QRScanInput, ArrivalButton } from './BoardingPanel'
 import RefreshButton from '@/app/components/RefreshButton'
+import { fetchFlightInfo, type FlightInfo } from '@/lib/flight'
 
 export const dynamic = 'force-dynamic'
 
@@ -73,9 +74,16 @@ export default async function DriverSlotPage({ params }: Props) {
   const boardedCount  = bookings.filter(b => b.status === 'completed').length
   const arrivedCount  = bookings.filter(b => b.status === 'arrived').length
   const totalPax      = bookings.reduce((a, b) => a + b.party_size, 0)
+  const totalLuggage  = bookings.reduce((a, b) => a + b.luggage_count, 0)
   const boardedPax    = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + b.party_size, 0)
   const allBoarded    = bookings.length > 0 && bookings.every(b => b.status !== 'confirmed')
   const allArrived    = bookings.length > 0 && bookings.every(b => b.status === 'arrived')
+
+  // フライト情報を取得（APIキー未設定時は全件 null）
+  const uniqueFlights = [...new Set(bookings.map(b => b.flight_number).filter(Boolean))]
+  const flightResults = await Promise.all(uniqueFlights.map(fn => fetchFlightInfo(fn, slot.date)))
+  const flightMap: Record<string, FlightInfo | null> = {}
+  uniqueFlights.forEach((fn, i) => { flightMap[fn] = flightResults[i] })
 
   const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-400'
   const statusLabel = SLOT_LABEL[slot.status] ?? slot.status
@@ -140,15 +148,25 @@ export default async function DriverSlotPage({ params }: Props) {
         )}
       </div>
 
-      {/* 乗客リスト（QRスキャンより先に表示） */}
+      {/* 乗客名簿 */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-700">
-          <h2 className="text-sm font-semibold text-white">
-            乗客名簿
-            <span className="ml-2 text-xs text-gray-400 font-normal">
-              {bookings.length}件 / {totalPax}名 — タップで搭乗確認
-            </span>
-          </h2>
+        {/* ヘッダー：乗客数・荷物数を目立たせる */}
+        <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between gap-3">
+          <div>
+            <h2 className="text-sm font-semibold text-white">乗客名簿</h2>
+            <p className="text-xs text-gray-500 mt-0.5">{bookings.length}件 — タップで搭乗確認</p>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-white leading-none">{totalPax}</p>
+              <p className="text-xs text-gray-400 mt-0.5">名</p>
+            </div>
+            <div className="w-px h-10 bg-gray-700" />
+            <div className="text-center">
+              <p className="text-3xl font-bold text-yellow-400 leading-none">{totalLuggage}</p>
+              <p className="text-xs text-gray-400 mt-0.5">個</p>
+            </div>
+          </div>
         </div>
 
         {bookings.length === 0 ? (
@@ -160,7 +178,12 @@ export default async function DriverSlotPage({ params }: Props) {
               ...bookings.filter(b => b.status === 'completed'),
               ...bookings.filter(b => b.status === 'arrived'),
             ].map(b => (
-              <BoardingRow key={b.id} booking={b} canBoard={isAssigned} />
+              <BoardingRow
+                key={b.id}
+                booking={b}
+                canBoard={isAssigned}
+                flightInfo={flightMap[b.flight_number] ?? null}
+              />
             ))}
           </div>
         )}
