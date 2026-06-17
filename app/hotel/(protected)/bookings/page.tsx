@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -26,7 +27,10 @@ export default async function BookingsPage() {
 
   return (
     <div>
-      <h1 className="text-lg font-bold text-gray-900 mb-4">予約履歴（直近30日）</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-lg font-bold text-gray-900">予約履歴（直近30日）</h1>
+        <RefreshButton />
+      </div>
       {!bookings || bookings.length === 0 ? (
         <p className="text-sm text-gray-400 text-center py-12">予約履歴はありません</p>
       ) : (

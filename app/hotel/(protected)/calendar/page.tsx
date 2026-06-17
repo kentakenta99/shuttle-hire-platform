@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import SlotList from './SlotList'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,7 +19,10 @@ export default async function CalendarPage() {
 
   return (
     <div>
-      <h1 className="text-lg font-bold text-gray-900 mb-4">シャトル空き枠</h1>
+      <div className="flex items-center justify-between mb-4">
+        <h1 className="text-lg font-bold text-gray-900">シャトル空き枠</h1>
+        <RefreshButton />
+      </div>
       <SlotList initialSlots={slots ?? []} />
     </div>
   )

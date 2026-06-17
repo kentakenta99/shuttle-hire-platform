@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { BoardingRow, QRScanInput } from './BoardingPanel'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -98,13 +99,14 @@ export default async function DriverSlotPage({ params }: Props) {
 
       {/* 乗車リスト */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-700">
+        <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-white">
             乗車リスト
             <span className="ml-2 text-xs text-gray-400 font-normal">
               {bookings.length}件 / {totalPax}名
             </span>
           </h2>
+          <RefreshButton dark />
         </div>
 
         {bookings.length === 0 ? (
