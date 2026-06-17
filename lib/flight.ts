@@ -23,7 +23,8 @@ export async function fetchFlightInfo(
   if (!iata || iata.length < 3) return null
 
   try {
-    const url = new URL('https://api.aviationstack.com/v1/flights')
+    // 無料プランはHTTPのみ対応（HTTPSは有料プラン以上）
+    const url = new URL('http://api.aviationstack.com/v1/flights')
     url.searchParams.set('access_key', apiKey)
     url.searchParams.set('flight_iata', iata)
     url.searchParams.set('flight_date', date)
