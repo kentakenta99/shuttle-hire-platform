@@ -8,7 +8,6 @@ export async function createBooking(formData: FormData): Promise<{ error: string
   const supabase = await createClient()
   const slotId = formData.get('slotId') as string
 
-  // レイアウトと同様にgetUser()でセッションを確立してからhotelを照会
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '操作権限がありません。' }
 
@@ -84,22 +83,27 @@ async function sendBookingConfirmationEmail(
 export async function cancelBooking(bookingId: string): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
 
-  // キャンセル前に情報を取得（メール用 + ホテルID取得）
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('*, shuttle_slots(date, departure_time), hotels(name, contact_email)')
-    .eq('id', bookingId)
-    .single()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '操作権限がありません。' }
 
   const { data: hotel } = await supabase
     .from('hotels')
-    .select('id')
+    .select('id, name, contact_email')
+    .eq('auth_user_id', user.id)
     .eq('is_active', true)
+    .single()
+  if (!hotel) return { error: '操作権限がありません。' }
+
+  // キャンセル前に情報を取得（メール用）
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('*, shuttle_slots(date, departure_time)')
+    .eq('id', bookingId)
     .single()
 
   const { data, error } = await supabase.rpc('cancel_booking_by_hotel', {
     p_booking_id: bookingId,
-    p_hotel_id:   hotel?.id ?? null,
+    p_hotel_id:   hotel.id,
   })
 
   if (error) return { error: 'システムエラーが発生しました。' }
@@ -110,10 +114,9 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   if (result.error) return { error: 'エラーが発生しました。' }
 
   // キャンセル通知メール（非同期）
-  if (booking) {
+  if (booking && hotel.contact_email) {
     const slot = booking.shuttle_slots as { date: string; departure_time: string } | null
-    const hotel = booking.hotels as { name: string; contact_email: string | null } | null
-    if (slot && hotel?.contact_email) {
+    if (slot) {
       sendCancellationNotice(hotel.contact_email, {
         guestName: booking.guest_name,
         confirmationCode: booking.confirmation_code,
