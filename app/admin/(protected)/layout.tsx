@@ -8,14 +8,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/admin/login')
 
-  const { data: adminUser } = await supabase
+  const { data: adminRaw } = await supabase
     .from('tmk_admin_users')
     .select('display_name')
     .eq('user_id', user.id)
     .eq('is_active', true)
     .single()
 
-  if (!adminUser) redirect('/admin/login')
+  if (!adminRaw) redirect('/admin/login')
+
+  // is_super_admin は型定義外のため adminClient で個別取得
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const { data: superAdminRow } = await createAdminClient()
+    .from('tmk_admin_users')
+    .select('is_super_admin')
+    .eq('user_id', user.id)
+    .single()
+  const isSuperAdmin = !!(superAdminRow as unknown as { is_super_admin?: boolean } | null)?.is_super_admin
+
+  const adminUser = adminRaw
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -31,6 +42,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 { href: '/admin/hotels', label: 'ホテル' },
                 { href: '/admin/invoices', label: '請求' },
                 { href: '/admin/security', label: '🔒 セキュリティ' },
+                ...(isSuperAdmin ? [{ href: '/admin/superadmin', label: '👑 スーパー管理者' }] : []),
               ].map(({ href, label }) => (
                 <Link
                   key={href}
