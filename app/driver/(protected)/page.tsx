@@ -63,14 +63,15 @@ export default async function DriverHomePage() {
         .from('bookings')
         .select('slot_id, status')
         .in('slot_id', slotIds)
-        .in('status', ['confirmed', 'completed'])
+        .in('status', ['confirmed', 'completed', 'arrived'])
     : { data: [] }
 
-  const completedMap: Record<string, { confirmed: number; completed: number }> = {}
+  const completedMap: Record<string, { confirmed: number; completed: number; arrived: number }> = {}
   for (const b of completedCounts ?? []) {
-    if (!completedMap[b.slot_id]) completedMap[b.slot_id] = { confirmed: 0, completed: 0 }
+    if (!completedMap[b.slot_id]) completedMap[b.slot_id] = { confirmed: 0, completed: 0, arrived: 0 }
     if (b.status === 'confirmed') completedMap[b.slot_id]!.confirmed++
     if (b.status === 'completed') completedMap[b.slot_id]!.completed++
+    if (b.status === 'arrived')   completedMap[b.slot_id]!.arrived++
   }
 
   const todaySlots = (slots ?? []).filter(s => s.date === todayStr)
@@ -78,8 +79,11 @@ export default async function DriverHomePage() {
 
   type SlotRow = { id: string; date: string; departure_time: string; capacity: number; remaining_seats: number; status: string; vehicle_type: string }
   function SlotCard({ slot }: { slot: SlotRow }) {
-    const counts = completedMap[slot.id] ?? { confirmed: 0, completed: 0 }
-    const total = counts.confirmed + counts.completed
+    const counts = completedMap[slot.id] ?? { confirmed: 0, completed: 0, arrived: 0 }
+    const total = counts.confirmed + counts.completed + counts.arrived
+    const doneCount = counts.completed + counts.arrived
+    const allArrived = total > 0 && counts.arrived === total
+    const allBoarded = total > 0 && doneCount === total
     const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'text-gray-400' }
 
     return (
@@ -102,13 +106,13 @@ export default async function DriverHomePage() {
           <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                counts.completed === total && total > 0 ? 'bg-green-500' : 'bg-blue-500'
+                allArrived ? 'bg-purple-500' : allBoarded ? 'bg-green-500' : 'bg-blue-500'
               }`}
-              style={{ width: total > 0 ? `${Math.round(counts.completed / total * 100)}%` : '0%' }}
+              style={{ width: total > 0 ? `${Math.round(doneCount / total * 100)}%` : '0%' }}
             />
           </div>
           <span className="text-xs text-gray-400 shrink-0">
-            乗車 {counts.completed}/{total}名
+            {allArrived ? `到着済 ${total}/${total}` : `搭乗 ${doneCount}/${total}`}件
           </span>
         </div>
       </Link>

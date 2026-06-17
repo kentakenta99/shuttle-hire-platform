@@ -82,9 +82,13 @@ export default async function DriverSlotPage({ params }: Props) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2">
-        <Link href="/driver" className="text-sm text-gray-400 hover:text-white transition">← 担当便</Link>
-      </div>
+      <Link
+        href="/driver"
+        className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 w-full"
+      >
+        <span className="text-lg leading-none">←</span>
+        <span className="font-medium">担当便一覧に戻る</span>
+      </Link>
 
       {/* 便情報ヘッダー */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
