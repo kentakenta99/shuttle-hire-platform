@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { sendSuspensionNotice } from '@/lib/email'
 
@@ -214,25 +215,40 @@ export async function assignDriver(
   slotId: string,
   formData: FormData
 ): Promise<{ error?: string }> {
+  // 管理者セッション確認（通常クライアント）
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+
+  const { data: admin } = await supabase
+    .from('tmk_admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
   const employeeCode = (formData.get('employee_code') as string).trim()
 
-  await supabase.from('driver_assignments').delete().eq('slot_id', slotId)
+  // RLSをバイパスするためサービスロールクライアントでDELETE/INSERT
+  const adminDb = createAdminClient()
+  await adminDb.from('driver_assignments').delete().eq('slot_id', slotId)
 
   if (!employeeCode) return {}
 
-  const { data: driver } = await supabase
+  const { data: driver } = await adminDb
     .from('driver_users')
     .select('id')
     .eq('employee_code', employeeCode)
     .single()
 
-  const { error } = await supabase.from('driver_assignments').insert({
+  if (!driver) return { error: `乗務員コード "${employeeCode}" が見つかりません。` }
+
+  const { error } = await adminDb.from('driver_assignments').insert({
     slot_id: slotId,
     employee_code: employeeCode,
-    driver_id: driver?.id ?? null,
-    assigned_by: user?.id ?? null,
+    driver_id: driver.id,
+    assigned_by: user.id,
   })
   if (error) return { error: error.message }
   return {}
