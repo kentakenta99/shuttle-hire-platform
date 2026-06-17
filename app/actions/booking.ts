@@ -8,8 +8,19 @@ export async function createBooking(formData: FormData): Promise<{ error: string
   const supabase = await createClient()
   const slotId = formData.get('slotId') as string
 
+  // SECURITY DEFINER内でauth.uid()がNULLになるSupabase既知の問題を回避
+  // サーバー側でホテルIDを取得してRPCに明示的に渡す
+  const { data: hotel } = await supabase
+    .from('hotels')
+    .select('id')
+    .eq('is_active', true)
+    .single()
+
+  if (!hotel) return { error: '操作権限がありません。' }
+
   const { data, error } = await supabase.rpc('create_booking', {
     p_slot_id:        slotId,
+    p_hotel_id:       hotel.id,
     p_guest_name:     formData.get('guestName') as string,
     p_party_size:     Number(formData.get('partySize')),
     p_flight_number:  formData.get('flightNumber') as string,
@@ -70,15 +81,22 @@ async function sendBookingConfirmationEmail(
 export async function cancelBooking(bookingId: string): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
 
-  // キャンセル前に情報を取得（メール用）
+  // キャンセル前に情報を取得（メール用 + ホテルID取得）
   const { data: booking } = await supabase
     .from('bookings')
     .select('*, shuttle_slots(date, departure_time), hotels(name, contact_email)')
     .eq('id', bookingId)
     .single()
 
+  const { data: hotel } = await supabase
+    .from('hotels')
+    .select('id')
+    .eq('is_active', true)
+    .single()
+
   const { data, error } = await supabase.rpc('cancel_booking_by_hotel', {
     p_booking_id: bookingId,
+    p_hotel_id:   hotel?.id ?? null,
   })
 
   if (error) return { error: 'システムエラーが発生しました。' }
