@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import { sendBookingConfirmation, sendGuestBookingConfirmation, sendCancellationNotice } from '@/lib/email'
 
@@ -11,7 +12,9 @@ export async function createBooking(formData: FormData): Promise<{ error: string
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '操作権限がありません。' }
 
-  const { data: hotel } = await supabase
+  // RLS を経由せず admin client でホテルを取得（RLS セッション問題を回避）
+  const adminDb = createAdminClient()
+  const { data: hotel } = await adminDb
     .from('hotels')
     .select('id')
     .eq('auth_user_id', user.id)
@@ -103,7 +106,8 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: '操作権限がありません。' }
 
-  const { data: hotel } = await supabase
+  const adminDb = createAdminClient()
+  const { data: hotel } = await adminDb
     .from('hotels')
     .select('id, name, contact_email')
     .eq('auth_user_id', user.id)
