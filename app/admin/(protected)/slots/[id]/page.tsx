@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { StatusToggle, SlotEditForm, DriverAssignForm } from './SlotActions'
+import PrintButton from './PrintButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -130,15 +131,7 @@ export default async function SlotDetailPage({ params }: Props) {
               {bookings.length}件 / {bookings.reduce((a, b) => a + b.party_size, 0)}名
             </span>
           </h2>
-          {bookings.length > 0 && (
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="text-xs text-gray-500 hover:text-gray-800 border border-gray-200 px-3 py-1 rounded-lg transition"
-            >
-              印刷
-            </button>
-          )}
+          {bookings.length > 0 && <PrintButton />}
         </div>
 
         {bookings.length === 0 ? (
