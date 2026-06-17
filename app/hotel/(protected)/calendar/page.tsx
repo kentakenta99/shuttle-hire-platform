@@ -6,7 +6,7 @@ export const dynamic = 'force-dynamic'
 export default async function CalendarPage() {
   const supabase = await createClient()
   const today = new Date().toISOString().slice(0, 10)
-  const until = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10)
+  const until = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
 
   const { data: slots } = await supabase
     .from('shuttle_slots')
