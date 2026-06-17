@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKシャトルハイヤー予約プラットフォーム v2.0 提案書</title>
+<style>
+  :root {
+    --mk-blue: #1a3a6b;
+    --mk-blue-light: #2a5298;
+    --mk-accent: #e8a020;
+    --text: #1a1a2e;
+    --text-sub: #555;
+    --border: #e2e8f0;
+    --bg-light: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; color: var(--text); line-height: 1.7; background: #fff; }
+
+  /* ── Cover ─────────────────────────────────────── */
+  .cover {
+    background: linear-gradient(135deg, #0f1f40 0%, #1a3a6b 50%, #2a5298 100%);
+    color: #fff; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 60px 40px;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(232,160,32,.08) 0%, transparent 50%);
+  }
+  .cover-logo {
+    width: 72px; height: 72px; background: rgba(255,255,255,.15); border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0 auto 24px; position: relative;
+    border: 2px solid rgba(255,255,255,.2);
+  }
+  .cover h1 { font-size: 2.4rem; font-weight: 800; line-height: 1.3; margin-bottom: 16px; position: relative; }
+  .cover h1 span { color: var(--mk-accent); }
+  .cover-sub { font-size: 1.1rem; opacity: .8; margin-bottom: 48px; position: relative; }
+  .cover-version {
+    background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2);
+    border-radius: 24px; padding: 10px 24px; font-size: .85rem; display: inline-block; position: relative;
+  }
+  .cover-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 32px; position: relative; }
+  .cover-tag {
+    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px; padding: 6px 16px; font-size: .8rem; opacity: .9;
+  }
+
+  /* ── Section layout ─────────────────────────────── */
+  .section { padding: 80px 0; }
+  .section:nth-child(even) { background: var(--bg-light); }
+  .container { max-width: 1040px; margin: 0 auto; padding: 0 40px; }
+  .section-label {
+    font-size: .75rem; font-weight: 700; letter-spacing: .12em;
+    color: var(--mk-blue-light); text-transform: uppercase; margin-bottom: 8px;
+  }
+  .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+  .section-desc { color: var(--text-sub); font-size: 1.05rem; max-width: 640px; margin-bottom: 48px; }
+
+  /* ── Feature grid ────────────────────────────────── */
+  .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .feature-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 16px;
+    padding: 28px; transition: box-shadow .2s;
+  }
+  .feature-card:hover { box-shadow: 0 8px 32px rgba(0,0,0,.08); }
+  .feature-icon { font-size: 2rem; margin-bottom: 14px; }
+  .feature-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 8px; }
+  .feature-card p { font-size: .9rem; color: var(--text-sub); line-height: 1.6; }
+
+  /* ── Screen mockups ──────────────────────────────── */
+  .screen-section { display: grid; grid-template-columns: 1fr 1fr; gap: 48px; align-items: start; margin-bottom: 64px; }
+  .screen-section.reverse { direction: rtl; }
+  .screen-section.reverse > * { direction: ltr; }
+  .screen-info h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 10px; }
+  .screen-info p { color: var(--text-sub); margin-bottom: 16px; }
+  .screen-info ul { list-style: none; }
+  .screen-info ul li { display: flex; align-items: start; gap: 8px; font-size: .9rem; margin-bottom: 6px; color: var(--text-sub); }
+  .screen-info ul li::before { content: '✓'; color: var(--mk-blue-light); font-weight: 700; flex-shrink: 0; margin-top: 2px; }
+  .role-badge {
+    display: inline-block; font-size: .72rem; font-weight: 700; padding: 3px 10px;
+    border-radius: 20px; margin-bottom: 12px; letter-spacing: .05em;
+  }
+  .role-hotel { background: #dbeafe; color: #1d4ed8; }
+  .role-driver { background: #1e293b; color: #94a3b8; }
+  .role-admin { background: #f0fdf4; color: #166534; }
+  .role-super { background: #faf5ff; color: #6b21a8; }
+  .role-guest { background: #fff7ed; color: #9a3412; }
+
+  /* ── Device frames ────────────────────────────────── */
+  .phone-frame {
+    background: #0f172a; border-radius: 32px; padding: 12px;
+    box-shadow: 0 32px 64px rgba(0,0,0,.3); max-width: 320px; margin: 0 auto;
+    border: 2px solid #334155;
+  }
+  .phone-screen { background: #1e293b; border-radius: 22px; overflow: hidden; }
+
+  .browser-frame {
+    background: #f1f5f9; border-radius: 12px;
+    box-shadow: 0 16px 48px rgba(0,0,0,.12); overflow: hidden;
+    border: 1px solid #e2e8f0;
+  }
+  .browser-bar {
+    background: #e2e8f0; padding: 10px 16px; display: flex; align-items: center; gap: 8px;
+  }
+  .browser-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .browser-url {
+    flex: 1; background: #fff; border-radius: 6px; padding: 4px 10px;
+    font-size: .72rem; color: #64748b; font-family: monospace; margin: 0 8px;
+  }
+  .browser-content { background: #fff; }
+
+  /* ── UI Mockup: Hotel Calendar ───────────────────── */
+  .mock-hotel-header {
+    background: linear-gradient(135deg, #1e3a5f, #2a5298); color: #fff;
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .mock-hotel-logo { display: flex; align-items: center; gap: 10px; }
+  .mock-logo-box {
+    width: 32px; height: 32px; background: rgba(255,255,255,.15); border-radius: 8px;
+    display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900;
+  }
+  .mock-hotel-name { font-size: 12px; font-weight: 600; }
+  .mock-hotel-sub { font-size: 10px; opacity: .7; }
+  .mock-calendar-header {
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #e2e8f0; background: #f8fafc;
+  }
+  .mock-cal-title { font-size: 13px; font-weight: 700; color: #1e3a5f; }
+  .mock-cal-nav { font-size: 18px; color: #94a3b8; cursor: default; }
+  .mock-date-group { padding: 0; }
+  .mock-date-header {
+    padding: 10px 20px 6px; font-size: 11px; font-weight: 700; color: #475569;
+    background: #f1f5f9; border-top: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;
+  }
+  .mock-slot {
+    padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #f1f5f9; background: #fff;
+  }
+  .mock-slot-time { font-size: 18px; font-weight: 800; color: #1e3a5f; font-variant-numeric: tabular-nums; }
+  .mock-slot-vehicle { font-size: 10px; color: #94a3b8; margin-top: 1px; }
+  .mock-seats { display: flex; gap: 4px; align-items: center; }
+  .mock-seat { font-size: 16px; }
+  .mock-btn {
+    background: #1e3a5f; color: #fff; border-radius: 8px;
+    padding: 6px 14px; font-size: 11px; font-weight: 600;
+  }
+  .mock-btn-full { background: #94a3b8; color: #fff; border-radius: 8px; padding: 6px 14px; font-size: 11px; }
+  .mock-tag-closed {
+    background: #f1f5f9; color: #94a3b8; border-radius: 6px;
+    padding: 5px 10px; font-size: 10px;
+  }
+
+  /* ── UI Mockup: QR Ticket ────────────────────────── */
+  .mock-ticket { background: #f8fafc; padding: 20px 16px; }
+  .mock-ticket-header { text-align: center; margin-bottom: 20px; }
+  .mock-mk-logo-wrap { display: flex; align-items: center; gap: 10px; justify-content: center; margin-bottom: 4px; }
+  .mock-mk-logo-box {
+    width: 40px; height: 40px; background: #1d4ed8; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 900; color: #fff;
+  }
+  .mock-mk-name { font-size: 13px; font-weight: 700; text-align: left; line-height: 1.3; }
+  .mock-mk-name-sub { font-size: 10px; color: #64748b; }
+  .mock-qr-card {
+    background: #fff; border-radius: 16px; border: 1px solid #e2e8f0;
+    padding: 16px; text-align: center; margin-bottom: 12px;
+  }
+  .mock-qr-label { font-size: 9px; font-weight: 700; letter-spacing: .1em; color: #94a3b8; text-transform: uppercase; margin-bottom: 12px; }
+  .mock-qr-code {
+    width: 100px; height: 100px; background: #1e293b; margin: 0 auto 10px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: rgba(255,255,255,.4); overflow: hidden; position: relative;
+  }
+  .mock-qr-grid {
+    position: absolute; inset: 8px;
+    background-image:
+      linear-gradient(rgba(255,255,255,.2) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.2) 1px, transparent 1px);
+    background-size: 10px 10px;
+  }
+  .mock-qr-corner {
+    position: absolute; width: 24px; height: 24px;
+    border: 3px solid #fff; border-radius: 4px;
+  }
+  .mock-confirm-code { font-family: monospace; font-size: 13px; font-weight: 700; color: #374151; margin-bottom: 4px; }
+  .mock-confirm-hint { font-size: 9px; color: #94a3b8; }
+  .mock-plate-card {
+    background: #fff; border-radius: 16px; border: 1px solid #e2e8f0;
+    padding: 12px; text-align: center; margin-bottom: 12px;
+  }
+  .mock-plate-label { font-size: 9px; color: #94a3b8; margin-bottom: 8px; }
+  .mock-plate {
+    display: inline-block; background: #fff; border: 3px solid #15803d;
+    border-radius: 6px; padding: 6px 16px; position: relative;
+  }
+  .mock-plate-top { width: 100%; height: 4px; background: #15803d; border-radius: 2px 2px 0 0; position: absolute; top: -1px; left: -1px; right: -1px; }
+  .mock-plate-region { font-size: 8px; font-weight: 700; color: #15803d; text-align: center; margin-top: 4px; }
+  .mock-plate-number { font-size: 18px; font-weight: 900; color: #1a1a1a; font-family: monospace; letter-spacing: .1em; }
+  .mock-detail-card {
+    background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; overflow: hidden; margin-bottom: 12px;
+  }
+  .mock-detail-header { background: #1d4ed8; padding: 10px 14px; }
+  .mock-detail-header-label { font-size: 9px; color: rgba(255,255,255,.7); }
+  .mock-detail-header-val { font-size: 12px; font-weight: 700; color: #fff; }
+  .mock-detail-row { display: flex; padding: 8px 14px; border-bottom: 1px solid #f1f5f9; }
+  .mock-detail-row-label { font-size: 9px; color: #94a3b8; width: 100px; flex-shrink: 0; }
+  .mock-detail-row-val { font-size: 10px; font-weight: 600; color: #374151; }
+
+  /* ── UI Mockup: Driver Slot ──────────────────────── */
+  .mock-driver-wrap { background: #0f172a; border-radius: 22px; padding: 16px; }
+  .mock-driver-nav {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+  }
+  .mock-driver-back {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    color: #d1d5db; font-size: 10px; padding: 6px 12px; flex: 1; display: flex; align-items: center; gap: 4px;
+  }
+  .mock-driver-refresh {
+    background: #1e293b; border: 1px solid #334155; border-radius: 10px;
+    color: #d1d5db; font-size: 10px; padding: 6px 10px;
+  }
+  .mock-slot-card {
+    background: #1e293b; border-radius: 16px; border: 1px solid #334155; padding: 14px; margin-bottom: 10px;
+  }
+  .mock-slot-date { font-size: 10px; color: #64748b; }
+  .mock-slot-time-big { font-size: 28px; font-weight: 900; color: #fff; line-height: 1; }
+  .mock-slot-time-unit { font-size: 12px; color: #64748b; margin-left: 2px; }
+  .mock-slot-type { font-size: 10px; color: #64748b; margin-top: 2px; }
+  .mock-status-badge {
+    font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px;
+    background: #14532d; color: #4ade80;
+  }
+  .mock-progress-bar-wrap { margin-top: 10px; }
+  .mock-progress-label { display: flex; justify-content: space-between; font-size: 9px; color: #64748b; margin-bottom: 4px; }
+  .mock-progress-bar { height: 6px; background: #334155; border-radius: 99px; overflow: hidden; }
+  .mock-progress-fill { height: 100%; background: #3b82f6; border-radius: 99px; width: 0%; }
+
+  .mock-terminal-card {
+    background: #1e293b; border: 1px solid #1d4ed8; border-radius: 14px; padding: 12px; margin-bottom: 10px;
+  }
+  .mock-terminal-label { font-size: 9px; font-weight: 700; color: #60a5fa; margin-bottom: 8px; }
+  .mock-terminal-row { display: flex; align-items: center; gap: 8px; }
+  .mock-terminal-box {
+    background: rgba(29,78,216,.4); border: 1px solid #1d4ed8;
+    border-radius: 10px; padding: 8px 12px; text-align: center; min-width: 64px;
+  }
+  .mock-terminal-step { font-size: 8px; color: #93c5fd; }
+  .mock-terminal-num { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+  .mock-terminal-pax { font-size: 8px; color: #94a3b8; }
+  .mock-terminal-arrow { font-size: 18px; color: #475569; }
+  .mock-terminal-hint { font-size: 8px; color: #475569; margin-top: 6px; }
+
+  .mock-manifest-header {
+    background: #1e293b; border-radius: 14px; border: 1px solid #334155;
+    overflow: hidden; margin-bottom: 10px;
+  }
+  .mock-manifest-title-row {
+    padding: 10px 14px; border-bottom: 1px solid #334155;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mock-manifest-title { font-size: 11px; font-weight: 600; color: #fff; }
+  .mock-manifest-counts { display: flex; align-items: center; gap: 12px; }
+  .mock-count-big { font-size: 22px; font-weight: 900; color: #fff; line-height: 1; }
+  .mock-count-label { font-size: 8px; color: #64748b; }
+  .mock-count-divider { width: 1px; height: 28px; background: #334155; }
+  .mock-count-big-yellow { font-size: 22px; font-weight: 900; color: #fbbf24; line-height: 1; }
+  .mock-passenger-row {
+    padding: 10px 14px; border-bottom: 1px solid #1e293b; background: #1a2744;
+  }
+  .mock-pax-name { font-size: 11px; font-weight: 600; color: #fff; }
+  .mock-pax-info { font-size: 9px; color: #64748b; margin-top: 2px; display: flex; align-items: center; gap: 4px; }
+  .mock-pax-flight { font-family: monospace; color: #d1d5db; }
+  .mock-pax-terminal { background: #312e81; color: #a5b4fc; font-size: 8px; font-weight: 700; padding: 1px 5px; border-radius: 4px; }
+  .mock-pax-dep { color: #38bdf8; font-size: 8px; font-weight: 600; }
+  .mock-pax-delay { color: #fb923c; font-size: 8px; font-weight: 600; }
+  .mock-pax-badge-ok { background: #14532d; color: #4ade80; font-size: 8px; padding: 2px 6px; border-radius: 20px; }
+  .mock-board-btn { background: #2563eb; color: #fff; font-size: 9px; padding: 5px 10px; border-radius: 8px; float: right; }
+
+  /* ── UI Mockup: Admin Dashboard ──────────────────── */
+  .mock-admin-header {
+    background: #1e293b; padding: 10px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .mock-admin-brand { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+  .mock-admin-nav { display: flex; gap: 2px; }
+  .mock-admin-nav-item {
+    font-size: 9px; color: #94a3b8; padding: 4px 8px; border-radius: 4px;
+  }
+  .mock-admin-nav-item.active { color: #fff; background: #334155; }
+  .mock-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 14px; background: #f8fafc; }
+  .mock-kpi-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .mock-kpi-label { font-size: 8px; color: #94a3b8; margin-bottom: 4px; }
+  .mock-kpi-val { font-size: 16px; font-weight: 800; color: #1e293b; }
+  .mock-kpi-sub { font-size: 8px; color: #94a3b8; margin-top: 2px; }
+  .mock-slots-section { padding: 14px; }
+  .mock-slots-title { font-size: 11px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
+  .mock-slot-row {
+    display: flex; align-items: center; justify-content: space-between;
+    border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px 14px; margin-bottom: 8px; background: #fff;
+  }
+  .mock-slot-row-time { font-size: 16px; font-weight: 800; color: #1e293b; }
+  .mock-slot-row-date { font-size: 9px; color: #94a3b8; }
+  .mock-seats-row { display: flex; gap: 4px; }
+  .mock-seat-blue { color: #2563eb; font-size: 14px; }
+  .mock-seat-gray { color: #cbd5e1; font-size: 14px; }
+  .mock-slot-actions { display: flex; gap: 6px; }
+  .mock-action-btn { font-size: 9px; padding: 4px 8px; border-radius: 6px; background: #f1f5f9; color: #475569; }
+  .mock-action-btn-blue { font-size: 9px; padding: 4px 8px; border-radius: 6px; background: #dbeafe; color: #1d4ed8; }
+
+  /* ── UI Mockup: Super Admin ──────────────────────── */
+  .mock-superadmin-header {
+    background: #1e293b; padding: 10px 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .mock-superadmin-nav { display: flex; gap: 2px; margin-top: 4px; }
+  .mock-superadmin-nav-item { font-size: 9px; color: #94a3b8; padding: 4px 8px; border-radius: 6px; }
+  .mock-superadmin-nav-item.active { color: #fff; background: #334155; }
+  .mock-sa-kpi-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; padding: 14px; background: #f8fafc; }
+  .mock-sa-kpi { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .mock-chart-section { padding: 0 14px 14px; }
+  .mock-chart-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .mock-chart-title { font-size: 10px; font-weight: 700; color: #1e293b; margin-bottom: 10px; }
+  .mock-bars { display: flex; align-items: end; gap: 6px; height: 60px; margin-bottom: 4px; }
+  .mock-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .mock-bar { width: 100%; background: #3b82f6; border-radius: 3px 3px 0 0; min-height: 2px; }
+  .mock-bar-label { font-size: 7px; color: #94a3b8; }
+  .mock-hotel-rank { padding: 0 14px 14px; }
+  .mock-rank-box { background: #fff; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px; }
+  .mock-rank-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .mock-rank-num { font-size: 10px; color: #94a3b8; width: 12px; }
+  .mock-rank-bar-wrap { flex: 1; }
+  .mock-rank-name { font-size: 9px; color: #374151; margin-bottom: 2px; }
+  .mock-rank-bar { height: 4px; background: #3b82f6; border-radius: 99px; }
+  .mock-rank-count { font-size: 10px; font-weight: 700; color: #374151; flex-shrink: 0; }
+
+  /* ── Architecture ────────────────────────────────── */
+  .arch-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .arch-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px;
+    padding: 24px; text-align: center;
+  }
+  .arch-icon { font-size: 2.5rem; margin-bottom: 12px; }
+  .arch-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .arch-card p { font-size: .85rem; color: var(--text-sub); }
+
+  /* ── Roadmap ─────────────────────────────────────── */
+  .roadmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .phase-card {
+    border-radius: 14px; padding: 24px;
+    border-left: 4px solid transparent;
+  }
+  .phase-card.done { background: #f0fdf4; border-color: #22c55e; }
+  .phase-card.active { background: #eff6ff; border-color: #3b82f6; }
+  .phase-card.next { background: #fefce8; border-color: #eab308; }
+  .phase-card.future { background: #faf5ff; border-color: #a855f7; }
+  .phase-num { font-size: .7rem; font-weight: 700; letter-spacing: .1em; margin-bottom: 6px; }
+  .phase-card.done .phase-num { color: #16a34a; }
+  .phase-card.active .phase-num { color: #2563eb; }
+  .phase-card.next .phase-num { color: #ca8a04; }
+  .phase-card.future .phase-num { color: #9333ea; }
+  .phase-card h3 { font-size: 1rem; font-weight: 800; margin-bottom: 10px; }
+  .phase-card ul { list-style: none; }
+  .phase-card ul li { font-size: .82rem; color: var(--text-sub); margin-bottom: 4px; padding-left: 14px; position: relative; }
+  .phase-card ul li::before { content: '→'; position: absolute; left: 0; color: #94a3b8; }
+
+  /* ── Security section ────────────────────────────── */
+  .security-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+  .security-card {
+    background: #fff; border: 1px solid var(--border); border-radius: 14px; padding: 24px;
+  }
+  .security-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 8px; }
+  .security-card ul { list-style: none; }
+  .security-card ul li { font-size: .88rem; color: var(--text-sub); padding: 6px 0; border-bottom: 1px solid #f1f5f9; display: flex; gap: 8px; }
+  .security-card ul li::before { content: '🔒'; flex-shrink: 0; }
+
+  /* ── Footer ──────────────────────────────────────── */
+  .footer {
+    background: #0f172a; color: rgba(255,255,255,.6);
+    padding: 40px; text-align: center; font-size: .85rem;
+  }
+  .footer strong { color: rgba(255,255,255,.9); }
+
+  /* ── Divider ─────────────────────────────────────── */
+  .divider { border: none; border-top: 1px solid var(--border); margin: 48px 0; }
+
+  @media (max-width: 768px) {
+    .cover h1 { font-size: 1.6rem; }
+    .feature-grid, .arch-grid, .roadmap { grid-template-columns: 1fr; }
+    .screen-section { grid-template-columns: 1fr; }
+    .screen-section.reverse { direction: ltr; }
+    .mock-kpi-grid { grid-template-columns: repeat(2, 1fr); }
+    .container { padding: 0 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════
+     COVER
+════════════════════════════════════════════════ -->
+<div class="cover">
+  <div class="cover-logo">MK</div>
+  <h1>シャトルハイヤー<br>予約プラットフォーム</h1>
+  <p class="cover-sub">ホテル × 東京エムケイ × ドライバー をつなぐ B2B 予約システム</p>
+  <div class="cover-version">提案書 v2.0 ― 2026年6月</div>
+  <div class="cover-tags">
+    <span class="cover-tag">🏨 ホテルスタッフ向けUI</span>
+    <span class="cover-tag">🚗 ドライバー向けUI</span>
+    <span class="cover-tag">⚙️ TMK管理者UI</span>
+    <span class="cover-tag">👑 スーパー管理者UI</span>
+    <span class="cover-tag">🛫 フライト情報連携</span>
+    <span class="cover-tag">🔒 セキュリティ監視</span>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     OVERVIEW
+════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">System Overview</p>
+    <h2 class="section-title">電話ゼロ・リアルタイム予約</h2>
+    <p class="section-desc">
+      ホテルのフロント・ベルデスクがシャトル便の空き枠をリアルタイムで確認し、
+      成田空港送りの予約を電話なしで完結。QRコードでチケットを発行し、
+      ドライバーが現場でスキャンして乗車確認まで行うエンドツーエンドシステムです。
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <h3>電話不要の即時予約</h3>
+        <p>ホテルスタッフがブラウザから即日予約。空き枠・残席はリアルタイム更新。満席時は自動的に案内文を表示。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🎫</div>
+        <h3>QRチケット発行</h3>
+        <p>予約完了時にQRコードを発行。ゲストのスマートフォンで読み取れるデジタルチケット。乗車ナンバープレートも表示。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛫</div>
+        <h3>フライト情報自動取得</h3>
+        <p>AviationStack APIと連携。乗務員画面にフライト出発時刻・遅延情報をリアルタイム表示。ターミナル停車順も自動提案。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <h3>3ロール権限設計</h3>
+        <p>ホテルスタッフ／TMK管理者／ドライバー の3種類のアカウントを完全分離。各画面はロールに最適化されたUI。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>売上・稼働率ダッシュボード</h3>
+        <p>スーパー管理者専用の統計画面。月次売上推移・便別稼働率・ホテル別予約ランキングを一覧表示。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔒</div>
+        <h3>セキュリティ監視</h3>
+        <p>ログイン成功・失敗・不正アクセスを全件記録。不審IPの自動検出と管理者アラートで不正ログインを防止。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 1: Hotel Calendar
+════════════════════════════════════════════════ -->
+<div class="section" style="background: var(--bg-light);">
+  <div class="container">
+    <p class="section-label">Hotel Staff UI</p>
+    <h2 class="section-title">ホテルスタッフ画面</h2>
+    <p class="section-desc">フロント・ベルデスクが使う予約画面。空き枠の確認から予約完了まで3ステップ。</p>
+
+    <div class="screen-section">
+      <div class="screen-info">
+        <span class="role-badge role-hotel">HOTEL STAFF</span>
+        <h3>出発枠カレンダー</h3>
+        <p>本日以降の出発枠が一覧表示されます。イスのアイコンで残席が一目でわかります。</p>
+        <ul>
+          <li>イスアイコン（青＝予約済・灰＝空き）で残席を視覚的に表示</li>
+          <li>満席便は自動的にボタンが非表示に</li>
+          <li>締切済み便はグレーアウト</li>
+          <li>当日だけでなく翌日以降も先行予約可能</li>
+        </ul>
+      </div>
+      <div>
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="browser-dot" style="background:#ef4444"></div>
+            <div class="browser-dot" style="background:#f59e0b"></div>
+            <div class="browser-dot" style="background:#22c55e"></div>
+            <div class="browser-url">shuttle-hire-platform.vercel.app/hotel/calendar</div>
+          </div>
+          <div class="browser-content">
+            <div class="mock-hotel-header">
+              <div class="mock-hotel-logo">
+                <div class="mock-logo-box">MK</div>
+                <div>
+                  <div class="mock-hotel-name">ホテルオークラ東京</div>
+                  <div class="mock-hotel-sub">シャトルハイヤー予約</div>
+                </div>
+              </div>
+              <span style="font-size:10px;opacity:.6;cursor:default">ログアウト</span>
+            </div>
+            <div class="mock-calendar-header">
+              <span class="mock-cal-nav">‹</span>
+              <span class="mock-cal-title">2026年6月の出発枠</span>
+              <span class="mock-cal-nav">›</span>
+            </div>
+            <div class="mock-date-group">
+              <div class="mock-date-header">6月19日（金）</div>
+              <div class="mock-slot">
+                <div>
+                  <div class="mock-slot-time">11:30 <span style="font-size:10px;color:#64748b">発</span></div>
+                  <div class="mock-slot-vehicle">スタンダードハイヤー</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="mock-seats">
+                    <span class="mock-seat">💺</span>
+                    <span class="mock-seat">💺</span>
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                  </div>
+                  <div class="mock-btn">予約する</div>
+                </div>
+              </div>
+              <div class="mock-slot" style="background:#fafafa">
+                <div>
+                  <div class="mock-slot-time">14:00 <span style="font-size:10px;color:#64748b">発</span></div>
+                  <div class="mock-slot-vehicle">スタンダードハイヤー</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="mock-seats">
+                    <span class="mock-seat">💺</span>
+                    <span class="mock-seat">💺</span>
+                    <span class="mock-seat">💺</span>
+                    <span class="mock-seat">💺</span>
+                  </div>
+                  <div class="mock-btn-full">満席</div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-date-group">
+              <div class="mock-date-header">6月20日（土）</div>
+              <div class="mock-slot">
+                <div>
+                  <div class="mock-slot-time">09:00 <span style="font-size:10px;color:#64748b">発</span></div>
+                  <div class="mock-slot-vehicle">スタンダードハイヤー</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="mock-seats">
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                    <span class="mock-seat" style="opacity:.25">💺</span>
+                  </div>
+                  <div class="mock-btn">予約する</div>
+                </div>
+              </div>
+              <div class="mock-slot" style="background:#f8fafc">
+                <div>
+                  <div class="mock-slot-time" style="color:#94a3b8">13:00 <span style="font-size:10px">発</span></div>
+                  <div class="mock-slot-vehicle">（締切済）</div>
+                </div>
+                <div class="mock-tag-closed">受付終了</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 2: QR Ticket
+════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="container">
+    <div class="screen-section reverse">
+      <div class="screen-info">
+        <span class="role-badge role-guest">GUEST TICKET</span>
+        <h3>QRチケット（ゲスト画面）</h3>
+        <p>予約完了後にURLを発行。ゲストのスマートフォンで開くと乗車チケットが表示されます。</p>
+        <ul>
+          <li>認証不要のPublicページ — ゲストはアプリ不要</li>
+          <li>確認コードのみをQRエンコード（ドライバーが専用スキャナーで読み取り）</li>
+          <li>東京エムケイロゴ・ブランドカラーでMKを明示</li>
+          <li>乗車予定の車両ナンバープレートを図示表示</li>
+          <li>乗車確認後に「乗車確認済み」バナーに自動更新</li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="mock-ticket">
+              <div class="mock-ticket-header">
+                <div class="mock-mk-logo-wrap">
+                  <div class="mock-mk-logo-box">MK</div>
+                  <div>
+                    <div class="mock-mk-name">東京エムケイ</div>
+                    <div class="mock-mk-name-sub">Shuttle Hire</div>
+                  </div>
+                </div>
+              </div>
+              <div class="mock-qr-card">
+                <div class="mock-qr-label">乗車チケット — Boarding Pass</div>
+                <div class="mock-qr-code">
+                  <div class="mock-qr-grid"></div>
+                  <div class="mock-qr-corner" style="top:8px;left:8px;border-right:none;border-bottom:none"></div>
+                  <div class="mock-qr-corner" style="top:8px;right:8px;border-left:none;border-bottom:none"></div>
+                  <div class="mock-qr-corner" style="bottom:8px;left:8px;border-right:none;border-top:none"></div>
+                </div>
+                <div class="mock-confirm-code">TMK-202606-0042</div>
+                <div class="mock-confirm-hint">ドライバーにこの画面を見せてください</div>
+                <div class="mock-confirm-hint">Please show this screen to your driver</div>
+              </div>
+              <div class="mock-plate-card">
+                <div class="mock-plate-label">お乗りの車両 / Your Vehicle</div>
+                <div style="text-align:center">
+                  <div class="mock-plate">
+                    <div class="mock-plate-region">TOKYO MK</div>
+                    <div class="mock-plate-number">品川 500 あ 1234</div>
+                  </div>
+                  <div style="font-size:9px;color:#94a3b8;margin-top:6px">お乗りになる車両</div>
+                </div>
+              </div>
+              <div class="mock-detail-card">
+                <div class="mock-detail-header">
+                  <div class="mock-detail-header-label">出発</div>
+                  <div class="mock-detail-header-val">2026年6月20日（土）　13:00 発</div>
+                </div>
+                <div class="mock-detail-row"><span class="mock-detail-row-label">お名前 / Name</span><span class="mock-detail-row-val">山田 太郎</span></div>
+                <div class="mock-detail-row"><span class="mock-detail-row-label">人数 / Guests</span><span class="mock-detail-row-val">3名</span></div>
+                <div class="mock-detail-row"><span class="mock-detail-row-label">フライト / Flight</span><span class="mock-detail-row-val">NH832</span></div>
+                <div class="mock-detail-row"><span class="mock-detail-row-label">荷物 / Luggage</span><span class="mock-detail-row-val">3個</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 3: Driver Manifest
+════════════════════════════════════════════════ -->
+<div class="section" style="background: #0f172a;">
+  <div class="container">
+    <p class="section-label" style="color:#60a5fa">Driver UI</p>
+    <h2 class="section-title" style="color:#fff">ドライバー画面</h2>
+    <p class="section-desc" style="color:#94a3b8">乗務員が使うダークUI。タブレット・スマートフォンに最適化。フライト情報とターミナル停車順を自動表示。</p>
+
+    <div class="screen-section">
+      <div class="screen-info">
+        <span class="role-badge role-driver">DRIVER</span>
+        <h3 style="color:#fff">乗客名簿 + ターミナル案内</h3>
+        <p style="color:#94a3b8">乗車予定の全乗客と、AviationStack APIから取得したフライト情報を一覧表示します。</p>
+        <ul>
+          <li style="color:#94a3b8">乗客数・荷物数を大きな数字で視認性最大化</li>
+          <li style="color:#94a3b8">フライト出発時刻・遅延情報をリアルタイム表示</li>
+          <li style="color:#94a3b8">ターミナル停車順を最早出発便ベースで自動計算</li>
+          <li style="color:#94a3b8">QRスキャン or 確認番号手動入力で乗車確認</li>
+          <li style="color:#94a3b8">全員確認後に「空港到着確認」ボタンが出現</li>
+        </ul>
+      </div>
+      <div>
+        <div class="phone-frame">
+          <div class="phone-screen">
+            <div class="mock-driver-wrap">
+              <div class="mock-driver-nav">
+                <div class="mock-driver-back">← 担当便一覧</div>
+                <div class="mock-driver-refresh">↻</div>
+              </div>
+              <div class="mock-slot-card">
+                <div style="display:flex;justify-content:space-between;align-items:start">
+                  <div>
+                    <div class="mock-slot-date">2026年6月20日（土）</div>
+                    <div><span class="mock-slot-time-big">13:00</span><span class="mock-slot-time-unit">発</span></div>
+                    <div class="mock-slot-type">スタンダードハイヤー</div>
+                  </div>
+                  <div class="mock-status-badge">受付中</div>
+                </div>
+                <div class="mock-progress-bar-wrap">
+                  <div class="mock-progress-label"><span>搭乗確認済</span><span style="color:#fff">0/2件 (0/4名)</span></div>
+                  <div class="mock-progress-bar"><div class="mock-progress-fill"></div></div>
+                </div>
+              </div>
+              <div class="mock-terminal-card">
+                <div class="mock-terminal-label">🛫 ターミナル停車順（自動）</div>
+                <div class="mock-terminal-row">
+                  <div class="mock-terminal-box">
+                    <div class="mock-terminal-step">第1停車</div>
+                    <div class="mock-terminal-num">T2</div>
+                    <div class="mock-terminal-pax">2名</div>
+                  </div>
+                  <div class="mock-terminal-arrow">→</div>
+                  <div class="mock-terminal-box">
+                    <div class="mock-terminal-step">第2停車</div>
+                    <div class="mock-terminal-num">T1</div>
+                    <div class="mock-terminal-pax">2名</div>
+                  </div>
+                </div>
+                <div class="mock-terminal-hint">最早出発便の順に自動ソートしています</div>
+              </div>
+              <div class="mock-manifest-header">
+                <div class="mock-manifest-title-row">
+                  <div>
+                    <div class="mock-manifest-title">乗客名簿</div>
+                    <div style="font-size:8px;color:#64748b">2件 — タップで搭乗確認</div>
+                  </div>
+                  <div class="mock-manifest-counts">
+                    <div style="text-align:center">
+                      <div class="mock-count-big">4</div>
+                      <div class="mock-count-label">名</div>
+                    </div>
+                    <div class="mock-count-divider"></div>
+                    <div style="text-align:center">
+                      <div class="mock-count-big-yellow">5</div>
+                      <div class="mock-count-label">個</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-passenger-row">
+                  <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div>
+                      <div class="mock-pax-name">山田 太郎</div>
+                      <div class="mock-pax-info">
+                        <span>3名 / 荷物3個</span><span style="color:#334155">·</span>
+                        <span class="mock-pax-flight">NH832</span>
+                        <span class="mock-pax-terminal">T2</span>
+                        <span class="mock-pax-dep">13:40発 ✓定刻</span>
+                      </div>
+                      <div style="font-size:8px;color:#475569;margin-top:2px;font-family:monospace">TMK-202606-0042</div>
+                    </div>
+                    <div>
+                      <span class="mock-pax-badge-ok">予約OK</span>
+                      <div style="margin-top:6px"><div class="mock-board-btn">搭乗確認</div></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="mock-passenger-row" style="background:#1e293b">
+                  <div style="display:flex;justify-content:space-between;align-items:start">
+                    <div>
+                      <div class="mock-pax-name">SMITH, John</div>
+                      <div class="mock-pax-info">
+                        <span>1名 / 荷物2個</span><span style="color:#334155">·</span>
+                        <span class="mock-pax-flight">JL714</span>
+                        <span class="mock-pax-terminal">T1</span>
+                        <span class="mock-pax-delay">15:00発 ⚠+20分遅延</span>
+                      </div>
+                    </div>
+                    <div>
+                      <span class="mock-pax-badge-ok">予約OK</span>
+                      <div style="margin-top:6px"><div class="mock-board-btn">搭乗確認</div></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 4: Admin Dashboard
+════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">Admin UI</p>
+    <h2 class="section-title">TMK管理者画面</h2>
+    <p class="section-desc">出発枠の作成・管理、予約の確認・キャンセル、ドライバーアサイン、請求管理をワンストップで実行。</p>
+
+    <div class="screen-section reverse">
+      <div class="screen-info">
+        <span class="role-badge role-admin">TMK ADMIN</span>
+        <h3>出発枠管理ダッシュボード</h3>
+        <p>本日の便ステータスと予約埋まり状況を一覧で管理。</p>
+        <ul>
+          <li>イスアイコンで座席の埋まり具合を一覧確認</li>
+          <li>出発時刻は10分単位で設定（任意時刻）</li>
+          <li>受付締切は「出発X時間前」方式でカンタン設定</li>
+          <li>ドライバーアサイン・車両番号をスロット単位で管理</li>
+          <li>CSV出力でホテルへの請求書作成に対応</li>
+        </ul>
+      </div>
+      <div>
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="browser-dot" style="background:#ef4444"></div>
+            <div class="browser-dot" style="background:#f59e0b"></div>
+            <div class="browser-dot" style="background:#22c55e"></div>
+            <div class="browser-url">shuttle-hire-platform.vercel.app/admin/slots</div>
+          </div>
+          <div class="browser-content">
+            <div class="mock-admin-header">
+              <span class="mock-admin-brand">東京MK シャトル管理</span>
+              <div class="mock-admin-nav">
+                <span class="mock-admin-nav-item active">出発枠</span>
+                <span class="mock-admin-nav-item">予約</span>
+                <span class="mock-admin-nav-item">ホテル</span>
+                <span class="mock-admin-nav-item">請求</span>
+                <span class="mock-admin-nav-item">🔒</span>
+                <span class="mock-admin-nav-item">👑</span>
+              </div>
+            </div>
+            <div class="mock-kpi-grid">
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">今日の便数</div>
+                <div class="mock-kpi-val">3</div>
+                <div class="mock-kpi-sub">うち運休 0件</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">本日の予約</div>
+                <div class="mock-kpi-val">8件</div>
+                <div class="mock-kpi-sub">11名</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">今月の予約</div>
+                <div class="mock-kpi-val">47件</div>
+                <div class="mock-kpi-sub">↑12% 先月比</div>
+              </div>
+              <div class="mock-kpi-card">
+                <div class="mock-kpi-label">稼働率</div>
+                <div class="mock-kpi-val">73%</div>
+                <div class="mock-kpi-sub">今月平均</div>
+              </div>
+            </div>
+            <div class="mock-slots-section">
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+                <div class="mock-slots-title">2026年6月20日（土）の出発枠</div>
+                <div style="font-size:9px;background:#1e3a5f;color:#fff;padding:4px 10px;border-radius:6px">+ 新規作成</div>
+              </div>
+              <div class="mock-slot-row">
+                <div><div class="mock-slot-row-time">09:00</div><div class="mock-slot-row-date">品川 500 あ 1234</div></div>
+                <div class="mock-seats-row">
+                  <span class="mock-seat-blue">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                </div>
+                <div class="mock-slot-actions">
+                  <span class="mock-action-btn">詳細</span>
+                  <span class="mock-action-btn-blue">DR割当</span>
+                </div>
+              </div>
+              <div class="mock-slot-row">
+                <div><div class="mock-slot-row-time">13:00</div><div class="mock-slot-row-date">品川 500 い 5678</div></div>
+                <div class="mock-seats-row">
+                  <span class="mock-seat-blue">💺</span>
+                  <span class="mock-seat-blue">💺</span>
+                  <span class="mock-seat-blue">💺</span>
+                  <span class="mock-seat-blue">💺</span>
+                </div>
+                <div class="mock-slot-actions">
+                  <span class="mock-action-btn">詳細</span>
+                  <span style="font-size:9px;padding:4px 8px;border-radius:6px;background:#fef9c3;color:#854d0e">満席</span>
+                </div>
+              </div>
+              <div class="mock-slot-row">
+                <div><div class="mock-slot-row-time">16:00</div><div class="mock-slot-row-date">（車両未設定）</div></div>
+                <div class="mock-seats-row">
+                  <span class="mock-seat-gray">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                  <span class="mock-seat-gray">💺</span>
+                </div>
+                <div class="mock-slot-actions">
+                  <span class="mock-action-btn">詳細</span>
+                  <span class="mock-action-btn-blue">DR割当</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SCREEN 5: Super Admin
+════════════════════════════════════════════════ -->
+<div class="section" style="background: var(--bg-light);">
+  <div class="container">
+    <p class="section-label">Super Admin UI</p>
+    <h2 class="section-title">スーパー管理者画面</h2>
+    <p class="section-desc">売上・稼働率の統計ダッシュボードと、ホテル・管理者アカウントのCRUD管理。is_super_admin フラグで保護。</p>
+
+    <div class="screen-section">
+      <div class="screen-info">
+        <span class="role-badge role-super">SUPER ADMIN</span>
+        <h3>売上ダッシュボード + ユーザー管理</h3>
+        <p>経営判断に必要な数字を一画面に集約。アカウント管理も同じ画面で。</p>
+        <ul>
+          <li>今月の予約数・推定売上・平均稼働率をKPI表示</li>
+          <li>過去6ヶ月の月次推移バーチャート</li>
+          <li>ホテル別予約ランキング（バーグラフ付き）</li>
+          <li>便別稼働率（赤：90%超、オレンジ：60%超）</li>
+          <li>ホテルアカウント・管理者アカウントをCRUD</li>
+          <li>乗務員マスタ・車両マスタはDOSを参照（表示のみ）</li>
+        </ul>
+      </div>
+      <div>
+        <div class="browser-frame">
+          <div class="browser-bar">
+            <div class="browser-dot" style="background:#ef4444"></div>
+            <div class="browser-dot" style="background:#f59e0b"></div>
+            <div class="browser-dot" style="background:#22c55e"></div>
+            <div class="browser-url">shuttle-hire-platform.vercel.app/admin/superadmin</div>
+          </div>
+          <div class="browser-content">
+            <div class="mock-superadmin-header">
+              <div>
+                <div style="font-size:11px;font-weight:700;color:#e2e8f0">👑 スーパー管理者</div>
+                <div class="mock-superadmin-nav">
+                  <span class="mock-superadmin-nav-item active">ダッシュボード</span>
+                  <span class="mock-superadmin-nav-item">ユーザー管理</span>
+                </div>
+              </div>
+            </div>
+            <div class="mock-sa-kpi-grid">
+              <div class="mock-sa-kpi">
+                <div class="mock-kpi-label">今月の予約数</div>
+                <div class="mock-kpi-val">47件</div>
+                <div class="mock-kpi-sub">キャンセル 3件</div>
+              </div>
+              <div class="mock-sa-kpi">
+                <div class="mock-kpi-label">今月の推定売上</div>
+                <div class="mock-kpi-val" style="font-size:13px">¥1,971,000</div>
+                <div class="mock-kpi-sub">146名分</div>
+              </div>
+              <div class="mock-sa-kpi">
+                <div class="mock-kpi-label">平均稼働率</div>
+                <div class="mock-kpi-val">73%</div>
+                <div class="mock-kpi-sub">31便対象</div>
+              </div>
+              <div class="mock-sa-kpi">
+                <div class="mock-kpi-label">アクティブ</div>
+                <div class="mock-kpi-val" style="font-size:13px">H3/DR8/A2</div>
+                <div class="mock-kpi-sub">ホテル/DR/管理者</div>
+              </div>
+            </div>
+            <div class="mock-chart-section">
+              <div class="mock-chart-box">
+                <div class="mock-chart-title">月次予約推移（過去6ヶ月）</div>
+                <div class="mock-bars">
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:18px"></div><div class="mock-bar-label">1月</div></div>
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:28px"></div><div class="mock-bar-label">2月</div></div>
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:22px"></div><div class="mock-bar-label">3月</div></div>
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:38px"></div><div class="mock-bar-label">4月</div></div>
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:52px"></div><div class="mock-bar-label">5月</div></div>
+                  <div class="mock-bar-wrap"><div class="mock-bar" style="height:60px;background:#1d4ed8"></div><div class="mock-bar-label" style="font-weight:700;color:#1d4ed8">6月</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="mock-hotel-rank">
+              <div class="mock-rank-box">
+                <div class="mock-chart-title" style="margin-bottom:10px">今月のホテル別予約数</div>
+                <div class="mock-rank-row">
+                  <span class="mock-rank-num">1</span>
+                  <div class="mock-rank-bar-wrap">
+                    <div class="mock-rank-name">ホテルオークラ東京</div>
+                    <div class="mock-rank-bar" style="width:100%"></div>
+                  </div>
+                  <span class="mock-rank-count">28件</span>
+                </div>
+                <div class="mock-rank-row">
+                  <span class="mock-rank-num">2</span>
+                  <div class="mock-rank-bar-wrap">
+                    <div class="mock-rank-name">ANAインターコンチネンタル</div>
+                    <div class="mock-rank-bar" style="width:68%"></div>
+                  </div>
+                  <span class="mock-rank-count">19件</span>
+                </div>
+                <div class="mock-rank-row">
+                  <span class="mock-rank-num">3</span>
+                  <div class="mock-rank-bar-wrap">
+                    <div class="mock-rank-name">パレスホテル東京</div>
+                    <div class="mock-rank-bar" style="width:36%"></div>
+                  </div>
+                  <span class="mock-rank-count">10件</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     SECURITY
+════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">Security</p>
+    <h2 class="section-title">セキュリティ設計</h2>
+    <p class="section-desc">不正ログイン検知・アクセス制御・データ保護を多層で実装。</p>
+
+    <div class="security-grid">
+      <div class="security-card">
+        <h3>🔐 認証・アクセス制御</h3>
+        <ul>
+          <li>3ロール完全分離（hotel_staff / tmk_admin / driver）</li>
+          <li>Row Level Security（Supabase RLS）で全テーブル保護</li>
+          <li>管理操作はサービスロールキー + 呼び出し元ロール検証</li>
+          <li>Refresh Token Rotation + 競合対策（getSession()）</li>
+        </ul>
+      </div>
+      <div class="security-card">
+        <h3>📋 認証イベントログ</h3>
+        <ul>
+          <li>ログイン成功・失敗・不正アクセスを全件記録</li>
+          <li>IPアドレス・UserAgentを記録（auth_eventsテーブル）</li>
+          <li>1時間以内に3回以上失敗したIPを不審IPとして検出</li>
+          <li>管理画面でリアルタイムアラート表示</li>
+        </ul>
+      </div>
+      <div class="security-card">
+        <h3>🛡️ データ保護</h3>
+        <ul>
+          <li>APIキー・シークレットは環境変数のみ（コードにハードコード禁止）</li>
+          <li>SUPABASE_SERVICE_ROLE_KEY はサーバーサイドのみ参照</li>
+          <li>ゲスト確認URLは確認コードのみエンコード（フルURL不使用）</li>
+          <li>ログに個人情報・認証情報を出力しない</li>
+        </ul>
+      </div>
+      <div class="security-card">
+        <h3>🏗️ インフラ</h3>
+        <ul>
+          <li>Vercel（US-East, iad1）上でホスト</li>
+          <li>Supabase PostgreSQL + 自動バックアップ</li>
+          <li>HTTPS強制（Vercel自動）</li>
+          <li>環境変数はVercel Environment Variables管理</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     ARCHITECTURE
+════════════════════════════════════════════════ -->
+<div class="section" style="background: var(--bg-light);">
+  <div class="container">
+    <p class="section-label">Architecture</p>
+    <h2 class="section-title">技術スタック</h2>
+    <p class="section-desc">運用コストを最小化しつつスケール可能な構成。全てマネージドサービスで自社インフラ不要。</p>
+
+    <div class="arch-grid">
+      <div class="arch-card">
+        <div class="arch-icon">⚡</div>
+        <h3>Next.js 16 + Vercel</h3>
+        <p>App Router + Server Actions でフルスタックを1リポジトリで管理。Vercelで自動デプロイ。</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🗄️</div>
+        <h3>Supabase</h3>
+        <p>PostgreSQL + Auth + RLS。行レベルセキュリティで各ロールのデータアクセスを厳密に制御。</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">✈️</div>
+        <h3>AviationStack API</h3>
+        <p>フライト出発時刻・遅延・ターミナル情報をリアルタイム取得。5分キャッシュで過剰リクエストを防止。</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">📧</div>
+        <h3>Resend（予定）</h3>
+        <p>予約確認メール・ホテルへの通知メールを送信。確認URLとQRコードを自動添付。</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🔗</div>
+        <h3>Dispatch OS 連携（予定）</h3>
+        <p>乗務員マスタ・車両マスタはDOSが正。employee_codeをブリッジキーとして将来的に統合。</p>
+      </div>
+      <div class="arch-card">
+        <div class="arch-icon">🤖</div>
+        <h3>Booknetics API（Phase 4）</h3>
+        <p>エミレーツ便乗客数を自動取得し、シャトル枠の自動生成・ホテル通知まで全自動化。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     ROADMAP
+════════════════════════════════════════════════ -->
+<div class="section">
+  <div class="container">
+    <p class="section-label">Roadmap</p>
+    <h2 class="section-title">フェーズ別展開計画</h2>
+    <p class="section-desc">ホテルオークラ東京での実証から、業界横断インフラへの段階的な展開。</p>
+
+    <div class="roadmap">
+      <div class="phase-card done">
+        <div class="phase-num">PHASE 1 ✓ 完了</div>
+        <h3>コア機能実装</h3>
+        <ul>
+          <li>3ロールUI（ホテル / 管理者 / 乗務員）</li>
+          <li>出発枠CRUD・予約CRUD</li>
+          <li>QRチケット・乗車確認フロー</li>
+          <li>スーパー管理者（売上・ユーザー管理）</li>
+          <li>セキュリティ監視</li>
+          <li>本番デプロイ（Vercel）</li>
+        </ul>
+      </div>
+      <div class="phase-card active">
+        <div class="phase-num">PHASE 2 → 進行中</div>
+        <h3>ホテル拡大</h3>
+        <ul>
+          <li>ホテルオークラ東京 本格稼働</li>
+          <li>追加ホテルへのオンボーディング</li>
+          <li>メール通知（Resend）</li>
+          <li>月次請求書の自動生成</li>
+          <li>フィードバック収集・UI改善</li>
+        </ul>
+      </div>
+      <div class="phase-card next">
+        <div class="phase-num">PHASE 3 → 次期</div>
+        <h3>Dispatch OS 統合</h3>
+        <ul>
+          <li>乗務員マスタをDOSと同期</li>
+          <li>DR UIをDRアプリ「今日」タブに統合</li>
+          <li>車両マスタ・パートナーマスタ連携</li>
+          <li>リアルタイムGPS位置共有</li>
+        </ul>
+      </div>
+      <div class="phase-card future">
+        <div class="phase-num">PHASE 4 → 将来</div>
+        <h3>自動配車 / Booknetics</h3>
+        <ul>
+          <li>エミレーツ便カウント → シャトル枠自動生成</li>
+          <li>ホテルへの空き枠自動通知</li>
+          <li>AI配車最適化</li>
+          <li>Mobility Network（業界横断）</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     FOOTER
+════════════════════════════════════════════════ -->
+<div class="footer">
+  <p style="margin-bottom:8px"><strong>東京エムケイ株式会社</strong></p>
+  <p>MKシャトルハイヤー予約プラットフォーム — 提案書 v2.0（2026年6月）</p>
+  <p style="margin-top:8px;font-size:.75rem;opacity:.5">本文書の内容は予告なく変更される場合があります。</p>
+</div>
+
+</body>
+</html>
