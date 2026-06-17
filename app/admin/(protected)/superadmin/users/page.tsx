@@ -1,7 +1,7 @@
 import { createAdminClient } from '@/lib/supabase/admin'
 import { toggleUserActive } from '@/app/actions/superadmin'
 import Link from 'next/link'
-import { CreateHotelModal, CreateDriverModal, CreateAdminModal } from './UserModals'
+import { CreateHotelModal, CreateAdminModal } from './UserModals'
 
 async function doToggle(formData: FormData): Promise<void> {
   'use server'
@@ -139,7 +139,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">ドライバーアカウント</h2>
-            <CreateDriverModal />
+            <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">乗務員マスタはDOS管理</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
