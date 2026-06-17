@@ -68,8 +68,13 @@ export function BoardingRow({
               {booking.party_size}名 / 荷物{booking.luggage_count}個
             </span>
             <span className="text-xs text-gray-500">·</span>
-            {/* フライト番号 + 出発時刻（API取得時） */}
+            {/* フライト番号 + ターミナル + 出発時刻 */}
             <span className="text-xs font-mono text-gray-300">{booking.flight_number}</span>
+            {flightInfo?.terminal && (
+              <span className="text-xs bg-indigo-900 text-indigo-300 px-1.5 py-0.5 rounded font-bold">
+                T{flightInfo.terminal}
+              </span>
+            )}
             {flightInfo?.scheduledDeparture && (
               <>
                 <span className="text-xs text-gray-600">→</span>

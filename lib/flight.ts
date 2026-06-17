@@ -4,6 +4,7 @@ export type FlightInfo = {
   estimatedDeparture:  string | null
   status:              string | null  // "scheduled" | "active" | "landed" | "cancelled" | "incident" | "diverted"
   airline:             string | null
+  terminal:            string | null  // 出発ターミナル（例: "1", "2", "3"）
   delayMinutes:        number | null
 }
 
@@ -51,6 +52,7 @@ export async function fetchFlightInfo(
       estimatedDeparture: estimated,
       status:             f.flight_status ?? null,
       airline:            f.airline?.name  ?? null,
+      terminal:           f.departure?.terminal ?? null,
       delayMinutes,
     }
   } catch {

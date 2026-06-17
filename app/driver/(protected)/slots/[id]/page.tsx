@@ -85,6 +85,28 @@ export default async function DriverSlotPage({ params }: Props) {
   const flightMap: Record<string, FlightInfo | null> = {}
   uniqueFlights.forEach((fn, i) => { flightMap[fn] = flightResults[i] })
 
+  // ターミナル別グループ化 → 最早便の出発順にソート
+  type TerminalGroup = { terminal: string; earliestDep: string | null; pax: number }
+  const terminalMap = new Map<string, TerminalGroup>()
+  for (const b of bookings) {
+    const fi = flightMap[b.flight_number]
+    const t = fi?.terminal
+    if (!t) continue
+    const dep = fi?.scheduledDeparture ?? null
+    if (!terminalMap.has(t)) {
+      terminalMap.set(t, { terminal: t, earliestDep: dep, pax: b.party_size })
+    } else {
+      const g = terminalMap.get(t)!
+      g.pax += b.party_size
+      if (dep && (!g.earliestDep || dep < g.earliestDep)) g.earliestDep = dep
+    }
+  }
+  const terminalRoute = [...terminalMap.values()].sort((a, b) => {
+    if (!a.earliestDep) return 1
+    if (!b.earliestDep) return -1
+    return a.earliestDep < b.earliestDep ? -1 : 1
+  })
+
   const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-400'
   const statusLabel = SLOT_LABEL[slot.status] ?? slot.status
 
@@ -147,6 +169,37 @@ export default async function DriverSlotPage({ params }: Props) {
           <ArrivalButton slotId={id} />
         )}
       </div>
+
+      {/* ターミナル順序（APIでターミナル情報が取得できた場合のみ表示） */}
+      {terminalRoute.length >= 2 && (
+        <div className="bg-gray-800 rounded-2xl border border-blue-800 p-4">
+          <p className="text-xs font-semibold text-blue-400 mb-3">🛫 ターミナル停車順（自動）</p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {terminalRoute.map((g, i) => (
+              <div key={g.terminal} className="flex items-center gap-2">
+                <div className="flex flex-col items-center bg-blue-900/60 border border-blue-700 rounded-xl px-4 py-2 min-w-[72px] text-center">
+                  <span className="text-xs text-blue-400 font-medium">第{i + 1}停車</span>
+                  <span className="text-2xl font-black text-white leading-tight">T{g.terminal}</span>
+                  <span className="text-xs text-gray-400 mt-0.5">{g.pax}名</span>
+                </div>
+                {i < terminalRoute.length - 1 && (
+                  <span className="text-gray-500 text-xl">→</span>
+                )}
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3">最早出発便の順に自動ソートしています</p>
+        </div>
+      )}
+      {terminalRoute.length === 1 && (
+        <div className="bg-gray-800 rounded-2xl border border-gray-700 px-4 py-3 flex items-center gap-3">
+          <span className="text-blue-400 text-lg">🛫</span>
+          <div>
+            <p className="text-xs text-gray-400">全員同じターミナル</p>
+            <p className="text-lg font-bold text-white">第{terminalRoute[0].terminal}ターミナル</p>
+          </div>
+        </div>
+      )}
 
       {/* 乗客名簿 */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
