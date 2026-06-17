@@ -33,10 +33,13 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // セッションリフレッシュ（必ず getUser を呼ぶこと）
+  // getSession でCookieを読み取りセッションを確認する。
+  // getUser は毎回サーバー検証のネットワーク呼び出しを行うため、
+  // 複数リクエスト同時発行時にリフレッシュトークンが競合してログアウトされる。
+  // ルート保護用途では getSession で十分（実データはRLSで保護）。
   const {
-    data: { user },
-  } = await supabase.auth.getUser()
+    data: { session },
+  } = await supabase.auth.getSession()
 
   const { pathname } = request.nextUrl
 
@@ -45,7 +48,7 @@ export async function proxy(request: NextRequest) {
     if (pathname === route.login) continue
 
     if (pathname.startsWith(route.prefix)) {
-      if (!user) {
+      if (!session) {
         return NextResponse.redirect(new URL(route.login, request.url))
       }
       // ロール確認は Server Component 側で行う（RLS で保護済み）
