@@ -25,6 +25,46 @@ function formatDateHeader(d: string) {
   return `${dt.getFullYear()}年${dt.getMonth() + 1}月${dt.getDate()}日（${wd}）`
 }
 
+function SeatIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 18 22" width="16" height="20" fill="currentColor"
+      className={filled ? 'text-blue-500' : 'text-gray-200'}>
+      <rect x="1" y="0" width="16" height="11" rx="3"/>
+      <rect x="0" y="12" width="18" height="6" rx="2"/>
+      <rect x="1"  y="19" width="5" height="3" rx="1"/>
+      <rect x="12" y="19" width="5" height="3" rx="1"/>
+    </svg>
+  )
+}
+
+function SeatIcons({ capacity, booked }: { capacity: number; booked: number }) {
+  const MAX = 10
+  if (capacity <= MAX) {
+    return (
+      <div className="flex gap-0.5 items-end">
+        {Array.from({ length: capacity }, (_, i) => (
+          <SeatIcon key={i} filled={i < booked} />
+        ))}
+      </div>
+    )
+  }
+  // 席数が多い場合は代表アイコン＋数字
+  const remaining = capacity - booked
+  return (
+    <div className="flex items-center gap-1.5">
+      <div className="flex gap-0.5 items-end">
+        {Array.from({ length: Math.min(booked, 5) }, (_, i) => <SeatIcon key={`b${i}`} filled />)}
+        {booked > 5 && <span className="text-xs text-blue-500 font-medium">+{booked - 5}</span>}
+      </div>
+      <span className="text-gray-300 text-xs">/</span>
+      <div className="flex gap-0.5 items-end">
+        {Array.from({ length: Math.min(remaining, 5) }, (_, i) => <SeatIcon key={`r${i}`} filled={false} />)}
+        {remaining > 5 && <span className="text-xs text-gray-300 font-medium">+{remaining - 5}</span>}
+      </div>
+    </div>
+  )
+}
+
 export default async function AdminSlotsPage({ searchParams }: Props) {
   const { date } = await searchParams
   const supabase = await createClient()
@@ -98,7 +138,6 @@ export default async function AdminSlotsPage({ searchParams }: Props) {
             <div className="divide-y divide-gray-50">
               {daySlots!.map(slot => {
                 const booked = slot.capacity - slot.remaining_seats
-                const pct = slot.capacity > 0 ? Math.round((booked / slot.capacity) * 100) : 0
                 const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'bg-gray-100 text-gray-500' }
                 return (
                   <Link
@@ -111,14 +150,9 @@ export default async function AdminSlotsPage({ searchParams }: Props) {
                     </span>
                     <span className="text-xs text-gray-400 w-28 shrink-0">{slot.vehicle_type}</span>
                     <div className="flex-1 flex items-center gap-3">
-                      <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                        <div
-                          className={`h-full rounded-full ${pct >= 100 ? 'bg-red-500' : pct >= 70 ? 'bg-orange-400' : 'bg-blue-500'}`}
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
-                      </div>
-                      <span className="text-xs text-gray-500 w-20 text-right shrink-0">
-                        {booked}/{slot.capacity}名 ({pct}%)
+                      <SeatIcons capacity={slot.capacity} booked={booked} />
+                      <span className="text-xs text-gray-500 shrink-0">
+                        {booked}/{slot.capacity}席
                       </span>
                     </div>
                     <span className={`text-xs px-2 py-0.5 rounded-full shrink-0 ${s.cls}`}>{s.label}</span>

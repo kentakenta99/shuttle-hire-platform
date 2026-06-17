@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -121,9 +122,12 @@ export default async function DriverHomePage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <p className="text-gray-400 text-xs mb-1">{todayStr}</p>
-        <h1 className="text-xl font-bold text-white">本日の担当便</h1>
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-gray-400 text-xs mb-1">{todayStr}</p>
+          <h1 className="text-xl font-bold text-white">本日の担当便</h1>
+        </div>
+        <RefreshButton dark />
       </div>
 
       {todaySlots.length === 0 ? (

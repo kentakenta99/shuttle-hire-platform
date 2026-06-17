@@ -9,15 +9,29 @@ export async function createSlot(formData: FormData): Promise<{ error: string } 
   const supabase = await createClient()
 
   const capacity = parseInt(formData.get('capacity') as string)
+  const date = formData.get('date') as string
+  const departureTime = formData.get('departure_time') as string
+
+  // 締切時刻: 「何時間前」か「日時指定」か
+  const cutoffMode = formData.get('cutoff_mode') as string
+  let cutoffAt: string
+  if (cutoffMode === 'hours_before') {
+    const hours = parseInt(formData.get('cutoff_hours_before') as string)
+    const depMs = new Date(`${date}T${departureTime}:00+09:00`).getTime()
+    cutoffAt = new Date(depMs - hours * 3_600_000).toISOString()
+  } else {
+    cutoffAt = formData.get('cutoff_at') as string
+  }
+
   const { data, error } = await supabase
     .from('shuttle_slots')
     .insert({
-      date: formData.get('date') as string,
-      departure_time: formData.get('departure_time') as string,
+      date,
+      departure_time: departureTime,
       capacity,
       remaining_seats: capacity,
       vehicle_type: formData.get('vehicle_type') as string,
-      cutoff_at: formData.get('cutoff_at') as string,
+      cutoff_at: cutoffAt,
       price_per_seat_yen: parseInt(formData.get('price_per_seat_yen') as string),
       notes: (formData.get('notes') as string) || null,
       status: 'open',

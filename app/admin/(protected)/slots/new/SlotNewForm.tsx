@@ -6,14 +6,23 @@ import { createSlot, createBulkSlots } from '@/app/actions/admin'
 const VEHICLE_TYPES = ['トヨタアルファード', 'Vクラス', 'レクサスLM', '未定']
 const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
 
-type BulkResult = { error?: string; created?: number }
+// 10分単位の時刻オプション
+const TIME_OPTIONS: string[] = []
+for (let h = 0; h < 24; h++) {
+  for (let m = 0; m < 60; m += 10) {
+    TIME_OPTIONS.push(`${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`)
+  }
+}
 
+type BulkResult = { error?: string; created?: number }
 const initialBulkState: BulkResult = {}
 
 const fieldCls = "w-full border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-slate-800"
 
 export default function SlotNewForm() {
   const [tab, setTab] = useState<'single' | 'bulk'>('single')
+  const [cutoffMode, setCutoffMode] = useState<'hours_before' | 'datetime'>('hours_before')
+
   const [singleState, singleAction, singlePending] = useActionState<{ error: string } | null, FormData>(
     async (_, fd) => {
       const result = await createSlot(fd)
@@ -61,7 +70,9 @@ export default function SlotNewForm() {
               <input type="date" name="date" required min={today} className={fieldCls} />
             </Field>
             <Field label="出発時刻 *">
-              <input type="time" name="departure_time" required className={fieldCls} />
+              <select name="departure_time" required defaultValue="09:00" className={fieldCls}>
+                {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
             </Field>
           </div>
 
@@ -77,8 +88,49 @@ export default function SlotNewForm() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="受付締切日時 *">
-              <input type="datetime-local" name="cutoff_at" required className={fieldCls} />
+            <Field label="受付締切 *">
+              <div className="space-y-2">
+                {/* モード切替ラジオ */}
+                <div className="flex gap-4">
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      value="hours_before"
+                      checked={cutoffMode === 'hours_before'}
+                      onChange={() => setCutoffMode('hours_before')}
+                      className="accent-slate-800"
+                    />
+                    <span className="text-xs text-gray-600">何時間前</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer select-none">
+                    <input
+                      type="radio"
+                      value="datetime"
+                      checked={cutoffMode === 'datetime'}
+                      onChange={() => setCutoffMode('datetime')}
+                      className="accent-slate-800"
+                    />
+                    <span className="text-xs text-gray-600">日時指定</span>
+                  </label>
+                </div>
+                <input type="hidden" name="cutoff_mode" value={cutoffMode} />
+                {cutoffMode === 'hours_before' ? (
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      name="cutoff_hours_before"
+                      required
+                      min={1}
+                      max={168}
+                      defaultValue={24}
+                      className={`${fieldCls} w-24`}
+                    />
+                    <span className="text-sm text-gray-500 shrink-0">時間前</span>
+                  </div>
+                ) : (
+                  <input type="datetime-local" name="cutoff_at" required className={fieldCls} />
+                )}
+              </div>
             </Field>
             <Field label="1席あたり単価（円） *">
               <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
@@ -140,7 +192,9 @@ export default function SlotNewForm() {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="出発時刻 *">
-              <input type="time" name="departure_time" required className={fieldCls} />
+              <select name="departure_time" required defaultValue="09:00" className={fieldCls}>
+                {TIME_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+              </select>
             </Field>
             <Field label="定員（名） *">
               <input type="number" name="capacity" required min={1} max={20} defaultValue={3} className={fieldCls} />
