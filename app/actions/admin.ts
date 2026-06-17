@@ -97,12 +97,20 @@ export async function updateSlot(
   slotId: string,
   formData: FormData
 ): Promise<{ error?: string }> {
+  // 管理者セッション確認
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+  const { data: admin } = await supabase.from('tmk_admin_users').select('id').eq('user_id', user.id).eq('is_active', true).single()
+  if (!admin) return { error: '管理者権限が必要です。' }
 
   const newCapacity = parseInt(formData.get('capacity') as string)
-  const { data: slot } = await supabase
+
+  // RLSをバイパスして現在値を取得・更新
+  const adminDb = createAdminClient()
+  const { data: slot } = await adminDb
     .from('shuttle_slots')
-    .select('capacity, remaining_seats')
+    .select('capacity, remaining_seats, status')
     .eq('id', slotId)
     .single()
 
@@ -113,9 +121,14 @@ export async function updateSlot(
     return { error: `定員を ${bookedCount} 名未満に設定できません（既に ${bookedCount} 名予約済）` }
   }
 
-  const { error } = await supabase.from('shuttle_slots').update({
+  const newRemaining = slot.remaining_seats + (newCapacity - slot.capacity)
+  // 増席によって full → open に戻す場合
+  const newStatus = slot.status === 'full' && newRemaining > 0 ? 'open' : slot.status
+
+  const { error } = await adminDb.from('shuttle_slots').update({
     capacity: newCapacity,
-    remaining_seats: slot.remaining_seats + (newCapacity - slot.capacity),
+    remaining_seats: newRemaining,
+    status: newStatus,
     cutoff_at: formData.get('cutoff_at') as string,
     price_per_seat_yen: parseInt(formData.get('price_per_seat_yen') as string),
     notes: (formData.get('notes') as string) || null,
@@ -129,8 +142,15 @@ export async function updateSlotStatus(
   slotId: string,
   status: string
 ): Promise<{ error?: string }> {
+  // 管理者セッション確認
   const supabase = await createClient()
-  const { error } = await supabase
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+  const { data: admin } = await supabase.from('tmk_admin_users').select('id').eq('user_id', user.id).eq('is_active', true).single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
+  const adminDb = createAdminClient()
+  const { error } = await adminDb
     .from('shuttle_slots')
     .update({ status })
     .eq('id', slotId)
@@ -138,7 +158,7 @@ export async function updateSlotStatus(
 
   // 運休確定時: 予約済みホテルへ通知メール
   if (status === 'suspended') {
-    sendSuspensionEmails(supabase, slotId).catch(e =>
+    sendSuspensionEmails(adminDb, slotId).catch(e =>
       console.error('[email] 運休通知メール送信失敗:', e)
     )
   }
@@ -147,7 +167,7 @@ export async function updateSlotStatus(
 }
 
 async function sendSuspensionEmails(
-  supabase: Awaited<ReturnType<typeof createClient>>,
+  supabase: ReturnType<typeof createAdminClient>,
   slotId: string
 ) {
   const [slotRes, bookingsRes] = await Promise.all([
