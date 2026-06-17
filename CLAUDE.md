@@ -27,6 +27,36 @@
 - `bookings.status` の値：`confirmed / cancelled / completed`
 - `cancelled` = 乗客都合のキャンセル。便の運休は `suspended`（混同禁止）
 
+## 権限設計の鉄則（実装前に必ず実行すること）
+
+新しいロール・テーブル・機能を追加するとき、コードを1行も書く前に以下のマトリクスを埋める。
+埋めるまで実装に入ってはならない。「知っているがやらない」はプロの仕事ではない。
+
+### 確認マトリクス（ロール × テーブル × 操作）
+
+| テーブル | hotel_staff | tmk_admin | driver |
+|---|---|---|---|
+| hotels | SELECT（自分のホテルのみ） | SELECT（全件） | × |
+| shuttle_slots | SELECT（全件） | ALL | SELECT（全件） |
+| bookings | ALL（自ホテルのみ） | ALL | SELECT（担当便のみ）/ UPDATE（completedへのみ） |
+| driver_assignments | × | ALL | SELECT（自分のみ） |
+| driver_users | × | SELECT（全件） | SELECT（自分のみ） |
+| tmk_admin_users | × | SELECT（自分のみ） | × |
+
+### チェック項目（機能追加・変更のたびに確認）
+
+1. **新しいテーブルを作成したか？** → 全ロールのアクセス可否を決めてRLSポリシーを書く
+2. **既存テーブルに新しい操作（INSERT/UPDATE/DELETE）を追加したか？** → そのロールのポリシーにその操作が含まれているか確認
+3. **JOINするテーブルが増えたか？** → JOINされる側のテーブルへのSELECT権限がそのロールにあるか確認
+4. **RPC（DB関数）を作成・呼び出すか？** → SECURITY DEFINERの場合 `auth.uid()` はNULLになる。p_hotel_id等のパラメータで代替する
+5. **サービスロールを使う場合** → 必ず呼び出し元でロール検証してからadminClientを使う（検証なしのサービスロール使用は禁止）
+
+### よくある落とし穴（過去の失敗から）
+- `driver_users` に admin の SELECT ポリシーを忘れる → JOINが空になり「未アサイン」表示になる
+- driver に bookings の UPDATE ポリシーを忘れる → 乗車確認ボタンが押せても更新されない
+- `current_user_role()` 内でRLSが再帰的にかかることがある → EXISTS句のテーブルにも適切なポリシーが必要
+- ダッシュボード集計で月末日を `YYYY-MM-31` とハードコード → 30日月でPostgreSQLエラーになりデータが0件になる
+
 ## ブランチ戦略
 - `main`：本番。直接コミット禁止
 - `feature/xxx`：機能単位のブランチ。PR → main
