@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BoardingRow, QRScanInput } from './BoardingPanel'
+import { BoardingRow, QRScanInput, ArrivalButton } from './BoardingPanel'
 import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
@@ -14,13 +15,13 @@ function formatDate(d: string) {
   return `${dt.getMonth() + 1}月${dt.getDate()}日（${wd}）`
 }
 
-const STATUS_BADGE: Record<string, string> = {
+const SLOT_BADGE: Record<string, string> = {
   open:      'bg-green-900 text-green-400',
   full:      'bg-orange-900 text-orange-400',
   closed:    'bg-gray-700 text-gray-400',
   suspended: 'bg-red-900 text-red-400',
 }
-const STATUS_LABEL: Record<string, string> = {
+const SLOT_LABEL: Record<string, string> = {
   open: '受付中', full: '満席', closed: 'クローズ', suspended: '運休',
 }
 
@@ -28,9 +29,36 @@ export default async function DriverSlotPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
+  // ドライバー認証確認（通常クライアント）
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/driver/login')
+
+  const { data: driverUser } = await supabase
+    .from('driver_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+
+  if (!driverUser) redirect('/driver/login')
+
+  // RLSをバイパスしてデータ取得
+  const adminDb = createAdminClient()
+
+  // 担当便確認
+  const { data: assignment } = await adminDb
+    .from('driver_assignments')
+    .select('id')
+    .eq('slot_id', id)
+    .eq('driver_id', driverUser.id)
+    .maybeSingle()
+
+  // 未アサインでも閲覧は許可（管理者がアサイン前に確認するケース対応）
+  const isAssigned = !!assignment
+
   const [slotRes, bookingsRes] = await Promise.all([
-    supabase.from('shuttle_slots').select('*').eq('id', id).single(),
-    supabase
+    adminDb.from('shuttle_slots').select('*').eq('id', id).single(),
+    adminDb
       .from('bookings')
       .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status')
       .eq('slot_id', id)
@@ -42,13 +70,15 @@ export default async function DriverSlotPage({ params }: Props) {
   const slot = slotRes.data
   const bookings = bookingsRes.data ?? []
 
-  const confirmedCount = bookings.filter(b => b.status === 'confirmed').length
-  const boardedCount = bookings.filter(b => b.status === 'completed').length
-  const totalPax = bookings.reduce((a, b) => a + b.party_size, 0)
-  const boardedPax = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + b.party_size, 0)
+  const boardedCount  = bookings.filter(b => b.status === 'completed').length
+  const arrivedCount  = bookings.filter(b => b.status === 'arrived').length
+  const totalPax      = bookings.reduce((a, b) => a + b.party_size, 0)
+  const boardedPax    = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + b.party_size, 0)
+  const allBoarded    = bookings.length > 0 && bookings.every(b => b.status !== 'confirmed')
+  const allArrived    = bookings.length > 0 && bookings.every(b => b.status === 'arrived')
 
-  const statusBadge = STATUS_BADGE[slot.status] ?? 'bg-gray-700 text-gray-400'
-  const statusLabel = STATUS_LABEL[slot.status] ?? slot.status
+  const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-400'
+  const statusLabel = SLOT_LABEL[slot.status] ?? slot.status
 
   return (
     <div className="space-y-4">
@@ -75,27 +105,40 @@ export default async function DriverSlotPage({ params }: Props) {
         {/* 乗車進捗バー */}
         <div className="mt-4 space-y-2">
           <div className="flex items-center justify-between text-xs text-gray-400">
-            <span>乗車確認済</span>
-            <span className="font-medium text-white">{boardedCount}/{bookings.length}件 ({boardedPax}/{totalPax}名)</span>
+            <span>搭乗確認済</span>
+            <span className="font-medium text-white">
+              {boardedCount + arrivedCount}/{bookings.length}件 ({boardedPax}/{totalPax}名)
+            </span>
           </div>
           <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                boardedCount === bookings.length && bookings.length > 0
-                  ? 'bg-green-500'
-                  : 'bg-blue-500'
+                allArrived ? 'bg-purple-500' : allBoarded ? 'bg-green-500' : 'bg-blue-500'
               }`}
-              style={{ width: bookings.length > 0 ? `${Math.round(boardedCount / bookings.length * 100)}%` : '0%' }}
+              style={{
+                width: bookings.length > 0
+                  ? `${Math.round((boardedCount + arrivedCount) / bookings.length * 100)}%`
+                  : '0%'
+              }}
             />
           </div>
-          {boardedCount === bookings.length && bookings.length > 0 && (
-            <p className="text-xs text-green-400 text-center">全員乗車確認完了！</p>
-          )}
+          {allArrived && <p className="text-xs text-purple-400 text-center">空港到着確認完了！</p>}
+          {allBoarded && !allArrived && <p className="text-xs text-green-400 text-center">全員搭乗済 — 到着確認をしてください</p>}
         </div>
+
+        {/* 到着確認ボタン（全員搭乗済かつ未到着確認時に表示） */}
+        {isAssigned && allBoarded && !allArrived && (
+          <ArrivalButton slotId={id} />
+        )}
       </div>
 
       {/* QRスキャン入力 */}
-      <QRScanInput slotId={id} />
+      {isAssigned && <QRScanInput slotId={id} />}
+      {!isAssigned && (
+        <div className="bg-yellow-900/40 border border-yellow-700 rounded-2xl px-4 py-3 text-xs text-yellow-400">
+          この便はまだアサインされていません。管理者にご確認ください。
+        </div>
+      )}
 
       {/* 乗車リスト */}
       <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
@@ -113,12 +156,12 @@ export default async function DriverSlotPage({ params }: Props) {
           <p className="text-sm text-gray-500 text-center py-10">予約がありません</p>
         ) : (
           <div className="divide-y divide-gray-700">
-            {/* 未乗車を先に、乗車済を後に */}
             {[
               ...bookings.filter(b => b.status === 'confirmed'),
               ...bookings.filter(b => b.status === 'completed'),
+              ...bookings.filter(b => b.status === 'arrived'),
             ].map(b => (
-              <BoardingRow key={b.id} booking={b} />
+              <BoardingRow key={b.id} booking={b} canBoard={isAssigned} />
             ))}
           </div>
         )}

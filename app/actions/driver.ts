@@ -3,6 +3,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
+export async function markArrived(slotId: string): Promise<{ error?: string }> {
+  const { error: authError, driver } = await getVerifiedDriver()
+  if (authError || !driver) return { error: authError ?? '権限エラー' }
+
+  const adminDb = createAdminClient()
+
+  const { data: assignment } = await adminDb
+    .from('driver_assignments')
+    .select('id')
+    .eq('slot_id', slotId)
+    .eq('driver_id', driver.id)
+    .single()
+
+  if (!assignment) return { error: '担当便の権限がありません' }
+
+  const { error } = await adminDb
+    .from('bookings')
+    .update({ status: 'arrived', completed_at: new Date().toISOString() })
+    .eq('slot_id', slotId)
+    .eq('status', 'completed')
+
+  if (error) return { error: error.message }
+  return {}
+}
+
 async function getVerifiedDriver() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

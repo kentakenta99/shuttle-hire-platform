@@ -15,6 +15,12 @@ const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   suspended: { label: '運休',     cls: 'bg-red-100 text-red-700 border-red-200' },
 }
 
+const BOOKING_STATUS: Record<string, { label: string; cls: string }> = {
+  confirmed: { label: '予約OK',  cls: 'text-green-700 bg-green-50' },
+  completed: { label: '搭乗済',  cls: 'text-blue-700 bg-blue-50' },
+  arrived:   { label: '到着済',  cls: 'text-purple-700 bg-purple-50' },
+}
+
 function formatDate(d: string) {
   const dt = new Date(d + 'T00:00:00')
   const wd = ['日','月','火','水','木','金','土'][dt.getDay()]
@@ -38,7 +44,7 @@ export default async function SlotDetailPage({ params }: Props) {
       .from('bookings')
       .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, status, notes')
       .eq('slot_id', id)
-      .eq('status', 'confirmed')
+      .neq('status', 'cancelled')
       .order('created_at'),
     supabase
       .from('driver_assignments')
@@ -147,11 +153,14 @@ export default async function SlotDetailPage({ params }: Props) {
                   <th className="text-center px-4 py-2.5 font-medium">荷物</th>
                   <th className="text-left px-4 py-2.5 font-medium">フライト</th>
                   <th className="text-left px-4 py-2.5 font-medium">確認番号</th>
+                  <th className="text-left px-4 py-2.5 font-medium">ステータス</th>
                   <th className="text-left px-4 py-2.5 font-medium">備考</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
-                {bookings.map((b, i) => (
+                {bookings.map((b, i) => {
+                  const bst = BOOKING_STATUS[b.status] ?? { label: b.status, cls: 'text-gray-500 bg-gray-100' }
+                  return (
                   <tr key={b.id} className="hover:bg-gray-50 transition">
                     <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">
@@ -163,9 +172,15 @@ export default async function SlotDetailPage({ params }: Props) {
                     <td className="px-4 py-3 text-center text-gray-700">{b.luggage_count}個</td>
                     <td className="px-4 py-3 text-gray-600 font-mono text-xs">{b.flight_number}</td>
                     <td className="px-4 py-3 text-gray-400 font-mono text-xs">{b.confirmation_code}</td>
+                    <td className="px-4 py-3">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${bst.cls}`}>
+                        {bst.label}
+                      </span>
+                    </td>
                     <td className="px-4 py-3 text-gray-400 text-xs">{b.notes ?? '─'}</td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
               <tfoot className="bg-gray-50 text-xs text-gray-500">
                 <tr>
@@ -176,7 +191,7 @@ export default async function SlotDetailPage({ params }: Props) {
                   <td className="px-4 py-2.5 text-center font-medium">
                     {bookings.reduce((a, b) => a + b.luggage_count, 0)}個
                   </td>
-                  <td colSpan={3} />
+                  <td colSpan={4} />
                 </tr>
               </tfoot>
             </table>

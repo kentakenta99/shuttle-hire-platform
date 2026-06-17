@@ -29,6 +29,53 @@ function formatDateLabel(dateStr: string) {
   return base
 }
 
+function SeatIcon({ filled }: { filled: boolean }) {
+  return (
+    <svg viewBox="0 0 18 22" width="18" height="22" fill="currentColor"
+      className={filled ? 'text-blue-500' : 'text-gray-200'}>
+      {/* 背もたれ */}
+      <rect x="1" y="0" width="16" height="11" rx="3"/>
+      {/* 座面 */}
+      <rect x="0" y="12" width="18" height="6" rx="2"/>
+      {/* 脚 */}
+      <rect x="1"  y="19" width="5" height="3" rx="1"/>
+      <rect x="12" y="19" width="5" height="3" rx="1"/>
+    </svg>
+  )
+}
+
+function SeatIcons({ capacity, remaining }: { capacity: number; remaining: number }) {
+  const booked = capacity - remaining
+  const MAX_ICONS = 10
+  if (capacity <= MAX_ICONS) {
+    return (
+      <div className="flex gap-1 items-end">
+        {Array.from({ length: capacity }, (_, i) => (
+          <SeatIcon key={i} filled={i < booked} />
+        ))}
+      </div>
+    )
+  }
+  // 席数が多い場合はアイコン簡略表示
+  return (
+    <div className="flex items-center gap-2">
+      <div className="flex gap-0.5 items-end">
+        {Array.from({ length: Math.min(booked, 5) }, (_, i) => (
+          <SeatIcon key={`b${i}`} filled />
+        ))}
+        {booked > 5 && <span className="text-xs text-blue-500 font-medium ml-0.5">+{booked - 5}</span>}
+      </div>
+      <span className="text-gray-300 text-xs">/</span>
+      <div className="flex gap-0.5 items-end">
+        {Array.from({ length: Math.min(remaining, 5) }, (_, i) => (
+          <SeatIcon key={`r${i}`} filled={false} />
+        ))}
+        {remaining > 5 && <span className="text-xs text-gray-400 font-medium ml-0.5">+{remaining - 5}</span>}
+      </div>
+    </div>
+  )
+}
+
 function groupByDate(slots: ShuttleSlot[]) {
   const map = new Map<string, ShuttleSlot[]>()
   for (const s of slots) {
@@ -95,44 +142,54 @@ export default function SlotList({ initialSlots }: Props) {
                                  slot.remaining_seats >= 1 ? 'text-yellow-600' : 'text-red-500'
 
               return (
-                <div key={slot.id} className="bg-white rounded-xl border border-gray-200 p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
-                    <span className="text-2xl font-bold text-gray-900 tabular-nums">
-                      {formatTime(slot.departure_time)}
-                    </span>
-                    <div>
-                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
-                        {st.label}
+                <div key={slot.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-4">
+                      <span className="text-2xl font-bold text-gray-900 tabular-nums">
+                        {formatTime(slot.departure_time)}
                       </span>
-                      {slot.status === 'open' && !isPastCutoff && (
-                        <p className={`text-sm mt-0.5 font-medium ${seatsColor}`}>
-                          残{slot.remaining_seats}席
-                        </p>
-                      )}
-                      {slot.status === 'open' && isPastCutoff && (
-                        <p className="text-sm mt-0.5 text-gray-400">締切済</p>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
+                            {st.label}
+                          </span>
+                          <span className="text-xs text-gray-400">{slot.vehicle_type}</span>
+                        </div>
+                        {slot.status === 'open' && isPastCutoff && (
+                          <p className="text-xs mt-0.5 text-gray-400">締切済</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-3 shrink-0">
+                      <span className="text-xs text-gray-400">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
+                      {isBookable ? (
+                        <Link
+                          href={`/hotel/book/${slot.id}`}
+                          className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition"
+                        >
+                          予約する
+                        </Link>
+                      ) : slot.status === 'full' ? (
+                        <div className="text-right">
+                          <span className="text-xs text-gray-400 block">通常ハイヤーへ</span>
+                          <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">─</span>
                       )}
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 shrink-0">
-                    <span className="text-sm text-gray-400">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
-                    {isBookable ? (
-                      <Link
-                        href={`/hotel/book/${slot.id}`}
-                        className="bg-blue-600 text-white text-sm font-medium px-4 py-2 rounded-lg hover:bg-blue-700 transition"
-                      >
-                        予約する
-                      </Link>
-                    ) : slot.status === 'full' ? (
-                      <div className="text-right">
-                        <span className="text-xs text-gray-400 block">通常ハイヤーへ</span>
-                        <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
-                      </div>
-                    ) : (
-                      <span className="text-sm text-gray-400">─</span>
-                    )}
-                  </div>
+                  {/* 椅子アイコンで残席表示 */}
+                  {slot.status !== 'suspended' && (
+                    <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-3">
+                      <SeatIcons capacity={slot.capacity} remaining={slot.remaining_seats} />
+                      <span className={`text-xs font-medium ${seatsColor}`}>
+                        残{slot.remaining_seats}席 / {slot.capacity}席
+                      </span>
+                    </div>
+                  )}
                 </div>
               )
             })}

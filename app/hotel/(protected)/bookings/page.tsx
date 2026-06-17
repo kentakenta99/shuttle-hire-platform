@@ -5,9 +5,10 @@ import RefreshButton from '@/app/components/RefreshButton'
 export const dynamic = 'force-dynamic'
 
 const STATUS = {
-  confirmed: { label: '確定',       color: 'text-green-700 bg-green-50' },
-  cancelled: { label: 'キャンセル', color: 'text-gray-500 bg-gray-100' },
-  completed: { label: '完了',       color: 'text-blue-700 bg-blue-50'  },
+  confirmed: { label: '予約OK',      color: 'text-green-700 bg-green-50' },
+  cancelled: { label: 'キャンセル',  color: 'text-gray-500 bg-gray-100' },
+  completed: { label: '搭乗済',      color: 'text-blue-700 bg-blue-50'  },
+  arrived:   { label: '到着済',      color: 'text-purple-700 bg-purple-50' },
 }
 
 function formatDate(d: string) {

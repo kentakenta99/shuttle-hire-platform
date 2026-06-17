@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useActionState, useRef } from 'react'
-import { markBoarded, markBoardedByCode } from '@/app/actions/driver'
+import { markBoarded, markBoardedByCode, markArrived } from '@/app/actions/driver'
 import { useRouter } from 'next/navigation'
 
 type Booking = {
@@ -15,10 +15,19 @@ type Booking = {
   status: string
 }
 
-export function BoardingRow({ booking }: { booking: Booking }) {
+const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
+  confirmed: { label: '予約OK',  cls: 'bg-green-900 text-green-400' },
+  completed: { label: '搭乗済',  cls: 'bg-blue-900 text-blue-400' },
+  arrived:   { label: '到着済',  cls: 'bg-purple-900 text-purple-400' },
+}
+
+export function BoardingRow({ booking, canBoard }: { booking: Booking; canBoard: boolean }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const isBoarded = booking.status === 'completed'
+  const isBoarded  = booking.status === 'completed'
+  const isArrived  = booking.status === 'arrived'
+  const isDone     = isBoarded || isArrived
+  const badge      = STATUS_BADGE[booking.status]
 
   async function handleBoard() {
     setLoading(true)
@@ -28,34 +37,39 @@ export function BoardingRow({ booking }: { booking: Booking }) {
   }
 
   return (
-    <div className={`px-4 py-4 transition ${isBoarded ? 'opacity-50' : ''}`}>
+    <div className={`px-4 py-4 transition ${isDone ? 'opacity-60' : ''}`}>
       <div className="flex items-start gap-3">
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <p className="font-medium text-white text-sm">{booking.guest_name}</p>
-            {isBoarded && (
-              <span className="text-xs bg-green-900 text-green-400 px-2 py-0.5 rounded-full">乗車済</span>
+            {badge && (
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${badge.cls}`}>
+                {badge.label}
+              </span>
             )}
           </div>
           <p className="text-xs text-gray-400 mt-0.5">
             {booking.party_size}名 / 荷物{booking.luggage_count}個 / {booking.flight_number}
           </p>
+          <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.confirmation_code}</p>
           {booking.notes && (
             <p className="text-xs text-yellow-400 mt-0.5">⚠ {booking.notes}</p>
           )}
         </div>
-        {!isBoarded && (
+        {booking.status === 'confirmed' && canBoard && (
           <button
             type="button"
             onClick={handleBoard}
             disabled={loading}
             className="shrink-0 px-4 py-2 bg-blue-600 text-white text-xs rounded-xl hover:bg-blue-700 transition active:scale-95 disabled:opacity-60"
           >
-            {loading ? '...' : '乗車確認'}
+            {loading ? '...' : '搭乗確認'}
           </button>
         )}
-        {isBoarded && (
-          <span className="shrink-0 w-8 h-8 bg-green-900 rounded-full flex items-center justify-center text-green-400 text-sm">
+        {isDone && (
+          <span className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm ${
+            isArrived ? 'bg-purple-900 text-purple-400' : 'bg-green-900 text-green-400'
+          }`}>
             ✓
           </span>
         )}
@@ -96,7 +110,7 @@ export function QRScanInput({ slotId }: { slotId: string }) {
       )}
       {result?.guestName && !result.error && (
         <div className="bg-green-900/50 border border-green-700 rounded-xl px-3 py-2 text-xs text-green-400">
-          ✓ {result.guestName} 様の乗車を確認しました
+          ✓ {result.guestName} 様の搭乗を確認しました
         </div>
       )}
 
@@ -106,7 +120,7 @@ export function QRScanInput({ slotId }: { slotId: string }) {
           type="text"
           name="code"
           required
-          placeholder="例: ABC-123456"
+          placeholder="例: TMK-202606-0001"
           autoComplete="off"
           autoCapitalize="characters"
           className="flex-1 bg-gray-700 border border-gray-600 rounded-xl px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-mono"
@@ -120,5 +134,34 @@ export function QRScanInput({ slotId }: { slotId: string }) {
         </button>
       </div>
     </form>
+  )
+}
+
+export function ArrivalButton({ slotId }: { slotId: string }) {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+
+  async function handleArrival() {
+    setLoading(true)
+    setError('')
+    const r = await markArrived(slotId)
+    setLoading(false)
+    if (r.error) setError(r.error)
+    else router.refresh()
+  }
+
+  return (
+    <div className="mt-4 space-y-2">
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      <button
+        type="button"
+        onClick={handleArrival}
+        disabled={loading}
+        className="w-full py-3 bg-purple-700 hover:bg-purple-600 text-white text-sm font-semibold rounded-xl transition active:scale-95 disabled:opacity-60"
+      >
+        {loading ? '処理中...' : '✈ 空港到着確認（全員）'}
+      </button>
+    </div>
   )
 }

@@ -79,7 +79,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
           ['お荷物', `${booking.luggage_count}個`],
           ['出発日時', slot ? `${formatDate(slot.date)} ${slot.departure_time.slice(0,5)} 発` : '─'],
           ['確認番号', booking.confirmation_code],
-          ['ステータス', booking.status === 'confirmed' ? '予約確定' : booking.status === 'cancelled' ? 'キャンセル済' : '完了'],
+          ['ステータス', ({ confirmed: '予約OK', cancelled: 'キャンセル済', completed: '搭乗済', arrived: '到着済' } as Record<string,string>)[booking.status] ?? booking.status],
           ...(booking.notes ? [['備考', booking.notes]] : []),
           ...(booking.booked_by_name ? [['担当スタッフ', booking.booked_by_name]] : []),
         ].map(([label, value]) => (
