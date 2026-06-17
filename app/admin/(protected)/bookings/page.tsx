@@ -9,9 +9,10 @@ type Props = {
 }
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  confirmed: { label: '確定',       cls: 'bg-green-100 text-green-700' },
+  confirmed: { label: '予約OK',     cls: 'bg-green-100 text-green-700' },
   cancelled: { label: 'キャンセル', cls: 'bg-red-100 text-red-700' },
-  completed: { label: '完了',       cls: 'bg-gray-100 text-gray-600' },
+  completed: { label: '搭乗済',     cls: 'bg-blue-100 text-blue-700' },
+  arrived:   { label: '到着済',     cls: 'bg-purple-100 text-purple-700' },
 }
 
 export default async function AdminBookingsPage({ searchParams }: Props) {

@@ -8,9 +8,10 @@ export const dynamic = 'force-dynamic'
 type Props = { params: Promise<{ id: string }> }
 
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  confirmed: { label: '予約確定',     cls: 'bg-green-100 text-green-700 border-green-200' },
+  confirmed: { label: '予約OK',       cls: 'bg-green-100 text-green-700 border-green-200' },
   cancelled: { label: 'キャンセル済', cls: 'bg-red-100 text-red-700 border-red-200' },
-  completed: { label: '完了',         cls: 'bg-gray-100 text-gray-600 border-gray-200' },
+  completed: { label: '搭乗済',       cls: 'bg-blue-100 text-blue-700 border-blue-200' },
+  arrived:   { label: '到着済',       cls: 'bg-purple-100 text-purple-700 border-purple-200' },
 }
 
 function formatDateTime(iso: string) {
