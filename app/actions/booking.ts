@@ -8,11 +8,14 @@ export async function createBooking(formData: FormData): Promise<{ error: string
   const supabase = await createClient()
   const slotId = formData.get('slotId') as string
 
-  // SECURITY DEFINER内でauth.uid()がNULLになるSupabase既知の問題を回避
-  // サーバー側でホテルIDを取得してRPCに明示的に渡す
+  // レイアウトと同様にgetUser()でセッションを確立してからhotelを照会
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '操作権限がありません。' }
+
   const { data: hotel } = await supabase
     .from('hotels')
     .select('id')
+    .eq('auth_user_id', user.id)
     .eq('is_active', true)
     .single()
 
