@@ -81,6 +81,7 @@ CREATE TABLE bookings (
   flight_number     text NOT NULL,
   luggage_count     int NOT NULL DEFAULT 0 CHECK (luggage_count >= 0),
   notes             text,
+  booked_by_name    text,             -- 予約したベルボーイ・スタッフ名（任意。1ホテル1アカウント環境での個人識別用）
   signature_url     text,
   -- cancelled = 乗客都合のキャンセル（Service Order: cancelled に対応）
   status            text NOT NULL DEFAULT 'confirmed',
