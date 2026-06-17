@@ -94,6 +94,19 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
         />
       </div>
 
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+          ゲストのメールアドレス（任意）
+        </label>
+        <input
+          name="guestEmail"
+          type="email"
+          placeholder="例：guest@example.com"
+          className={inputCls}
+        />
+        <p className="text-xs text-gray-400 mt-1">入力するとゲスト本人にQRコード付き乗車案内メールを送信します</p>
+      </div>
+
       {state?.error && (
         <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
           {state.error}

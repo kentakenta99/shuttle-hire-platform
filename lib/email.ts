@@ -77,6 +77,56 @@ export async function sendBookingConfirmation(to: string, info: BookingInfo) {
   })
 }
 
+export async function sendGuestBookingConfirmation(to: string, info: BookingInfo) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  return send({
+    from: FROM,
+    to,
+    subject: `【乗車案内】${departureLabel} 東京エムケイ シャトルハイヤー`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#0f172a;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#94a3b8;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">乗車ご案内</h1>
+  </div>
+
+  <p style="color:#475569;font-size:14px">${info.guestName} 様<br>このたびはご予約いただきありがとうございます。以下の内容でシャトルハイヤーをご用意しております。</p>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    ${[
+      ['確認番号', `<strong style="font-family:monospace;font-size:20px;color:#0f172a;letter-spacing:2px">${info.confirmationCode}</strong>`],
+      ['出発日時', `<strong>${departureLabel}</strong>`],
+      ['人数', `${info.partySize}名`],
+      ['お荷物', `${info.luggageCount}個`],
+      ['フライト番号', info.flightNumber],
+      ['予約ホテル', info.hotelName],
+      ...(info.notes ? [['備考', info.notes]] : []),
+    ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b;width:35%">${label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px">${value}</td>
+    </tr>`).join('')}
+  </table>
+
+  <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:20px;margin:20px 0;text-align:center">
+    <p style="font-size:13px;color:#166534;margin:0 0 12px;font-weight:bold">乗車時にこのQRコードをご提示ください</p>
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(info.confirmUrl)}" alt="QRコード" style="width:180px;height:180px;display:block;margin:0 auto 12px" />
+    <p style="font-size:11px;color:#4ade80;margin:0 0 4px">確認URL</p>
+    <a href="${info.confirmUrl}" style="font-size:12px;color:#166534;word-break:break-all">${info.confirmUrl}</a>
+  </div>
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    ご不明な点はホテルフロントまたは東京エムケイ配車センターまでお問い合わせください。<br>
+    東京エムケイ株式会社
+  </p>
+</body>
+</html>`,
+  })
+}
+
 export async function sendCancellationNotice(to: string, info: {
   guestName: string
   confirmationCode: string

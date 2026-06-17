@@ -1,34 +1,70 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { revalidatePath } from 'next/cache'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+async function getVerifiedDriver() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です', supabase, driver: null }
+
+  const { data: driver } = await supabase
+    .from('driver_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .single()
+
+  if (!driver) return { error: '乗務員権限が必要です', supabase, driver: null }
+  return { error: null, supabase, driver }
+}
 
 export async function markBoarded(
   bookingId: string
 ): Promise<{ error?: string }> {
-  const supabase = await createClient()
-  const { error } = await supabase
+  const { error: authError, driver } = await getVerifiedDriver()
+  if (authError || !driver) return { error: authError ?? '権限エラー' }
+
+  const adminDb = createAdminClient()
+
+  const { data: booking } = await adminDb
     .from('bookings')
-    .update({
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    })
+    .select('id, slot_id, status')
     .eq('id', bookingId)
-    .eq('status', 'confirmed')
+    .single()
+
+  if (!booking) return { error: '予約が見つかりません' }
+  if (booking.status === 'completed') return {}
+  if (booking.status !== 'confirmed') return { error: 'この予約はキャンセルされています' }
+
+  const { data: assignment } = await adminDb
+    .from('driver_assignments')
+    .select('id')
+    .eq('slot_id', booking.slot_id)
+    .eq('driver_id', driver.id)
+    .single()
+
+  if (!assignment) return { error: '担当便の権限がありません' }
+
+  const { error } = await adminDb
+    .from('bookings')
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
+    .eq('id', bookingId)
 
   if (error) return { error: error.message }
-  revalidatePath('/driver/slots/[id]', 'page')
   return {}
 }
 
 export async function markBoardedByCode(
   confirmationCode: string
 ): Promise<{ error?: string; guestName?: string }> {
-  const supabase = await createClient()
+  const { error: authError, driver } = await getVerifiedDriver()
+  if (authError || !driver) return { error: authError ?? '権限エラー' }
 
-  const { data: booking } = await supabase
+  const adminDb = createAdminClient()
+
+  const { data: booking } = await adminDb
     .from('bookings')
-    .select('id, guest_name, status')
+    .select('id, slot_id, guest_name, status')
     .eq('confirmation_code', confirmationCode.trim().toUpperCase())
     .single()
 
@@ -36,15 +72,20 @@ export async function markBoardedByCode(
   if (booking.status === 'completed') return { error: `${booking.guest_name} 様はすでに乗車確認済みです` }
   if (booking.status !== 'confirmed') return { error: 'この予約はキャンセルされています' }
 
-  const { error } = await supabase
+  const { data: assignment } = await adminDb
+    .from('driver_assignments')
+    .select('id')
+    .eq('slot_id', booking.slot_id)
+    .eq('driver_id', driver.id)
+    .single()
+
+  if (!assignment) return { error: 'この便の担当権限がありません' }
+
+  const { error } = await adminDb
     .from('bookings')
-    .update({
-      status: 'completed',
-      completed_at: new Date().toISOString(),
-    })
+    .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', booking.id)
 
   if (error) return { error: error.message }
-  revalidatePath('/driver/slots/[id]', 'page')
   return { guestName: booking.guest_name }
 }

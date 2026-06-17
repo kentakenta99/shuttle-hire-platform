@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { sendBookingConfirmation, sendCancellationNotice } from '@/lib/email'
+import { sendBookingConfirmation, sendGuestBookingConfirmation, sendCancellationNotice } from '@/lib/email'
 
 export async function createBooking(formData: FormData): Promise<{ error: string } | never> {
   const supabase = await createClient()
@@ -42,8 +42,14 @@ export async function createBooking(formData: FormData): Promise<{ error: string
 
   const bookingId = result.booking_id!
 
+  // ゲストメールアドレスが入力されていればbookingに保存
+  const guestEmail = (formData.get('guestEmail') as string)?.trim() || null
+  if (guestEmail) {
+    await supabase.from('bookings').update({ guest_email: guestEmail }).eq('id', bookingId)
+  }
+
   // メール送信（非同期・失敗しても予約は完了扱い）
-  sendBookingConfirmationEmail(supabase, bookingId).catch(e =>
+  sendBookingConfirmationEmail(supabase, bookingId, guestEmail).catch(e =>
     console.error('[email] 予約確定メール送信失敗:', e)
   )
 
@@ -52,7 +58,8 @@ export async function createBooking(formData: FormData): Promise<{ error: string
 
 async function sendBookingConfirmationEmail(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  bookingId: string
+  bookingId: string,
+  guestEmail?: string | null
 ) {
   const { data: booking } = await supabase
     .from('bookings')
@@ -63,10 +70,10 @@ async function sendBookingConfirmationEmail(
   if (!booking) return
   const slot = booking.shuttle_slots as { date: string; departure_time: string } | null
   const hotel = booking.hotels as { name: string; contact_email: string | null } | null
-  if (!slot || !hotel?.contact_email) return
+  if (!slot || !hotel) return
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
-  await sendBookingConfirmation(hotel.contact_email, {
+  const emailInfo = {
     guestName: booking.guest_name,
     confirmationCode: booking.confirmation_code,
     confirmUrl: `${baseUrl}/confirm/${booking.confirmation_code}`,
@@ -77,7 +84,17 @@ async function sendBookingConfirmationEmail(
     flightNumber: booking.flight_number,
     notes: booking.notes,
     hotelName: hotel.name,
-  })
+  }
+
+  // ホテルへの通知メール
+  if (hotel.contact_email) {
+    await sendBookingConfirmation(hotel.contact_email, emailInfo)
+  }
+
+  // ゲストへの直接送信（Cフロー）
+  if (guestEmail) {
+    await sendGuestBookingConfirmation(guestEmail, emailInfo)
+  }
 }
 
 export async function cancelBooking(bookingId: string): Promise<{ error: string } | { success: true }> {

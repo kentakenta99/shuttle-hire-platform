@@ -49,12 +49,16 @@ export default async function AdminDashboardPage() {
       .in('event_type', ['booking_created', 'booking_cancelled'])
       .order('event_at', { ascending: false })
       .limit(10),
-    supabase
-      .from('bookings')
-      .select('party_size')
-      .eq('status', 'confirmed')
-      .gte('created_at', `${yearMonth}-01T00:00:00+09:00`)
-      .lt('created_at', `${yearMonth}-31T23:59:59+09:00`),
+    (() => {
+      const [y, m] = yearMonth.split('-').map(Number)
+      const nm = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
+      return supabase
+        .from('bookings')
+        .select('party_size')
+        .in('status', ['confirmed', 'completed'])
+        .gte('created_at', `${yearMonth}-01T00:00:00+09:00`)
+        .lt('created_at', `${nm}-01T00:00:00+09:00`)
+    })(),
   ])
 
   const allSlots = slotsRes.data ?? []

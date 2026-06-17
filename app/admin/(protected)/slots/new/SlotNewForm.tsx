@@ -3,7 +3,7 @@
 import { useState, useActionState } from 'react'
 import { createSlot, createBulkSlots } from '@/app/actions/admin'
 
-const VEHICLE_TYPES = ['スタンダードハイヤー', 'プレミアムハイヤー']
+const VEHICLE_TYPES = ['トヨタアルファード', 'Vクラス', 'レクサスLM', '未定']
 const WEEKDAY_LABELS = ['日', '月', '火', '水', '木', '金', '土']
 
 type BulkResult = { error?: string; created?: number }
