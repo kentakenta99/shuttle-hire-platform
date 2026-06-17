@@ -147,7 +147,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
                 <tr>
                   <th className={thCls}>氏名</th>
                   <th className={thCls}>メール</th>
-                  <th className={thCls}>乗務員コード</th>
+                  <th className={thCls}>社員番号</th>
                   <th className={thCls}>社員コード</th>
                   <th className={thCls + ' text-center'}>エミ便</th>
                   <th className={thCls + ' text-center'}>状態</th>

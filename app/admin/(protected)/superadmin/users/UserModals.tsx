@@ -109,7 +109,7 @@ export function CreateDriverModal() {
             <Field label="氏名" name="display_name" placeholder="山田 太郎" required />
             <Field label="ログインメール" name="email" type="email" placeholder="yamada@mktaxi.co.jp" required />
             <Field label="初期パスワード" name="password" type="password" placeholder="8文字以上" required />
-            <Field label="乗務員コード（ABCコード・7桁）" name="employee_code" placeholder="1234567" required />
+            <Field label="社員番号" name="employee_code" placeholder="1234567" required />
             <Field label="社員コード（8桁ゼロ埋め）" name="driver_code" placeholder="00012345" />
             <div className="flex items-center gap-2">
               <input type="checkbox" id="emirates_chk" name="is_emirates_route" value="1"
