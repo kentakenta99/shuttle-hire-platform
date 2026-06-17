@@ -87,10 +87,14 @@ export async function markBoardedByCode(
 
   const adminDb = createAdminClient()
 
+  // QRコードにURLが含まれる場合（例: https://xxx.com/confirm/TMK-...）もコードを抽出
+  const rawInput = confirmationCode.trim()
+  const code = rawInput.includes('/') ? (rawInput.split('/').pop() ?? rawInput).toUpperCase() : rawInput.toUpperCase()
+
   const { data: booking } = await adminDb
     .from('bookings')
     .select('id, slot_id, guest_name, status')
-    .eq('confirmation_code', confirmationCode.trim().toUpperCase())
+    .eq('confirmation_code', code)
     .single()
 
   if (!booking) return { error: '確認番号が見つかりません' }

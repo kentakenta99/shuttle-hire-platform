@@ -30,6 +30,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 { href: '/admin/bookings', label: '予約' },
                 { href: '/admin/hotels', label: 'ホテル' },
                 { href: '/admin/invoices', label: '請求' },
+                { href: '/admin/security', label: '🔒 セキュリティ' },
               ].map(({ href, label }) => (
                 <Link
                   key={href}

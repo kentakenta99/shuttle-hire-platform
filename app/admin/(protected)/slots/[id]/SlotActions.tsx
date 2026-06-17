@@ -11,6 +11,7 @@ type Slot = {
   capacity: number
   remaining_seats: number
   vehicle_type: string
+  vehicle_plate: string | null
   cutoff_at: string
   price_per_seat_yen: number
   notes: string | null
@@ -119,6 +120,13 @@ export function SlotEditForm({ slot }: { slot: Slot }) {
         <label className="text-xs text-gray-500">受付締切日時</label>
         <input type="datetime-local" name="cutoff_at" required
           defaultValue={toCutoffLocal(slot.cutoff_at)}
+          className={fieldCls} />
+      </div>
+      <div className="space-y-1">
+        <label className="text-xs text-gray-500">車両ナンバープレート</label>
+        <input type="text" name="vehicle_plate"
+          defaultValue={slot.vehicle_plate ?? ''}
+          placeholder="例: 品川 300 あ 1234"
           className={fieldCls} />
       </div>
       <div className="space-y-1">

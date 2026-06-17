@@ -145,6 +145,7 @@ export async function updateSlot(
     status: newStatus,
     cutoff_at: formData.get('cutoff_at') as string,
     price_per_seat_yen: parseInt(formData.get('price_per_seat_yen') as string),
+    vehicle_plate: (formData.get('vehicle_plate') as string) || null,
     notes: (formData.get('notes') as string) || null,
   }).eq('id', slotId)
 
