@@ -89,7 +89,8 @@ export default function SlotList({ initialSlots }: Props) {
           <div className="space-y-2">
             {dateSlots.map(slot => {
               const st = STATUS_LABELS[slot.status] ?? { label: slot.status, color: 'text-gray-500 bg-gray-100' }
-              const isBookable = slot.status === 'open' && slot.remaining_seats > 0
+              const isPastCutoff = new Date(slot.cutoff_at) <= new Date()
+              const isBookable = slot.status === 'open' && slot.remaining_seats > 0 && !isPastCutoff
               const seatsColor = slot.remaining_seats >= 3 ? 'text-green-600' :
                                  slot.remaining_seats >= 1 ? 'text-yellow-600' : 'text-red-500'
 
@@ -103,10 +104,13 @@ export default function SlotList({ initialSlots }: Props) {
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
                         {st.label}
                       </span>
-                      {slot.status === 'open' && (
+                      {slot.status === 'open' && !isPastCutoff && (
                         <p className={`text-sm mt-0.5 font-medium ${seatsColor}`}>
                           残{slot.remaining_seats}席
                         </p>
+                      )}
+                      {slot.status === 'open' && isPastCutoff && (
+                        <p className="text-sm mt-0.5 text-gray-400">締切済</p>
                       )}
                     </div>
                   </div>

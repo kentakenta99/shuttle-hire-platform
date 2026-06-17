@@ -23,7 +23,7 @@ export default async function BookPage({ params }: Props) {
     .eq('id', slotId)
     .single()
 
-  if (!slot || slot.status !== 'open' || slot.remaining_seats <= 0) notFound()
+  if (!slot || slot.status !== 'open' || slot.remaining_seats <= 0 || new Date(slot.cutoff_at) <= new Date()) notFound()
 
   const slotLabel = `${formatDate(slot.date)}　${slot.departure_time.slice(0,5)} 発　残${slot.remaining_seats}席　¥${slot.price_per_seat_yen.toLocaleString()}/席`
 
