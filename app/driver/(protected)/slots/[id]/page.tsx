@@ -71,13 +71,16 @@ export default async function DriverSlotPage({ params }: Props) {
   const slot = slotRes.data
   const bookings = bookingsRes.data ?? []
 
-  const boardedCount  = bookings.filter(b => b.status === 'completed').length
-  const arrivedCount  = bookings.filter(b => b.status === 'arrived').length
-  const totalPax      = bookings.reduce((a, b) => a + b.party_size, 0)
-  const totalLuggage  = bookings.reduce((a, b) => a + b.luggage_count, 0)
-  const boardedPax    = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + b.party_size, 0)
-  const allBoarded    = bookings.length > 0 && bookings.every(b => b.status !== 'confirmed')
-  const allArrived    = bookings.length > 0 && bookings.every(b => b.status === 'arrived')
+  const boardedCount    = bookings.filter(b => b.status === 'completed').length
+  const arrivedCount    = bookings.filter(b => b.status === 'arrived').length
+  const confirmedCount  = bookings.filter(b => b.status === 'confirmed').length
+  const totalPax        = bookings.reduce((a, b) => a + b.party_size, 0)
+  const totalLuggage    = bookings.reduce((a, b) => a + b.luggage_count, 0)
+  const boardedPax      = bookings.filter(b => b.status === 'completed').reduce((a, b) => a + b.party_size, 0)
+  const allBoarded      = bookings.length > 0 && bookings.every(b => b.status !== 'confirmed')
+  const allArrived      = bookings.length > 0 && bookings.every(b => b.status === 'arrived')
+  // 到着確認済み後に新規予約が入った場合など、混在状態の検出
+  const hasMixedState   = arrivedCount > 0 && confirmedCount > 0
 
   // フライト情報を取得（APIキー未設定時は全件 null）
   const uniqueFlights = [...new Set(bookings.map(b => b.flight_number).filter(Boolean))]
@@ -162,6 +165,12 @@ export default async function DriverSlotPage({ params }: Props) {
           </div>
           {allArrived && <p className="text-xs text-purple-400 text-center">空港到着確認完了！</p>}
           {allBoarded && !allArrived && <p className="text-xs text-green-400 text-center">全員搭乗済 — 到着確認をしてください</p>}
+          {hasMixedState && (
+            <div className="mt-1 bg-amber-900/40 border border-amber-700/60 rounded-xl px-3 py-2.5">
+              <p className="text-xs font-semibold text-amber-400">⚠ {confirmedCount}名が未搭乗のままです</p>
+              <p className="text-xs text-amber-500/80 mt-0.5">到着確認後に新規予約が追加された可能性があります。管理者にご確認ください。</p>
+            </div>
+          )}
         </div>
 
         {/* 到着確認ボタン（全員搭乗済かつ未到着確認時に表示） */}
