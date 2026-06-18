@@ -1,18 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
 import BookingFilters from './BookingFilters'
+import AdminBookingsClient from './AdminBookingsClient'
 
 export const dynamic = 'force-dynamic'
 
 type Props = {
   searchParams: Promise<{ date?: string; hotel?: string; status?: string }>
-}
-
-const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
-  confirmed: { label: '予約OK',     cls: 'bg-green-100 text-green-700' },
-  cancelled: { label: 'キャンセル', cls: 'bg-red-100 text-red-700' },
-  completed: { label: '搭乗済',     cls: 'bg-blue-100 text-blue-700' },
-  arrived:   { label: '到着済',     cls: 'bg-purple-100 text-purple-700' },
 }
 
 export default async function AdminBookingsPage({ searchParams }: Props) {
@@ -70,61 +63,11 @@ export default async function AdminBookingsPage({ searchParams }: Props) {
 
       <BookingFilters hotels={hotels ?? []} />
 
-      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs text-gray-400">
-          {filtered.length} 件
-        </div>
-        {filtered.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-12">該当する予約がありません</p>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead className="text-xs text-gray-400 border-b border-gray-100">
-                <tr>
-                  <th className="text-left px-4 py-3 font-medium">確認番号</th>
-                  <th className="text-left px-4 py-3 font-medium">お客様名</th>
-                  <th className="text-left px-4 py-3 font-medium">ホテル</th>
-                  <th className="text-left px-4 py-3 font-medium">出発日時</th>
-                  <th className="text-center px-4 py-3 font-medium">人数</th>
-                  <th className="text-center px-4 py-3 font-medium">荷物</th>
-                  <th className="text-left px-4 py-3 font-medium">フライト</th>
-                  <th className="text-left px-4 py-3 font-medium">ステータス</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filtered.map(b => {
-                  const slot = slotMap[b.slot_id]
-                  const s = STATUS_LABEL[b.status] ?? { label: b.status, cls: 'bg-gray-100 text-gray-500' }
-                  return (
-                    <tr key={b.id} className="hover:bg-gray-50 transition">
-                      <td className="px-4 py-3">
-                        <Link href={`/admin/bookings/${b.id}`} className="font-mono text-xs text-blue-600 hover:underline">
-                          {b.confirmation_code}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        <Link href={`/admin/bookings/${b.id}`} className="hover:text-blue-600 transition">
-                          {b.guest_name}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 text-gray-500 text-xs">{hotelMap[b.hotel_id] ?? '─'}</td>
-                      <td className="px-4 py-3 text-gray-500 text-xs font-mono">
-                        {slot ? `${slot.date} ${slot.departure_time.slice(0, 5)}` : '─'}
-                      </td>
-                      <td className="px-4 py-3 text-center">{b.party_size}名</td>
-                      <td className="px-4 py-3 text-center">{b.luggage_count}個</td>
-                      <td className="px-4 py-3 font-mono text-xs text-gray-500">{b.flight_number}</td>
-                      <td className="px-4 py-3">
-                        <span className={`text-xs px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+      <AdminBookingsClient
+        bookings={filtered}
+        slotMap={slotMap}
+        hotelMap={hotelMap}
+      />
     </div>
   )
 }
