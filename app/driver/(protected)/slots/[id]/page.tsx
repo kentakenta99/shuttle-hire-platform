@@ -58,10 +58,10 @@ export default async function DriverSlotPage({ params }: Props) {
   const isAssigned = !!assignment
 
   const [slotRes, bookingsRes] = await Promise.all([
-    adminDb.from('shuttle_slots').select('*, hotels(contact_phone)').eq('id', id).single(),
+    adminDb.from('shuttle_slots').select('*').eq('id', id).single(),
     adminDb
       .from('bookings')
-      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status')
+      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status, hotel_id')
       .eq('slot_id', id)
       .neq('status', 'cancelled')
       .order('created_at'),
@@ -69,8 +69,21 @@ export default async function DriverSlotPage({ params }: Props) {
 
   if (!slotRes.data) notFound()
   const slot = slotRes.data
-  const hotelPhone = (slot as unknown as { hotels?: { contact_phone?: string | null } }).hotels?.contact_phone ?? null
   const bookings = bookingsRes.data ?? []
+
+  // ホテルの電話番号を取得（shuttle_slotsにhotel_idはないのでbooking経由）
+  let hotelPhone: string | null = null
+  if (bookings.length > 0) {
+    const firstHotelId = (bookings[0] as { hotel_id?: string | null }).hotel_id
+    if (firstHotelId) {
+      const { data: hotel } = await adminDb
+        .from('hotels')
+        .select('contact_phone')
+        .eq('id', firstHotelId)
+        .single()
+      hotelPhone = hotel?.contact_phone ?? null
+    }
+  }
 
   const boardedCount    = bookings.filter(b => b.status === 'completed').length
   const arrivedCount    = bookings.filter(b => b.status === 'arrived').length
