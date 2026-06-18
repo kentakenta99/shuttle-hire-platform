@@ -9,6 +9,13 @@ const PROTECTED_ROUTES: { prefix: string; role: string; login: string }[] = [
   { prefix: '/driver', role: 'driver', login: '/driver/login' },
 ]
 
+// ロール別にどのテーブルのどのカラムで認証済みユーザーを照合するかを定義
+const ROLE_CHECK: Record<string, { table: string; column: string }> = {
+  hotel_staff: { table: 'hotels',          column: 'auth_user_id' },
+  tmk_admin:   { table: 'tmk_admin_users', column: 'user_id'      },
+  driver:      { table: 'driver_users',    column: 'user_id'      },
+}
+
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
 
@@ -47,10 +54,27 @@ export async function proxy(request: NextRequest) {
     if (pathname === route.login) continue
 
     if (pathname.startsWith(route.prefix)) {
+      // 未認証はログインページへ
       if (!user) {
         return NextResponse.redirect(new URL(route.login, request.url))
       }
-      // ロール確認は Server Component 側で行う（RLS で保護済み）
+
+      // ロール確認: 対象テーブルに該当ユーザーが存在するかチェック
+      const check = ROLE_CHECK[route.role]
+      if (check) {
+        const { data } = await supabase
+          .from(check.table)
+          .select('id')
+          .eq(check.column, user.id)
+          .limit(1)
+          .maybeSingle()
+
+        if (!data) {
+          // 認証済みだがロールが一致しない → 当該ロールのログインページへ
+          return NextResponse.redirect(new URL(route.login, request.url))
+        }
+      }
+
       break
     }
   }
