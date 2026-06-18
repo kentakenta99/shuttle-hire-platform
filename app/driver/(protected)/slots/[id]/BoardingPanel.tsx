@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { markBoarded, markBoardedByCode, markArrived } from '@/app/actions/driver'
+import { markBoarded, markBoardedByCode, markArrived, markNoShow } from '@/app/actions/driver'
 import { useRouter } from 'next/navigation'
 import type { FlightInfo } from '@/lib/flight'
 
@@ -29,22 +29,30 @@ const STATUS_BADGE: Record<string, { label: string; cls: string }> = {
   confirmed: { label: '予約OK',  cls: 'bg-green-900 text-green-400' },
   completed: { label: '搭乗済',  cls: 'bg-blue-900 text-blue-400' },
   arrived:   { label: '到着済',  cls: 'bg-purple-900 text-purple-400' },
+  no_show:   { label: 'NO SHOW', cls: 'bg-red-900 text-red-400' },
 }
 
 export function BoardingRow({
   booking,
   canBoard,
   flightInfo,
+  hotelPhone,
+  slotDate,
+  slotTime,
 }: {
   booking: Booking
   canBoard: boolean
   flightInfo?: FlightInfo | null
+  hotelPhone?: string | null
+  slotDate?: string
+  slotTime?: string
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const isBoarded  = booking.status === 'completed'
   const isArrived  = booking.status === 'arrived'
-  const isDone     = isBoarded || isArrived
+  const isNoShow   = booking.status === 'no_show'
+  const isDone     = isBoarded || isArrived || isNoShow
   const badge      = STATUS_BADGE[booking.status]
 
   async function handleBoard() {
@@ -52,6 +60,25 @@ export function BoardingRow({
     await markBoarded(booking.id)
     setLoading(false)
     router.refresh()
+  }
+
+  async function handleNoShow() {
+    if (!confirm(`${booking.guest_name} 様をNO-SHOWとして記録しますか？`)) return
+    setLoading(true)
+    const r = await markNoShow(booking.id)
+    setLoading(false)
+    if (r.error) { alert(r.error); return }
+    router.refresh()
+    // wa.me でホテルへ通知（電話番号が登録されている場合のみ）
+    if (hotelPhone) {
+      const phone = hotelPhone.replace(/\D/g, '').replace(/^0/, '81')
+      const date = slotDate ? new Date(slotDate + 'T00:00:00').toLocaleDateString('ja-JP') : ''
+      const time = slotTime ? slotTime.slice(0, 5) : ''
+      const msg = encodeURIComponent(
+        `【NO-SHOW報告】${date} ${time}発便\nゲスト: ${booking.guest_name} 様 (${booking.party_size}名)\nご確認をお願いします。`
+      )
+      window.open(`https://wa.me/${phone}?text=${msg}`, '_blank')
+    }
   }
 
   return (
@@ -98,14 +125,24 @@ export function BoardingRow({
           )}
         </div>
         {booking.status === 'confirmed' && canBoard && (
-          <button
-            type="button"
-            onClick={handleBoard}
-            disabled={loading}
-            className="shrink-0 px-4 py-2 bg-blue-600 text-white text-xs rounded-xl hover:bg-blue-700 transition active:scale-95 disabled:opacity-60"
-          >
-            {loading ? '...' : '搭乗確認'}
-          </button>
+          <div className="flex flex-col gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={handleBoard}
+              disabled={loading}
+              className="px-4 py-2 bg-blue-600 text-white text-xs rounded-xl hover:bg-blue-700 transition active:scale-95 disabled:opacity-60"
+            >
+              {loading ? '...' : '搭乗確認'}
+            </button>
+            <button
+              type="button"
+              onClick={handleNoShow}
+              disabled={loading}
+              className="px-4 py-2 bg-gray-700 text-red-400 text-xs rounded-xl hover:bg-red-900/50 border border-red-900/60 transition active:scale-95 disabled:opacity-60"
+            >
+              No-Show
+            </button>
+          </div>
         )}
         {isDone && (
           <span className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-sm ${

@@ -58,7 +58,7 @@ export default async function DriverSlotPage({ params }: Props) {
   const isAssigned = !!assignment
 
   const [slotRes, bookingsRes] = await Promise.all([
-    adminDb.from('shuttle_slots').select('*').eq('id', id).single(),
+    adminDb.from('shuttle_slots').select('*, hotels(contact_phone)').eq('id', id).single(),
     adminDb
       .from('bookings')
       .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status')
@@ -69,6 +69,7 @@ export default async function DriverSlotPage({ params }: Props) {
 
   if (!slotRes.data) notFound()
   const slot = slotRes.data
+  const hotelPhone = (slot as unknown as { hotels?: { contact_phone?: string | null } }).hotels?.contact_phone ?? null
   const bookings = bookingsRes.data ?? []
 
   const boardedCount    = bookings.filter(b => b.status === 'completed').length
@@ -239,12 +240,16 @@ export default async function DriverSlotPage({ params }: Props) {
               ...bookings.filter(b => b.status === 'confirmed'),
               ...bookings.filter(b => b.status === 'completed'),
               ...bookings.filter(b => b.status === 'arrived'),
+              ...bookings.filter(b => b.status === 'no_show'),
             ].map(b => (
               <BoardingRow
                 key={b.id}
                 booking={b}
                 canBoard={isAssigned}
                 flightInfo={flightMap[b.flight_number] ?? null}
+                hotelPhone={hotelPhone}
+                slotDate={slot.date}
+                slotTime={slot.departure_time}
               />
             ))}
           </div>

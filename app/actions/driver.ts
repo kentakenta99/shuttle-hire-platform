@@ -79,6 +79,41 @@ export async function markBoarded(
   return {}
 }
 
+export async function markNoShow(
+  bookingId: string
+): Promise<{ error?: string; guestName?: string }> {
+  const { error: authError, driver } = await getVerifiedDriver()
+  if (authError || !driver) return { error: authError ?? '権限エラー' }
+
+  const adminDb = createAdminClient()
+
+  const { data: booking } = await adminDb
+    .from('bookings')
+    .select('id, slot_id, status, guest_name')
+    .eq('id', bookingId)
+    .single()
+
+  if (!booking) return { error: '予約が見つかりません' }
+  if (booking.status !== 'confirmed') return { error: '搭乗前の予約にのみ使用できます' }
+
+  const { data: assignment } = await adminDb
+    .from('driver_assignments')
+    .select('id')
+    .eq('slot_id', booking.slot_id)
+    .eq('driver_id', driver.id)
+    .single()
+
+  if (!assignment) return { error: '担当便の権限がありません' }
+
+  const { error } = await adminDb
+    .from('bookings')
+    .update({ status: 'no_show' })
+    .eq('id', bookingId)
+
+  if (error) return { error: error.message }
+  return { guestName: booking.guest_name }
+}
+
 export async function markBoardedByCode(
   confirmationCode: string
 ): Promise<{ error?: string; guestName?: string }> {
