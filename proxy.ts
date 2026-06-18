@@ -33,13 +33,12 @@ export async function proxy(request: NextRequest) {
     }
   )
 
-  // getSession でCookieを読み取りセッションを確認する。
-  // getUser は毎回サーバー検証のネットワーク呼び出しを行うため、
-  // 複数リクエスト同時発行時にリフレッシュトークンが競合してログアウトされる。
-  // ルート保護用途では getSession で十分（実データはRLSで保護）。
+  // getUser でサーバー検証 + トークン自動リフレッシュを行う。
+  // getSession はネットワーク呼び出しをしないため期限切れJWTをリフレッシュできず、
+  // 数分の無操作でもログアウトされる原因になる。
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
+    data: { user },
+  } = await supabase.auth.getUser()
 
   const { pathname } = request.nextUrl
 
@@ -48,7 +47,7 @@ export async function proxy(request: NextRequest) {
     if (pathname === route.login) continue
 
     if (pathname.startsWith(route.prefix)) {
-      if (!session) {
+      if (!user) {
         return NextResponse.redirect(new URL(route.login, request.url))
       }
       // ロール確認は Server Component 側で行う（RLS で保護済み）
