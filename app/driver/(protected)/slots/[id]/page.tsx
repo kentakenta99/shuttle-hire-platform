@@ -133,7 +133,7 @@ export default async function DriverSlotPage({ params }: Props) {
       <div className="flex items-center gap-2">
         <Link
           href="/driver"
-          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition bg-gray-800 border border-gray-700 rounded-xl px-4 py-2.5 flex-1"
+          className="flex items-center gap-2 text-sm text-gray-300 hover:text-white transition bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-2.5 flex-1"
         >
           <span className="text-lg leading-none">←</span>
           <span className="font-medium">担当便一覧</span>
@@ -142,7 +142,7 @@ export default async function DriverSlotPage({ params }: Props) {
       </div>
 
       {/* 便情報ヘッダー */}
-      <div className="bg-gray-800 rounded-2xl border border-gray-700 p-5">
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
         <div className="flex items-start justify-between">
           <div>
             <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
@@ -165,10 +165,10 @@ export default async function DriverSlotPage({ params }: Props) {
               {boardedCount + arrivedCount}/{bookings.length}件 ({boardedPax}/{totalPax}名)
             </span>
           </div>
-          <div className="h-3 bg-gray-700 rounded-full overflow-hidden">
+          <div className="h-3 bg-zinc-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all duration-500 ${
-                allArrived ? 'bg-purple-500' : allBoarded ? 'bg-green-500' : 'bg-blue-500'
+                allArrived ? 'bg-purple-500' : allBoarded ? 'bg-green-500' : 'bg-[#C9A227]'
               }`}
               style={{
                 width: bookings.length > 0
@@ -195,13 +195,13 @@ export default async function DriverSlotPage({ params }: Props) {
 
       {/* ターミナル順序（APIでターミナル情報が取得できた場合のみ表示） */}
       {terminalRoute.length >= 2 && (
-        <div className="bg-gray-800 rounded-2xl border border-blue-800 p-4">
-          <p className="text-xs font-semibold text-blue-400 mb-3">🛫 ターミナル停車順（自動）</p>
+        <div className="bg-zinc-900 rounded-2xl border border-[#C9A227]/30 p-4">
+          <p className="text-xs font-semibold text-[#C9A227] mb-3">🛫 ターミナル停車順（自動）</p>
           <div className="flex items-center gap-2 flex-wrap">
             {terminalRoute.map((g, i) => (
               <div key={g.terminal} className="flex items-center gap-2">
-                <div className="flex flex-col items-center bg-blue-900/60 border border-blue-700 rounded-xl px-4 py-2 min-w-[72px] text-center">
-                  <span className="text-xs text-blue-400 font-medium">第{i + 1}停車</span>
+                <div className="flex flex-col items-center bg-blue-900/60 border border-[#C9A227]/40 rounded-xl px-4 py-2 min-w-[72px] text-center">
+                  <span className="text-xs text-[#C9A227] font-medium">第{i + 1}停車</span>
                   <span className="text-2xl font-black text-white leading-tight">T{g.terminal}</span>
                   <span className="text-xs text-gray-400 mt-0.5">{g.pax}名</span>
                 </div>
@@ -215,8 +215,8 @@ export default async function DriverSlotPage({ params }: Props) {
         </div>
       )}
       {terminalRoute.length === 1 && (
-        <div className="bg-gray-800 rounded-2xl border border-gray-700 px-4 py-3 flex items-center gap-3">
-          <span className="text-blue-400 text-lg">🛫</span>
+        <div className="bg-zinc-900 rounded-2xl border border-zinc-800 px-4 py-3 flex items-center gap-3">
+          <span className="text-[#C9A227] text-lg">🛫</span>
           <div>
             <p className="text-xs text-gray-400">全員同じターミナル</p>
             <p className="text-lg font-bold text-white">第{terminalRoute[0].terminal}ターミナル</p>
@@ -225,9 +225,9 @@ export default async function DriverSlotPage({ params }: Props) {
       )}
 
       {/* 乗客名簿 */}
-      <div className="bg-gray-800 rounded-2xl border border-gray-700 overflow-hidden">
+      <div className="bg-zinc-900 rounded-2xl border border-zinc-800 overflow-hidden">
         {/* ヘッダー：乗客数・荷物数を目立たせる */}
-        <div className="px-4 py-3 border-b border-gray-700 flex items-center justify-between gap-3">
+        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-semibold text-white">乗客名簿</h2>
             <p className="text-xs text-gray-500 mt-0.5">{bookings.length}件 — タップで搭乗確認</p>
@@ -237,7 +237,7 @@ export default async function DriverSlotPage({ params }: Props) {
               <p className="text-3xl font-bold text-white leading-none">{totalPax}</p>
               <p className="text-xs text-gray-400 mt-0.5">名</p>
             </div>
-            <div className="w-px h-10 bg-gray-700" />
+            <div className="w-px h-10 bg-zinc-800" />
             <div className="text-center">
               <p className="text-3xl font-bold text-yellow-400 leading-none">{totalLuggage}</p>
               <p className="text-xs text-gray-400 mt-0.5">個</p>

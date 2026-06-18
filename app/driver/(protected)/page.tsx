@@ -100,7 +100,7 @@ export default async function DriverHomePage() {
     return (
       <Link
         href={`/driver/slots/${slot.id}`}
-        className="block bg-gray-800 rounded-2xl border border-gray-700 hover:border-blue-500 transition p-4 active:scale-95"
+        className="block bg-zinc-900 rounded-2xl border border-zinc-800 hover:border-[#C9A227]/60 transition p-4 active:scale-95"
       >
         <div className="flex items-start justify-between mb-3">
           <div>
@@ -114,10 +114,10 @@ export default async function DriverHomePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex-1 h-2 bg-gray-700 rounded-full overflow-hidden">
+          <div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
-                allArrived ? 'bg-purple-500' : allBoarded ? 'bg-green-500' : 'bg-blue-500'
+                allArrived ? 'bg-purple-400' : allBoarded ? 'bg-emerald-400' : 'bg-[#C9A227]'
               }`}
               style={{ width: total > 0 ? `${Math.round(doneCount / total * 100)}%` : '0%' }}
             />

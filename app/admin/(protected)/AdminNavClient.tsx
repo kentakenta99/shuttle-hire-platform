@@ -22,7 +22,7 @@ export default function AdminNavClient({
           <Link
             key={href}
             href={href}
-            className="px-3 py-1.5 rounded text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition whitespace-nowrap"
+            className="px-3 py-1.5 rounded text-sm text-zinc-400 hover:text-[#C9A227] hover:bg-white/5 transition whitespace-nowrap"
           >
             {label}
           </Link>
@@ -31,11 +31,11 @@ export default function AdminNavClient({
 
       {/* Mobile: user label + hamburger */}
       <div className="flex md:hidden items-center gap-3">
-        <span className="text-xs text-slate-400 truncate max-w-[120px]">{displayName}</span>
+        <span className="text-xs text-[#C9A227]/60 truncate max-w-[120px]">{displayName}</span>
         <button
           type="button"
           onClick={() => setOpen(v => !v)}
-          className="p-2 rounded text-slate-300 hover:text-white hover:bg-slate-700 transition"
+          className="p-2 rounded text-zinc-400 hover:text-[#C9A227] hover:bg-white/5 transition"
           aria-label="メニューを開く"
         >
           {open ? (
@@ -52,14 +52,14 @@ export default function AdminNavClient({
 
       {/* Mobile dropdown */}
       {open && (
-        <div className="md:hidden absolute top-14 left-0 right-0 bg-slate-800 border-t border-slate-700 z-50 shadow-xl">
+        <div className="md:hidden absolute top-14 left-0 right-0 bg-black border-t border-[#C9A227]/20 z-50 shadow-xl">
           <nav className="flex flex-col py-2">
             {items.map(({ href, label }) => (
               <Link
                 key={href}
                 href={href}
                 onClick={() => setOpen(false)}
-                className="px-5 py-3 text-sm text-slate-300 hover:text-white hover:bg-slate-700 transition"
+                className="px-5 py-3 text-sm text-zinc-400 hover:text-[#C9A227] hover:bg-white/5 transition"
               >
                 {label}
               </Link>

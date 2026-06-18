@@ -40,17 +40,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-slate-800 text-white sticky top-0 z-40">
+      <header className="bg-black text-white sticky top-0 z-40 border-b border-[#C9A227]/20">
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between relative">
           <div className="flex items-center gap-4 md:gap-8 min-w-0">
-            <span className="font-bold text-sm tracking-wide whitespace-nowrap">MK シャトル</span>
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="w-7 h-7 bg-[#C9A227] rounded-md flex items-center justify-center text-[10px] font-black text-black">MK</div>
+              <span className="font-bold text-sm tracking-wide whitespace-nowrap text-[#C9A227]">シャトル管理</span>
+            </div>
             <AdminNavClient items={navItems} displayName={displayName} />
           </div>
           {/* Desktop: user info + logout */}
           <div className="hidden md:flex items-center gap-4 shrink-0">
-            <span className="text-xs text-slate-400">{displayName}</span>
+            <span className="text-xs text-[#C9A227]/60">{displayName}</span>
             <form action={async () => { 'use server'; await logout('/admin/login') }}>
-              <button type="submit" className="text-xs text-slate-400 hover:text-white transition">
+              <button type="submit" className="text-xs text-zinc-500 hover:text-white transition">
                 ログアウト
               </button>
             </form>
@@ -58,7 +61,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
           {/* Mobile: logout only (user name shown in hamburger area) */}
           <div className="flex md:hidden items-center shrink-0 ml-2">
             <form action={async () => { 'use server'; await logout('/admin/login') }}>
-              <button type="submit" className="text-xs text-slate-400 hover:text-white transition px-2 py-1">
+              <button type="submit" className="text-xs text-zinc-500 hover:text-white transition px-2 py-1">
                 ログアウト
               </button>
             </form>
