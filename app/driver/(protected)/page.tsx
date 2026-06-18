@@ -58,24 +58,34 @@ export default async function DriverHomePage() {
         .order('departure_time')
     : { data: [] }
 
-  // 各スロットの乗車完了数を取得
-  const { data: completedCounts } = slotIds.length > 0
+  // 各スロットの予約ステータス集計（no_show含む）
+  const { data: bookingCounts } = slotIds.length > 0
     ? await supabase
         .from('bookings')
         .select('slot_id, status')
         .in('slot_id', slotIds)
-        .in('status', ['confirmed', 'completed', 'arrived'])
+        .in('status', ['confirmed', 'completed', 'arrived', 'no_show'])
     : { data: [] }
 
-  const completedMap: Record<string, { confirmed: number; completed: number; arrived: number }> = {}
-  for (const b of completedCounts ?? []) {
-    if (!completedMap[b.slot_id]) completedMap[b.slot_id] = { confirmed: 0, completed: 0, arrived: 0 }
+  const completedMap: Record<string, { confirmed: number; completed: number; arrived: number; no_show: number }> = {}
+  for (const b of bookingCounts ?? []) {
+    if (!completedMap[b.slot_id]) completedMap[b.slot_id] = { confirmed: 0, completed: 0, arrived: 0, no_show: 0 }
     if (b.status === 'confirmed') completedMap[b.slot_id]!.confirmed++
     if (b.status === 'completed') completedMap[b.slot_id]!.completed++
     if (b.status === 'arrived')   completedMap[b.slot_id]!.arrived++
+    if (b.status === 'no_show')   completedMap[b.slot_id]!.no_show++
   }
 
-  const todaySlots = (slots ?? []).filter(s => s.date === todayStr)
+  // 乗務完了 = confirmed も completed も残っていない（全員が arrived/no_show/cancelled）
+  function isSlotDone(slotId: string): boolean {
+    const c = completedMap[slotId]
+    if (!c) return false
+    const active = c.confirmed + c.completed + c.arrived + c.no_show
+    return active > 0 && c.confirmed === 0 && c.completed === 0
+  }
+
+  const todaySlots = (slots ?? []).filter(s => s.date === todayStr && !isSlotDone(s.id))
+  const todayDoneCount = (slots ?? []).filter(s => s.date === todayStr && isSlotDone(s.id)).length
   const futureSlots = (slots ?? []).filter(s => s.date !== todayStr)
 
   type SlotRow = { id: string; date: string; departure_time: string; capacity: number; remaining_seats: number; status: string; vehicle_type: string }
@@ -132,7 +142,15 @@ export default async function DriverHomePage() {
 
       {todaySlots.length === 0 ? (
         <div className="bg-gray-800 rounded-2xl border border-gray-700 px-5 py-10 text-center">
-          <p className="text-gray-400 text-sm">本日の担当便はありません</p>
+          {todayDoneCount > 0 ? (
+            <>
+              <p className="text-2xl mb-2">✅</p>
+              <p className="text-white text-sm font-medium">本日の乗務はすべて完了しました</p>
+              <p className="text-gray-500 text-xs mt-1">{todayDoneCount}便 · お疲れさまでした</p>
+            </>
+          ) : (
+            <p className="text-gray-400 text-sm">本日の担当便はありません</p>
+          )}
         </div>
       ) : (
         <div className="space-y-3">
