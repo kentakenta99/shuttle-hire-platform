@@ -61,7 +61,7 @@ export default async function DriverSlotPage({ params }: Props) {
     adminDb.from('shuttle_slots').select('*').eq('id', id).single(),
     adminDb
       .from('bookings')
-      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status, hotel_id')
+      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status, hotel_id, unit_price, total_price')
       .eq('slot_id', id)
       .neq('status', 'cancelled')
       .order('created_at'),
@@ -71,17 +71,19 @@ export default async function DriverSlotPage({ params }: Props) {
   const slot = slotRes.data
   const bookings = bookingsRes.data ?? []
 
-  // ホテルの電話番号を取得（shuttle_slotsにhotel_idはないのでbooking経由）
+  // ホテルの電話番号と請求方式を取得（shuttle_slotsにhotel_idはないのでbooking経由）
   let hotelPhone: string | null = null
+  let billingType: 'hotel_invoice' | 'direct_guest' = 'hotel_invoice'
   if (bookings.length > 0) {
     const firstHotelId = (bookings[0] as { hotel_id?: string | null }).hotel_id
     if (firstHotelId) {
       const { data: hotel } = await adminDb
         .from('hotels')
-        .select('contact_phone')
+        .select('contact_phone, billing_type')
         .eq('id', firstHotelId)
         .single()
       hotelPhone = hotel?.contact_phone ?? null
+      billingType = (hotel?.billing_type as 'hotel_invoice' | 'direct_guest') ?? 'hotel_invoice'
     }
   }
 
@@ -267,6 +269,7 @@ export default async function DriverSlotPage({ params }: Props) {
                 hotelPhone={hotelPhone}
                 slotDate={slot.date}
                 slotTime={slot.departure_time}
+                billingType={billingType}
               />
             ))}
           </div>

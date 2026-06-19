@@ -37,10 +37,13 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
 
   const pricing = getPricing(pricingTiers, partySize)
 
+  // hotel_invoice の場合は価格をフォームに含めない（請求UIでのみ計算）
+  const showPrice = billingType === 'direct_guest'
+
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="slotId" value={slotId} />
-      {pricing && (
+      {showPrice && pricing && (
         <>
           <input type="hidden" name="unitPrice" value={pricing.unitPrice} />
           <input type="hidden" name="totalPrice" value={pricing.totalPrice} />
@@ -76,7 +79,7 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
             onChange={e => setPartySize(Number(e.target.value))}
           >
             {Array.from({ length: capacity }, (_, i) => i + 1).map(n => {
-              const p = getPricing(pricingTiers, n)
+              const p = showPrice ? getPricing(pricingTiers, n) : null
               return (
                 <option key={n} value={n}>
                   {n}名{p ? `　¥${p.unitPrice.toLocaleString()}/名` : ''}
@@ -97,33 +100,27 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
         </div>
       </div>
 
-      {/* 料金表示 */}
-      {pricing ? (
-        <div className={`rounded-xl px-4 py-3 border ${
-          billingType === 'direct_guest'
-            ? 'bg-amber-50 border-amber-200'
-            : 'bg-gray-50 border-gray-200'
-        }`}>
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-xs text-gray-500">
-                {partySize}名 × ¥{pricing.unitPrice.toLocaleString()}
-              </p>
-              <p className="text-xl font-bold text-gray-900 mt-0.5">
-                ¥{pricing.totalPrice.toLocaleString()}
-              </p>
+      {/* 料金表示（車内決済のみ） */}
+      {showPrice && (
+        pricing ? (
+          <div className="rounded-xl px-4 py-3 border bg-amber-50 border-amber-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs text-gray-500">
+                  {partySize}名 × ¥{pricing.unitPrice.toLocaleString()}
+                </p>
+                <p className="text-xl font-bold text-gray-900 mt-0.5">
+                  ¥{pricing.totalPrice.toLocaleString()}
+                </p>
+              </div>
+              <span className="text-xs px-2.5 py-1 rounded-full font-medium bg-amber-100 text-amber-700">
+                車内決済
+              </span>
             </div>
-            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
-              billingType === 'direct_guest'
-                ? 'bg-amber-100 text-amber-700'
-                : 'bg-gray-100 text-gray-600'
-            }`}>
-              {billingType === 'direct_guest' ? '車内決済' : 'ホテル請求'}
-            </span>
           </div>
-        </div>
-      ) : pricingTiers.length === 0 ? null : (
-        <p className="text-xs text-gray-400">この人数の料金設定はありません</p>
+        ) : pricingTiers.length > 0 ? (
+          <p className="text-xs text-gray-400">この人数の料金設定はありません</p>
+        ) : null
       )}
 
       <div>

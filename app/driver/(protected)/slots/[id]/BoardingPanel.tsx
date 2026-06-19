@@ -17,6 +17,8 @@ type Booking = {
   flight_number: string
   notes: string | null
   status: string
+  unit_price?: number | null
+  total_price?: number | null
 }
 
 function formatJST(iso: string) {
@@ -39,6 +41,7 @@ export function BoardingRow({
   hotelPhone,
   slotDate,
   slotTime,
+  billingType,
 }: {
   booking: Booking
   canBoard: boolean
@@ -46,6 +49,7 @@ export function BoardingRow({
   hotelPhone?: string | null
   slotDate?: string
   slotTime?: string
+  billingType?: 'hotel_invoice' | 'direct_guest'
 }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
@@ -120,6 +124,12 @@ export function BoardingRow({
             )}
           </div>
           <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.confirmation_code}</p>
+          {/* 車内決済の場合のみ料金明細を表示（TMKからお客様への説明用） */}
+          {billingType === 'direct_guest' && booking.unit_price != null && (
+            <p className="text-xs text-amber-400 mt-0.5 font-medium">
+              💴 {booking.party_size}名 × ¥{booking.unit_price.toLocaleString()} = ¥{(booking.total_price ?? booking.unit_price * booking.party_size).toLocaleString()}
+            </p>
+          )}
           {booking.notes && (
             <p className="text-xs text-yellow-400 mt-0.5">⚠ {booking.notes}</p>
           )}
