@@ -354,3 +354,122 @@ export async function updateDriverShuttleEligibility(
   if (error) return { error: error.message }
   return {}
 }
+
+// ── 月次請求生成 ──────────────────────────────────────────────
+
+function findTierPrice(
+  tiers: { party_size: number; per_person_price: number }[],
+  partySize: number
+): number {
+  const match = tiers
+    .filter(t => t.party_size <= partySize)
+    .sort((a, b) => b.party_size - a.party_size)[0]
+  return match?.per_person_price ?? 0
+}
+
+export async function generateMonthlyInvoice(
+  hotelId: string,
+  yearMonth: string // "YYYY-MM"
+): Promise<{ error?: string; result?: { bookings: number; seats: number; amount: number } }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+
+  const { data: admin } = await supabase
+    .from('tmk_admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
+  if (!/^\d{4}-\d{2}$/.test(yearMonth)) return { error: '年月の形式が不正です。' }
+
+  const adminDb = createAdminClient()
+
+  const { data: hotel } = await adminDb
+    .from('hotels')
+    .select('billing_type')
+    .eq('id', hotelId)
+    .single()
+  if (!hotel) return { error: 'ホテルが見つかりません。' }
+  if (hotel.billing_type !== 'hotel_invoice') {
+    return { error: 'このホテルは車内決済のため請求書は不要です。' }
+  }
+
+  // 入金済みは再生成不可
+  const { data: existing } = await adminDb
+    .from('monthly_invoices')
+    .select('id, invoice_status')
+    .eq('hotel_id', hotelId)
+    .eq('year_month', yearMonth)
+    .maybeSingle()
+  if (existing?.invoice_status === 'paid') {
+    return { error: '入金済みの請求書は再生成できません。' }
+  }
+
+  // 対象月の日付範囲
+  const [year, month] = yearMonth.split('-').map(Number)
+  const startDate = `${yearMonth}-01`
+  const lastDay = new Date(year, month, 0).getDate()
+  const endDate = `${yearMonth}-${String(lastDay).padStart(2, '0')}`
+
+  // 対象月の出発枠 ID
+  const { data: slots } = await adminDb
+    .from('shuttle_slots')
+    .select('id')
+    .gte('date', startDate)
+    .lte('date', endDate)
+  const slotIds = (slots ?? []).map(s => s.id)
+  if (slotIds.length === 0) {
+    return { error: `${yearMonth} に出発枠がありません。` }
+  }
+
+  // completed / arrived 予約のみ集計
+  const { data: bookings } = await adminDb
+    .from('bookings')
+    .select('id, party_size')
+    .eq('hotel_id', hotelId)
+    .in('slot_id', slotIds)
+    .in('status', ['completed', 'arrived'])
+  if (!bookings || bookings.length === 0) {
+    return { error: `${yearMonth} に完了済み予約がありません。` }
+  }
+
+  // 料金ティアで金額計算
+  const { data: tiers } = await adminDb
+    .from('hotel_pricing_tiers')
+    .select('party_size, per_person_price')
+    .eq('hotel_id', hotelId)
+  const tiersData = tiers ?? []
+
+  let totalAmount = 0
+  let totalSeats = 0
+  for (const b of bookings) {
+    totalSeats += b.party_size
+    totalAmount += findTierPrice(tiersData, b.party_size) * b.party_size
+  }
+
+  // 既存なら金額のみ更新・新規なら draft で挿入
+  if (existing) {
+    const { error: updateError } = await adminDb
+      .from('monthly_invoices')
+      .update({ total_bookings: bookings.length, total_seats: totalSeats, total_amount_yen: totalAmount })
+      .eq('id', existing.id)
+    if (updateError) return { error: updateError.message }
+  } else {
+    const { error: insertError } = await adminDb
+      .from('monthly_invoices')
+      .insert({
+        hotel_id: hotelId,
+        year_month: yearMonth,
+        total_bookings: bookings.length,
+        total_seats: totalSeats,
+        total_amount_yen: totalAmount,
+        invoice_status: 'draft',
+      })
+    if (insertError) return { error: insertError.message }
+  }
+
+  return { result: { bookings: bookings.length, seats: totalSeats, amount: totalAmount } }
+}

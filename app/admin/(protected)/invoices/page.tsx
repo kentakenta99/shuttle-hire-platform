@@ -1,4 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import GeneratePanel from './GeneratePanel'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,6 +20,15 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
 
   const now = new Date()
   const currentMonth = month ?? `${now.getFullYear()}-${pad2(now.getMonth() + 1)}`
+
+  // hotel_invoice タイプのホテル（請求生成パネル用）
+  const adminDb = createAdminClient()
+  const { data: invoiceHotels } = await adminDb
+    .from('hotels')
+    .select('id, name')
+    .eq('is_active', true)
+    .eq('billing_type', 'hotel_invoice')
+    .order('name')
 
   const { data: hotels } = await supabase
     .from('hotels')
@@ -45,6 +56,9 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
           Phase 1 — 基本実装
         </span>
       </div>
+
+      {/* 請求生成パネル */}
+      <GeneratePanel hotels={invoiceHotels ?? []} currentMonth={currentMonth} />
 
       {/* 月・ホテルフィルタ */}
       <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex flex-wrap gap-4 items-center">
