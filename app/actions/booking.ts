@@ -51,8 +51,8 @@ export async function createBooking(formData: FormData): Promise<{ error: string
     await supabase.from('bookings').update({ guest_email: guestEmail }).eq('id', bookingId)
   }
 
-  // メール送信（非同期・失敗しても予約は完了扱い）
-  sendBookingConfirmationEmail(supabase, bookingId, guestEmail).catch(e =>
+  // redirect()前に完了させる（Vercelサーバーレスではawaitしないと関数終了でキャンセルされる）
+  await sendBookingConfirmationEmail(supabase, bookingId, guestEmail).catch(e =>
     console.error('[email] 予約確定メール送信失敗:', e)
   )
 
