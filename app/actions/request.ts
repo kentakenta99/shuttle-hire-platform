@@ -135,6 +135,67 @@ export async function convertRequestToBooking(
   return {}
 }
 
+export type RequestStatusResult =
+  | { status: 'pending' }
+  | { status: 'rejected' }
+  | {
+      status: 'confirmed'
+      confirmationCode: string
+      confirmUrl: string
+      qrDataUrl: string
+      date: string
+      departureTime: string
+      partySize: number
+      hotelName: string
+    }
+
+export async function checkRequestStatus(requestId: string): Promise<RequestStatusResult> {
+  const adminDb = createAdminClient()
+
+  const { data: req } = await adminDb
+    .from('booking_requests')
+    .select('status, converted_booking_id, party_size')
+    .eq('id', requestId)
+    .single()
+
+  if (!req || req.status === 'pending') return { status: 'pending' }
+  if (req.status === 'rejected') return { status: 'rejected' }
+
+  const { data: booking } = await adminDb
+    .from('bookings')
+    .select('confirmation_code, party_size, shuttle_slots(date, departure_time), hotels(name)')
+    .eq('id', req.converted_booking_id)
+    .single()
+
+  if (!booking) return { status: 'pending' }
+
+  const slotRaw = booking.shuttle_slots as unknown
+  const slot = (Array.isArray(slotRaw) ? slotRaw[0] : slotRaw) as { date: string; departure_time: string } | null
+  const hotelRaw = booking.hotels as unknown
+  const hotel = (Array.isArray(hotelRaw) ? hotelRaw[0] : hotelRaw) as { name: string } | null
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shuttle-hire-platform.vercel.app'
+  const confirmUrl = `${baseUrl}/confirm/${booking.confirmation_code}`
+
+  const QRCodeLib = (await import('qrcode')).default
+  const qrDataUrl = await QRCodeLib.toDataURL(confirmUrl, {
+    width: 300,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' },
+  })
+
+  return {
+    status: 'confirmed',
+    confirmationCode: booking.confirmation_code,
+    confirmUrl,
+    qrDataUrl,
+    date: slot?.date ?? '',
+    departureTime: slot?.departure_time ?? '',
+    partySize: (booking.party_size as number | null) ?? (req.party_size as number),
+    hotelName: hotel?.name ?? '',
+  }
+}
+
 export async function rejectBookingRequest(requestId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
