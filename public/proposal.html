@@ -642,6 +642,12 @@
 </head>
 <body>
 
+<!-- 固定ブランドロゴ（全スライド共通） -->
+<div style="position:fixed;top:16px;left:24px;z-index:200;opacity:0.85;pointer-events:none;">
+  <img src="/logo-mk.png" alt="東京MK" style="height:40px;width:40px;border-radius:8px;"
+    onerror="this.style.display='none'">
+</div>
+
 <!-- ページナビ -->
 <nav class="slide-nav" aria-hidden="true">
   <a href="#cover"></a><a href="#problem"></a><a href="#overview"></a>
@@ -788,7 +794,7 @@
           <div class="phone-screen">
             <div class="mock-hotel-header">
               <div style="display:flex;align-items:center;gap:6px;">
-                <div class="mock-mk-badge">MK</div>
+                <img src="/logo-mk.png" alt="MK" style="width:22px;height:22px;border-radius:5px;" onerror="this.outerHTML='<div class=\'mock-mk-badge\'>MK</div>'">
                 <span style="font-size:10px;font-weight:700;color:#fff;">The Okura Tokyo</span>
               </div>
               <div class="mock-hotel-nav">
@@ -843,7 +849,7 @@
           <div class="phone-screen">
             <div class="mock-driver-header">
               <div style="display:flex;align-items:center;gap:7px;">
-                <div class="mock-mk-badge">MK</div>
+                <img src="/logo-mk.png" alt="MK" style="width:22px;height:22px;border-radius:5px;" onerror="this.outerHTML='<div class=\'mock-mk-badge\'>MK</div>'">
                 <div>
                   <div class="mock-driver-name">田中 一郎</div>
                   <div class="mock-driver-sub">シャトルハイヤー</div>
@@ -932,7 +938,7 @@
           </div>
           <div class="mock-admin-header">
             <div class="mock-admin-brand">
-              <div class="mock-admin-badge">MK</div>
+              <img src="/logo-mk.png" alt="MK" style="width:22px;height:22px;border-radius:5px;" onerror="this.outerHTML='<div class=\'mock-admin-badge\'>MK</div>'">
               <div class="mock-admin-title">シャトル管理</div>
             </div>
             <div class="mock-admin-nav">
