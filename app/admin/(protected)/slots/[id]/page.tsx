@@ -38,11 +38,14 @@ export default async function SlotDetailPage({ params }: Props) {
   const { id } = await params
   const supabase = await createClient()
 
-  const [slotRes, bookingsRes, assignmentRes] = await Promise.all([
+  const { createAdminClient } = await import('@/lib/supabase/admin')
+  const adminDb = createAdminClient()
+
+  const [slotRes, bookingsRes, assignmentRes, driversRes] = await Promise.all([
     supabase.from('shuttle_slots').select('*').eq('id', id).single(),
     supabase
       .from('bookings')
-      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, status, notes')
+      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, status, notes, unit_price, total_price')
       .eq('slot_id', id)
       .neq('status', 'cancelled')
       .order('created_at'),
@@ -51,6 +54,12 @@ export default async function SlotDetailPage({ params }: Props) {
       .select('*, driver_users(display_name, employee_code)')
       .eq('slot_id', id)
       .maybeSingle(),
+    adminDb
+      .from('driver_users')
+      .select('id, employee_code, display_name, is_shuttle_eligible, shuttle_score')
+      .eq('is_active', true)
+      .order('shuttle_score', { ascending: false })
+      .order('display_name'),
   ])
 
   if (!slotRes.data) notFound()
@@ -58,6 +67,7 @@ export default async function SlotDetailPage({ params }: Props) {
   const bookings = bookingsRes.data ?? []
   const assignment = assignmentRes.data
   const driver = assignment?.driver_users as { display_name: string | null; employee_code: string } | null
+  const allDrivers = driversRes.data ?? []
 
   const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'bg-gray-100 text-gray-500 border-gray-200' }
   const booked = slot.capacity - slot.remaining_seats
@@ -124,6 +134,7 @@ export default async function SlotDetailPage({ params }: Props) {
           <DriverAssignForm
             slotId={slot.id}
             currentEmployeeCode={assignment?.employee_code ?? null}
+            drivers={allDrivers}
           />
         </div>
       </div>

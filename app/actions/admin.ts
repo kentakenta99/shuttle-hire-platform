@@ -288,3 +288,69 @@ export async function assignDriver(
   if (error) return { error: error.message }
   return {}
 }
+
+// ── ホテル設定 ──────────────────────────────────────────────
+
+export async function saveHotelPricing(
+  hotelId: string,
+  billingType: string,
+  tiers: { party_size: number; per_person_price: number }[]
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+
+  const { data: admin } = await supabase
+    .from('tmk_admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
+  const adminDb = createAdminClient()
+
+  const [billingRes] = await Promise.all([
+    adminDb.from('hotels').update({ billing_type: billingType }).eq('id', hotelId),
+  ])
+  if (billingRes.error) return { error: billingRes.error.message }
+
+  // 料金ティア: 全削除→再挿入（upsert）
+  await adminDb.from('hotel_pricing_tiers').delete().eq('hotel_id', hotelId)
+  if (tiers.length > 0) {
+    const { error } = await adminDb.from('hotel_pricing_tiers').insert(
+      tiers.map(t => ({ hotel_id: hotelId, party_size: t.party_size, per_person_price: t.per_person_price }))
+    )
+    if (error) return { error: error.message }
+  }
+  return {}
+}
+
+// ── 乗務員シャトル適格設定 ──────────────────────────────────
+
+export async function updateDriverShuttleEligibility(
+  driverId: string,
+  isEligible: boolean,
+  score: number
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
+
+  const { data: admin } = await supabase
+    .from('tmk_admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
+  const adminDb = createAdminClient()
+  const { error } = await adminDb
+    .from('driver_users')
+    .update({ is_shuttle_eligible: isEligible, shuttle_score: score })
+    .eq('id', driverId)
+
+  if (error) return { error: error.message }
+  return {}
+}

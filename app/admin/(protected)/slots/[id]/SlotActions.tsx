@@ -148,14 +148,27 @@ export function SlotEditForm({ slot }: { slot: Slot }) {
   )
 }
 
+type DriverOption = {
+  id: string
+  employee_code: string
+  display_name: string | null
+  is_shuttle_eligible: boolean
+  shuttle_score: number
+}
+
 export function DriverAssignForm({
   slotId,
   currentEmployeeCode,
+  drivers,
 }: {
   slotId: string
   currentEmployeeCode: string | null
+  drivers: DriverOption[]
 }) {
   const router = useRouter()
+  const [query, setQuery] = useState('')
+  const [selected, setSelected] = useState(currentEmployeeCode ?? '')
+
   const [result, action, pending] = useActionState<{ error?: string } | null, FormData>(
     async (_, fd) => {
       const r = await assignDriver(slotId, fd)
@@ -165,27 +178,96 @@ export function DriverAssignForm({
     null
   )
 
+  const eligible   = drivers.filter(d => d.is_shuttle_eligible)
+  const ineligible = drivers.filter(d => !d.is_shuttle_eligible)
+
+  const filtered = (q: string, list: DriverOption[]) =>
+    q.trim() === ''
+      ? list
+      : list.filter(d =>
+          (d.display_name ?? '').includes(q) || d.employee_code.includes(q)
+        )
+
+  const matchedEligible   = filtered(query, eligible)
+  const matchedIneligible = filtered(query, ineligible)
+  const showIneligible    = query.trim() !== '' && matchedIneligible.length > 0
+
   return (
-    <form action={action} className="space-y-3">
-      {result?.error && (
-        <p className="text-xs text-red-600">{result.error}</p>
-      )}
-      <div className="flex gap-2 items-end">
-        <div className="flex-1 space-y-1">
-          <label className="text-xs text-gray-500">乗務員コード（空欄でアサイン解除）</label>
-          <input
-            type="text"
-            name="employee_code"
-            defaultValue={currentEmployeeCode ?? ''}
-            placeholder="例: DRV001"
-            className={fieldCls}
-          />
+    <form action={action} className="space-y-3 mt-3">
+      {result?.error && <p className="text-xs text-red-600">{result.error}</p>}
+
+      <input type="hidden" name="employee_code" value={selected} />
+
+      {/* 名前 or 社員番号で絞り込み */}
+      <input
+        type="text"
+        value={query}
+        onChange={e => setQuery(e.target.value)}
+        placeholder="名前 or 社員番号で検索..."
+        className={`${fieldCls} text-xs`}
+      />
+
+      {/* 選択済み表示 */}
+      {selected && (
+        <div className="flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-200 rounded-lg">
+          <span className="text-xs text-blue-700 flex-1">
+            {drivers.find(d => d.employee_code === selected)?.display_name ?? selected}
+            <span className="text-blue-400 ml-1">({selected})</span>
+          </span>
+          <button
+            type="button"
+            onClick={() => setSelected('')}
+            className="text-xs text-blue-400 hover:text-red-500"
+          >
+            解除
+          </button>
         </div>
-        <button type="submit" disabled={pending}
-          className="px-4 py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-60 shrink-0">
-          {pending ? '保存中...' : '保存'}
-        </button>
-      </div>
+      )}
+
+      {/* シャトル対象乗務員リスト */}
+      {matchedEligible.length > 0 && (
+        <div className="border border-gray-200 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
+          {matchedEligible.map(d => (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => { setSelected(d.employee_code); setQuery('') }}
+              className={`w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-blue-50 transition border-b border-gray-100 last:border-0 ${
+                selected === d.employee_code ? 'bg-blue-50' : ''
+              }`}
+            >
+              <span className="font-medium text-gray-800">{d.display_name ?? '─'}</span>
+              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* 非対象乗務員（検索ヒット時のみ表示） */}
+      {showIneligible && (
+        <div className="border border-gray-100 rounded-lg overflow-hidden max-h-32 overflow-y-auto opacity-60">
+          <p className="text-xs text-gray-400 px-3 py-1.5 bg-gray-50">シャトル非対象</p>
+          {matchedIneligible.map(d => (
+            <button
+              key={d.id}
+              type="button"
+              onClick={() => { setSelected(d.employee_code); setQuery('') }}
+              className="w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-gray-50 transition border-b border-gray-100 last:border-0"
+            >
+              <span className="text-gray-600">{d.display_name ?? '─'}</span>
+              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      <button
+        type="submit"
+        disabled={pending}
+        className="w-full py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-60"
+      >
+        {pending ? '保存中...' : selected ? 'アサインする' : 'アサイン解除'}
+      </button>
     </form>
   )
 }

@@ -45,10 +45,18 @@ export async function createBooking(formData: FormData): Promise<{ error: string
 
   const bookingId = result.booking_id!
 
-  // ゲストメールアドレスが入力されていればbookingに保存
+  // 価格スナップショット + ゲストメールを一括UPDATE
   const guestEmail = (formData.get('guestEmail') as string)?.trim() || null
-  if (guestEmail) {
-    await supabase.from('bookings').update({ guest_email: guestEmail }).eq('id', bookingId)
+  const unitPrice  = parseInt(formData.get('unitPrice')  as string) || null
+  const totalPrice = parseInt(formData.get('totalPrice') as string) || null
+
+  const updatePayload: Record<string, unknown> = {}
+  if (guestEmail)  updatePayload.guest_email  = guestEmail
+  if (unitPrice)   updatePayload.unit_price   = unitPrice
+  if (totalPrice)  updatePayload.total_price  = totalPrice
+
+  if (Object.keys(updatePayload).length > 0) {
+    await supabase.from('bookings').update(updatePayload).eq('id', bookingId)
   }
 
   // redirect()前に完了させる（Vercelサーバーレスではawaitしないと関数終了でキャンセルされる）

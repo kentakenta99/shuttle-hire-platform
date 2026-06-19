@@ -1,18 +1,33 @@
 'use client'
 
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { createBooking } from '@/app/actions/booking'
+
+type PricingTier = { party_size: number; per_person_price: number }
 
 type Props = {
   slotId: string
   slotLabel: string
   capacity: number
+  pricingTiers: PricingTier[]
+  billingType: 'hotel_invoice' | 'direct_guest'
 }
 
 const inputCls = "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 const selectCls = "w-full px-4 py-2.5 rounded-lg border border-gray-300 text-sm text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-blue-500"
 
-export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
+function getPricing(tiers: PricingTier[], partySize: number) {
+  // party_size 以下で最大のティアを使う（例: 3人→3人ティアがなければ2人ティア）
+  const tier = [...tiers]
+    .filter(t => t.party_size <= partySize)
+    .sort((a, b) => b.party_size - a.party_size)[0] ?? null
+  if (!tier) return null
+  return { unitPrice: tier.per_person_price, totalPrice: tier.per_person_price * partySize }
+}
+
+export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers, billingType }: Props) {
+  const [partySize, setPartySize] = useState(1)
+
   const [state, formAction, pending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
       return createBooking(formData)
@@ -20,9 +35,17 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
     null
   )
 
+  const pricing = getPricing(pricingTiers, partySize)
+
   return (
     <form action={formAction} className="space-y-5">
       <input type="hidden" name="slotId" value={slotId} />
+      {pricing && (
+        <>
+          <input type="hidden" name="unitPrice" value={pricing.unitPrice} />
+          <input type="hidden" name="totalPrice" value={pricing.totalPrice} />
+        </>
+      )}
 
       <div className="bg-blue-50 border border-blue-100 rounded-xl px-4 py-3 text-sm text-blue-800">
         {slotLabel}
@@ -45,10 +68,21 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           <label className="block text-sm font-medium text-gray-700 mb-1.5">
             人数 <span className="text-red-500">*</span>
           </label>
-          <select name="partySize" required className={selectCls}>
-            {Array.from({ length: capacity }, (_, i) => i + 1).map(n => (
-              <option key={n} value={n}>{n}名</option>
-            ))}
+          <select
+            name="partySize"
+            required
+            className={selectCls}
+            value={partySize}
+            onChange={e => setPartySize(Number(e.target.value))}
+          >
+            {Array.from({ length: capacity }, (_, i) => i + 1).map(n => {
+              const p = getPricing(pricingTiers, n)
+              return (
+                <option key={n} value={n}>
+                  {n}名{p ? `　¥${p.unitPrice.toLocaleString()}/名` : ''}
+                </option>
+              )
+            })}
           </select>
         </div>
         <div>
@@ -62,6 +96,35 @@ export default function BookingForm({ slotId, slotLabel, capacity }: Props) {
           </select>
         </div>
       </div>
+
+      {/* 料金表示 */}
+      {pricing ? (
+        <div className={`rounded-xl px-4 py-3 border ${
+          billingType === 'direct_guest'
+            ? 'bg-amber-50 border-amber-200'
+            : 'bg-gray-50 border-gray-200'
+        }`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-gray-500">
+                {partySize}名 × ¥{pricing.unitPrice.toLocaleString()}
+              </p>
+              <p className="text-xl font-bold text-gray-900 mt-0.5">
+                ¥{pricing.totalPrice.toLocaleString()}
+              </p>
+            </div>
+            <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${
+              billingType === 'direct_guest'
+                ? 'bg-amber-100 text-amber-700'
+                : 'bg-gray-100 text-gray-600'
+            }`}>
+              {billingType === 'direct_guest' ? '車内決済' : 'ホテル請求'}
+            </span>
+          </div>
+        </div>
+      ) : pricingTiers.length === 0 ? null : (
+        <p className="text-xs text-gray-400">この人数の料金設定はありません</p>
+      )}
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1.5">

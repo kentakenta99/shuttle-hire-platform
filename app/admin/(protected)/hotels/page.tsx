@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -39,6 +40,12 @@ export default async function AdminHotelsPage() {
                   <p className="text-xs text-gray-500">{hotel.contact_email ?? '─'}</p>
                   <p className="text-xs text-gray-400">セッション: {hotel.session_timeout_min}分</p>
                 </div>
+                <Link
+                  href={`/admin/hotels/${hotel.id}`}
+                  className="text-xs text-blue-600 hover:underline shrink-0"
+                >
+                  設定
+                </Link>
               </div>
             ))}
           </div>
