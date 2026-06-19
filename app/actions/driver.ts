@@ -3,12 +3,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
-export async function markArrived(slotId: string): Promise<{ error?: string }> {
+async function verifyAssignment(slotId: string) {
   const { error: authError, driver } = await getVerifiedDriver()
-  if (authError || !driver) return { error: authError ?? '権限エラー' }
+  if (authError || !driver) return { error: authError ?? '権限エラー', adminDb: null }
 
   const adminDb = createAdminClient()
-
   const { data: assignment } = await adminDb
     .from('driver_assignments')
     .select('id')
@@ -16,15 +15,45 @@ export async function markArrived(slotId: string): Promise<{ error?: string }> {
     .eq('driver_id', driver.id)
     .single()
 
-  if (!assignment) return { error: '担当便の権限がありません' }
+  if (!assignment) return { error: '担当便の権限がありません', adminDb: null }
+  return { error: null, adminDb }
+}
 
-  const { error } = await adminDb
-    .from('bookings')
-    .update({ status: 'arrived', completed_at: new Date().toISOString() })
-    .eq('slot_id', slotId)
-    .eq('status', 'completed')
+export async function markDeparted(slotId: string): Promise<{ error?: string }> {
+  const { error, adminDb } = await verifyAssignment(slotId)
+  if (error || !adminDb) return { error: error ?? '権限エラー' }
 
-  if (error) return { error: error.message }
+  const { error: dbError } = await adminDb
+    .from('shuttle_slots')
+    .update({ departed_at: new Date().toISOString() })
+    .eq('id', slotId)
+    .is('departed_at', null)
+
+  if (dbError) return { error: dbError.message }
+  return {}
+}
+
+export async function markArrived(slotId: string): Promise<{ error?: string }> {
+  const { error, adminDb } = await verifyAssignment(slotId)
+  if (error || !adminDb) return { error: error ?? '権限エラー' }
+
+  const now = new Date().toISOString()
+
+  const [slotRes, bookingRes] = await Promise.all([
+    adminDb
+      .from('shuttle_slots')
+      .update({ arrived_at: now })
+      .eq('id', slotId)
+      .is('arrived_at', null),
+    adminDb
+      .from('bookings')
+      .update({ status: 'arrived', completed_at: now })
+      .eq('slot_id', slotId)
+      .eq('status', 'completed'),
+  ])
+
+  if (slotRes.error) return { error: slotRes.error.message }
+  if (bookingRes.error) return { error: bookingRes.error.message }
   return {}
 }
 

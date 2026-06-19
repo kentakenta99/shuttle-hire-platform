@@ -2,7 +2,7 @@
 
 import { useState, useActionState, useRef } from 'react'
 import dynamic from 'next/dynamic'
-import { markBoarded, markBoardedByCode, markArrived, markNoShow } from '@/app/actions/driver'
+import { markBoarded, markBoardedByCode, markArrived, markDeparted, markNoShow } from '@/app/actions/driver'
 import { useRouter } from 'next/navigation'
 import type { FlightInfo } from '@/lib/flight'
 
@@ -261,30 +261,83 @@ export function QRScanInput({ slotId }: { slotId: string }) {
   )
 }
 
-export function ArrivalButton({ slotId }: { slotId: string }) {
+/**
+ * 出発 → 到着 の1ボタン昇華モデル
+ * departed_at / arrived_at は shuttle_slots の列で管理
+ */
+export function TripProgressButton({
+  slotId,
+  departedAt,
+  arrivedAt,
+}: {
+  slotId: string
+  departedAt: string | null
+  arrivedAt: string | null
+}) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
 
-  async function handleArrival() {
-    setLoading(true)
-    setError('')
-    const r = await markArrived(slotId)
-    setLoading(false)
-    if (r.error) setError(r.error)
-    else router.refresh()
+  // 到着済み
+  if (arrivedAt) {
+    return (
+      <div className="mt-4 flex items-center justify-center gap-2 py-3 bg-purple-900/40 border border-purple-700/60 rounded-xl">
+        <span className="text-purple-400 text-lg">✓</span>
+        <span className="text-sm font-semibold text-purple-300">空港到着完了</span>
+        <span className="text-xs text-purple-500 ml-1">
+          {new Date(arrivedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' })}
+        </span>
+      </div>
+    )
   }
 
+  // 出発済み → 到着ボタン
+  if (departedAt) {
+    return (
+      <div className="mt-4 space-y-1.5">
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-xs text-[#C9A227]">🚗 出発済</span>
+          <span className="text-xs text-gray-500">
+            {new Date(departedAt).toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo' })}
+          </span>
+        </div>
+        {error && <p className="text-xs text-red-400 px-1">{error}</p>}
+        <button
+          type="button"
+          disabled={loading}
+          onClick={async () => {
+            setLoading(true); setError('')
+            const r = await markArrived(slotId)
+            setLoading(false)
+            if (r.error) setError(r.error)
+            else router.refresh()
+          }}
+          className="w-full py-3.5 bg-purple-700 hover:bg-purple-600 active:scale-95 text-white text-sm font-bold rounded-xl transition disabled:opacity-60"
+        >
+          {loading ? '処理中...' : '✈ 空港到着'}
+        </button>
+      </div>
+    )
+  }
+
+  // 未出発 → 出発ボタン
   return (
-    <div className="mt-4 space-y-2">
-      {error && <p className="text-xs text-red-400">{error}</p>}
+    <div className="mt-4 space-y-1.5">
+      {error && <p className="text-xs text-red-400 px-1">{error}</p>}
       <button
         type="button"
-        onClick={handleArrival}
         disabled={loading}
-        className="w-full py-3 bg-purple-700 hover:bg-purple-600 text-white text-sm font-semibold rounded-xl transition active:scale-95 disabled:opacity-60"
+        onClick={async () => {
+          if (!confirm('出発しますか？')) return
+          setLoading(true); setError('')
+          const r = await markDeparted(slotId)
+          setLoading(false)
+          if (r.error) setError(r.error)
+          else router.refresh()
+        }}
+        className="w-full py-3.5 bg-[#C9A227] hover:bg-yellow-500 active:scale-95 text-black text-sm font-bold rounded-xl transition disabled:opacity-60"
       >
-        {loading ? '処理中...' : '✈ 空港到着確認（全員）'}
+        {loading ? '処理中...' : '🚗 出発する'}
       </button>
     </div>
   )

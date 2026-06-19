@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound, redirect } from 'next/navigation'
 import Link from 'next/link'
-import { BoardingRow, QRScanInput, ArrivalButton } from './BoardingPanel'
+import { BoardingRow, QRScanInput, TripProgressButton } from './BoardingPanel'
 import RefreshButton from '@/app/components/RefreshButton'
 import { fetchFlightInfo, type FlightInfo } from '@/lib/flight'
 
@@ -187,9 +187,13 @@ export default async function DriverSlotPage({ params }: Props) {
           )}
         </div>
 
-        {/* 到着確認ボタン（全員搭乗済かつ未到着確認時に表示） */}
-        {isAssigned && allBoarded && !allArrived && (
-          <ArrivalButton slotId={id} />
+        {/* 出発 → 到着 昇華ボタン（全員搭乗済 or 未到着確認時に表示） */}
+        {isAssigned && (allBoarded || slot.departed_at) && (
+          <TripProgressButton
+            slotId={id}
+            departedAt={slot.departed_at ?? null}
+            arrivedAt={slot.arrived_at ?? null}
+          />
         )}
       </div>
 
