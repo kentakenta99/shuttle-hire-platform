@@ -1,0 +1,151 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+
+export type RequestResult = { error: string } | { success: true; requestId: string }
+
+export async function submitBookingRequest(formData: FormData): Promise<RequestResult> {
+  const hotelId     = formData.get('hotelId') as string
+  const roomNumber  = (formData.get('roomNumber') as string)?.trim()
+  const guestName   = (formData.get('guestName') as string)?.trim()
+  const partySize   = parseInt(formData.get('partySize') as string)
+  const luggageCount = parseInt(formData.get('luggageCount') as string)
+  const preferredDate = formData.get('preferredDate') as string
+  const preferredTime = formData.get('preferredTime') as string
+  const flightNumber  = (formData.get('flightNumber') as string)?.trim().toUpperCase()
+  const guestEmail    = (formData.get('guestEmail') as string)?.trim() || null
+  const notes         = (formData.get('notes') as string)?.trim() || null
+
+  if (!hotelId || !roomNumber || !guestName || !partySize || !preferredDate || !preferredTime || !flightNumber) {
+    return { error: '必須項目を入力してください。' }
+  }
+  if (partySize < 1 || partySize > 6) return { error: '人数が不正です。' }
+  if (luggageCount < 0 || luggageCount > 12) return { error: '荷物数が不正です。' }
+
+  // anon クライアントで INSERT（RLS: anon_insert_booking_requests）
+  const adminDb = createAdminClient()
+  const { data, error } = await adminDb
+    .from('booking_requests')
+    .insert({
+      hotel_id:       hotelId,
+      room_number:    roomNumber,
+      guest_name:     guestName,
+      party_size:     partySize,
+      luggage_count:  luggageCount,
+      preferred_date: preferredDate,
+      preferred_time: preferredTime,
+      flight_number:  flightNumber,
+      guest_email:    guestEmail,
+      notes,
+    })
+    .select('id')
+    .single()
+
+  if (error || !data) return { error: 'エラーが発生しました。もう一度お試しください。' }
+  return { success: true, requestId: data.id }
+}
+
+export async function convertRequestToBooking(
+  requestId: string,
+  slotId: string
+): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '権限がありません。' }
+
+  const adminDb = createAdminClient()
+
+  // リクエスト取得
+  const { data: req } = await adminDb
+    .from('booking_requests')
+    .select('*')
+    .eq('id', requestId)
+    .single()
+  if (!req) return { error: 'リクエストが見つかりません。' }
+  if (req.status !== 'pending') return { error: 'このリクエストはすでに処理済みです。' }
+
+  // ホテル権限確認（hotel_staff は自ホテルのみ）
+  const { data: hotel } = await adminDb
+    .from('hotels')
+    .select('id, name, contact_email')
+    .eq('id', req.hotel_id)
+    .single()
+  if (!hotel) return { error: 'ホテルが見つかりません。' }
+
+  // 予約作成
+  const { data: bookingResult, error: bookingError } = await adminDb.rpc('create_booking', {
+    p_slot_id:        slotId,
+    p_hotel_id:       req.hotel_id,
+    p_guest_name:     req.guest_name,
+    p_party_size:     req.party_size,
+    p_flight_number:  req.flight_number,
+    p_luggage_count:  req.luggage_count,
+    p_notes:          req.notes ?? undefined,
+    p_booked_by_name: `リクエスト確定 (客室: ${req.room_number})`,
+  })
+
+  if (bookingError) return { error: bookingError.message }
+  const result = bookingResult as { error?: string; booking_id?: string }
+  if (result.error === 'SLOT_UNAVAILABLE') return { error: '選択した便は満席または締切済みです。' }
+  if (result.error) return { error: 'booking作成エラー: ' + result.error }
+
+  const bookingId = result.booking_id!
+
+  // ゲストメールを booking に保存
+  if (req.guest_email) {
+    await adminDb.from('bookings').update({ guest_email: req.guest_email }).eq('id', bookingId)
+  }
+
+  // リクエストを confirmed に更新
+  await adminDb
+    .from('booking_requests')
+    .update({ status: 'confirmed', converted_booking_id: bookingId })
+    .eq('id', requestId)
+
+  // QRチケットメールを送信
+  if (req.guest_email) {
+    const { data: booking } = await adminDb
+      .from('bookings')
+      .select('*, shuttle_slots(date, departure_time)')
+      .eq('id', bookingId)
+      .single()
+
+    if (booking) {
+      const slot = booking.shuttle_slots as { date: string; departure_time: string } | null
+      if (slot) {
+        const { sendGuestBookingConfirmation } = await import('@/lib/email')
+        const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
+        await sendGuestBookingConfirmation(req.guest_email, {
+          guestName:        req.guest_name,
+          confirmationCode: booking.confirmation_code,
+          confirmUrl:       `${baseUrl}/confirm/${booking.confirmation_code}`,
+          date:             slot.date,
+          departureTime:    slot.departure_time,
+          partySize:        req.party_size,
+          luggageCount:     req.luggage_count,
+          flightNumber:     req.flight_number,
+          notes:            req.notes ?? null,
+          hotelName:        hotel.name,
+        }).catch(e => console.error('[email] QRチケット送信失敗:', e))
+      }
+    }
+  }
+
+  return {}
+}
+
+export async function rejectBookingRequest(requestId: string): Promise<{ error?: string }> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '権限がありません。' }
+
+  const adminDb = createAdminClient()
+  const { error } = await adminDb
+    .from('booking_requests')
+    .update({ status: 'rejected' })
+    .eq('id', requestId)
+
+  if (error) return { error: error.message }
+  return {}
+}

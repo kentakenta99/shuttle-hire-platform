@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -12,12 +13,19 @@ export default async function HotelLayout({ children }: { children: React.ReactN
 
   const { data: hotel } = await supabase
     .from('hotels')
-    .select('name, session_timeout_min')
+    .select('id, name, session_timeout_min')
     .eq('auth_user_id', user.id)
     .eq('is_active', true)
     .single()
 
   if (!hotel) redirect('/hotel/login')
+
+  const adminDb = createAdminClient()
+  const { count: pendingCount } = await adminDb
+    .from('booking_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('hotel_id', hotel.id)
+    .eq('status', 'pending')
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -40,6 +48,17 @@ export default async function HotelLayout({ children }: { children: React.ReactN
                 className="px-3 py-1.5 rounded-lg text-sm text-[#C9A227]/80 hover:bg-white/10 hover:text-[#C9A227] transition"
               >
                 予約履歴
+              </Link>
+              <Link
+                href="/hotel/requests"
+                className="relative px-3 py-1.5 rounded-lg text-sm text-[#C9A227]/80 hover:bg-white/10 hover:text-[#C9A227] transition"
+              >
+                リクエスト
+                {pendingCount != null && pendingCount > 0 && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[16px] h-4 bg-amber-400 text-black text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+                    {pendingCount}
+                  </span>
+                )}
               </Link>
             </nav>
           </div>
