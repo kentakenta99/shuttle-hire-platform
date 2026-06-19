@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
+import Image from 'next/image'
 import { logout } from '@/app/actions/auth'
 import AdminNavClient from './AdminNavClient'
 
@@ -44,7 +45,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between relative">
           <div className="flex items-center gap-4 md:gap-8 min-w-0">
             <div className="flex items-center gap-2 shrink-0">
-              <div className="w-7 h-7 bg-[#C9A227] rounded-md flex items-center justify-center text-[10px] font-black text-black">MK</div>
+              <Image src="/logo-mk.png" alt="東京MK" width={28} height={28} className="rounded-md" />
               <span className="font-bold text-sm tracking-wide whitespace-nowrap text-[#C9A227]">シャトル管理</span>
             </div>
             <AdminNavClient items={navItems} displayName={displayName} />

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { logout } from '@/app/actions/auth'
 
 export default async function DriverLayout({ children }: { children: React.ReactNode }) {
@@ -22,9 +23,7 @@ export default async function DriverLayout({ children }: { children: React.React
       <header className="bg-black border-b border-[#C9A227]/30 sticky top-0 z-40">
         <div className="px-4 h-14 flex items-center justify-between max-w-2xl mx-auto">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#C9A227] rounded-lg flex items-center justify-center text-xs font-bold text-black">
-              MK
-            </div>
+            <Image src="/logo-mk.png" alt="東京MK" width={32} height={32} className="rounded-lg" />
             <div>
               <p className="text-sm font-medium leading-tight">
                 {driver.display_name ?? driver.employee_code}

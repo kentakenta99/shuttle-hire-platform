@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import SessionGuard from '@/app/components/SessionGuard'
 import { logout } from '@/app/actions/auth'
 
@@ -24,7 +25,7 @@ export default async function HotelLayout({ children }: { children: React.ReactN
         <div className="max-w-2xl mx-auto px-4 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-[#C9A227] rounded flex items-center justify-center text-[9px] font-black text-black">MK</div>
+              <Image src="/logo-mk.png" alt="東京MK" width={24} height={24} className="rounded" />
               <span className="font-semibold text-white text-sm truncate max-w-[140px]">{hotel.name}</span>
             </div>
             <nav className="flex gap-1">
