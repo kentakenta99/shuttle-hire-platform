@@ -1,9 +1,20 @@
 'use server'
 
+import { headers } from 'next/headers'
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 
 export type RequestResult = { error: string } | { success: true; requestId: string }
+
+const RATE_LIMIT_MAX = 3
+const RATE_LIMIT_WINDOW_MINUTES = 60
+
+async function getClientIp(): Promise<string> {
+  const h = await headers()
+  const forwarded = h.get('x-forwarded-for')
+  if (forwarded) return forwarded.split(',')[0].trim()
+  return h.get('x-real-ip') ?? 'unknown'
+}
 
 export async function submitBookingRequest(formData: FormData): Promise<RequestResult> {
   const hotelId     = formData.get('hotelId') as string
@@ -23,8 +34,21 @@ export async function submitBookingRequest(formData: FormData): Promise<RequestR
   if (partySize < 1 || partySize > 6) return { error: '人数が不正です。' }
   if (luggageCount < 0 || luggageCount > 12) return { error: '荷物数が不正です。' }
 
-  // anon クライアントで INSERT（RLS: anon_insert_booking_requests）
+  const ipAddress = await getClientIp()
+
+  // レートリミット：同IPから1時間以内に3件超はブロック
   const adminDb = createAdminClient()
+  const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString()
+  const { count } = await adminDb
+    .from('booking_requests')
+    .select('id', { count: 'exact', head: true })
+    .eq('ip_address', ipAddress)
+    .gte('created_at', windowStart)
+
+  if ((count ?? 0) >= RATE_LIMIT_MAX) {
+    return { error: 'リクエストが多すぎます。しばらく経ってから再度お試しください。' }
+  }
+
   const { data, error } = await adminDb
     .from('booking_requests')
     .insert({
@@ -38,6 +62,7 @@ export async function submitBookingRequest(formData: FormData): Promise<RequestR
       flight_number:  flightNumber,
       guest_email:    guestEmail,
       notes,
+      ip_address:     ipAddress,
     })
     .select('id')
     .single()
