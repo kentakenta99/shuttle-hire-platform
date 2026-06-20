@@ -43,6 +43,25 @@ export default async function GuestConfirmPage({ params }: Props) {
     vehicle_plate: string | null
   } | null
 
+  // 型定義に含まれない新カラムは unknown 経由でアクセス
+  const b = booking as unknown as Record<string, unknown>
+  const unitPrice: number | null = (b.unit_price as number | null) ?? null
+  const totalPrice: number | null = (b.total_price as number | null) ?? null
+  const originalUnitPrice: number | null = (b.original_unit_price as number | null) ?? null
+
+  // billing_type を別取得（hotel_invoice は料金非表示）
+  let isDirectGuest = false
+  if (unitPrice != null && booking.hotel_id) {
+    const { data: hotel } = await supabase
+      .from('hotels')
+      .select('billing_type')
+      .eq('id', booking.hotel_id)
+      .single()
+    isDirectGuest = (hotel as unknown as { billing_type?: string } | null)?.billing_type === 'direct_guest'
+  }
+
+  const priceDropped = isDirectGuest && unitPrice != null && originalUnitPrice != null && unitPrice < originalUnitPrice
+
   // ドライバーがスキャンするQR → 確認番号のみエンコード（URLではない）
   const qrSvg = await QRCode.toString(booking.confirmation_code, {
     type: 'svg',
@@ -126,6 +145,28 @@ export default async function GuestConfirmPage({ params }: Props) {
                 <span className="text-sm text-gray-900 font-medium">{value}</span>
               </div>
             ))}
+            {/* 車内決済の場合のみ料金表示 */}
+            {isDirectGuest && unitPrice != null && (
+              <div className="px-5 py-3 space-y-1.5">
+                <div className="flex gap-3">
+                  <span className="text-xs text-gray-400 w-32 shrink-0 mt-0.5">料金 / Fare</span>
+                  <div>
+                    {priceDropped && (
+                      <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-2 py-0.5 mb-1">
+                        <span className="text-xs text-green-700 font-bold">🎉 割引適用</span>
+                        <span className="text-xs text-gray-400 line-through">¥{originalUnitPrice!.toLocaleString()}/名</span>
+                        <span className="text-xs text-green-600 font-bold">→ ¥{unitPrice.toLocaleString()}/名</span>
+                      </div>
+                    )}
+                    <p className="text-sm font-bold text-gray-900">
+                      {booking.party_size}名 × ¥{unitPrice.toLocaleString()} ={' '}
+                      <span className="text-blue-700">¥{(totalPrice ?? unitPrice * booking.party_size).toLocaleString()}</span>
+                    </p>
+                    <p className="text-xs text-gray-400 mt-0.5">車内決済 / Paid in vehicle</p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -19,6 +19,7 @@ type Booking = {
   status: string
   unit_price?: number | null
   total_price?: number | null
+  original_unit_price?: number | null
 }
 
 function formatJST(iso: string) {
@@ -126,9 +127,18 @@ export function BoardingRow({
           <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.confirmation_code}</p>
           {/* 車内決済の場合のみ料金明細を表示（TMKからお客様への説明用） */}
           {billingType === 'direct_guest' && booking.unit_price != null && (
-            <p className="text-xs text-amber-400 mt-0.5 font-medium">
-              💴 {booking.party_size}名 × ¥{booking.unit_price.toLocaleString()} = ¥{(booking.total_price ?? booking.unit_price * booking.party_size).toLocaleString()}
-            </p>
+            <div className="mt-0.5 space-y-0.5">
+              {booking.original_unit_price != null && booking.unit_price < booking.original_unit_price && (
+                <div className="inline-flex items-center gap-1.5 bg-green-900/60 border border-green-700/60 rounded-lg px-2 py-1">
+                  <span className="text-xs text-green-400 font-bold">🎉 料金が安くなりました！</span>
+                  <span className="text-xs text-gray-400 line-through">¥{booking.original_unit_price.toLocaleString()}</span>
+                  <span className="text-xs text-green-300 font-bold">→ ¥{booking.unit_price.toLocaleString()}/名</span>
+                </div>
+              )}
+              <p className="text-xs text-amber-400 font-medium">
+                💴 {booking.party_size}名 × ¥{booking.unit_price.toLocaleString()} = ¥{(booking.total_price ?? booking.unit_price * booking.party_size).toLocaleString()}
+              </p>
+            </div>
           )}
           {booking.notes && (
             <p className="text-xs text-yellow-400 mt-0.5">⚠ {booking.notes}</p>

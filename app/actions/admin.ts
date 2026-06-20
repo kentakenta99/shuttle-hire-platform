@@ -425,10 +425,10 @@ export async function generateMonthlyInvoice(
     return { error: `${yearMonth} に出発枠がありません。` }
   }
 
-  // completed / arrived 予約のみ集計
+  // completed / arrived 予約のみ集計（total_price は動的スロット料金が反映済み）
   const { data: bookings } = await adminDb
     .from('bookings')
-    .select('id, party_size')
+    .select('id, party_size, total_price')
     .eq('hotel_id', hotelId)
     .in('slot_id', slotIds)
     .in('status', ['completed', 'arrived'])
@@ -436,7 +436,7 @@ export async function generateMonthlyInvoice(
     return { error: `${yearMonth} に完了済み予約がありません。` }
   }
 
-  // 料金ティアで金額計算
+  // フォールバック用ティア（total_price が null の旧予約向け）
   const { data: tiers } = await adminDb
     .from('hotel_pricing_tiers')
     .select('party_size, per_person_price')
@@ -447,7 +447,7 @@ export async function generateMonthlyInvoice(
   let totalSeats = 0
   for (const b of bookings) {
     totalSeats += b.party_size
-    totalAmount += findTierPrice(tiersData, b.party_size) * b.party_size
+    totalAmount += (b.total_price as number | null) ?? (findTierPrice(tiersData, b.party_size) * b.party_size)
   }
 
   // 既存なら金額のみ更新・新規なら draft で挿入
