@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { sendSuspensionNotice } from '@/lib/email'
+import { sendSuspensionNotice, sendCancellationNotice } from '@/lib/email'
 
 export async function createSlot(formData: FormData): Promise<{ error: string } | never> {
   const supabase = await createClient()
@@ -232,17 +232,63 @@ export async function cancelBookingByAdmin(
   reason?: string
 ): Promise<{ error?: string }> {
   const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: '認証が必要です。' }
 
-  // 既存の cancel_booking_by_hotel RPC を利用（残席復元込み）
-  const { data, error } = await supabase.rpc('cancel_booking_by_hotel', {
+  const adminDb = createAdminClient()
+
+  // 管理者権限確認
+  const { data: admin } = await adminDb
+    .from('tmk_admin_users')
+    .select('id')
+    .eq('user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!admin) return { error: '管理者権限が必要です。' }
+
+  // キャンセル前に予約情報を取得（hotel_id特定 + メール送信用）
+  const { data: booking } = await adminDb
+    .from('bookings')
+    .select('*, shuttle_slots(date, departure_time), hotels(name, contact_email)')
+    .eq('id', bookingId)
+    .single()
+  if (!booking) return { error: '予約が見つかりません。' }
+
+  const hotel = booking.hotels as { name: string; contact_email: string | null } | null
+  const slot  = booking.shuttle_slots as { date: string; departure_time: string } | null
+
+  // admin client + p_hotel_id を明示して RPC を呼ぶ（auth.uid() によるホテル検索を回避）
+  const { data, error } = await adminDb.rpc('cancel_booking_by_hotel', {
     p_booking_id: bookingId,
-    p_reason: reason ?? null,
+    p_hotel_id:   booking.hotel_id,
+    p_reason:     reason ?? null,
   })
 
   if (error) return { error: error.message }
-  if (data && typeof data === 'object' && 'error' in data) {
-    return { error: (data as { error: string }).error }
+  const result = data as { error?: string }
+  if (result?.error === 'PAST_CUTOFF') return { error: '締切時刻を過ぎているためキャンセルできません。' }
+  if (result?.error) return { error: result.error }
+
+  // キャンセル通知メール
+  if (slot) {
+    const cancelInfo = {
+      guestName:        booking.guest_name,
+      confirmationCode: booking.confirmation_code,
+      date:             slot.date,
+      departureTime:    slot.departure_time,
+      reason,
+      hotelName:        hotel?.name ?? '',
+    }
+    if (hotel?.contact_email) {
+      sendCancellationNotice(hotel.contact_email, cancelInfo)
+        .catch(e => console.error('[email] 管理者キャンセル通知（ホテル）失敗:', e))
+    }
+    if (booking.guest_email) {
+      sendCancellationNotice(booking.guest_email, cancelInfo)
+        .catch(e => console.error('[email] 管理者キャンセル通知（ゲスト）失敗:', e))
+    }
   }
+
   return {}
 }
 
