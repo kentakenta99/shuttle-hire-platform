@@ -301,7 +301,7 @@ export default function RequestForm({
             <p className="text-xs text-gray-500">{partySize} {partySize === 1 ? 'guest' : 'guests'} × ¥{pricing.unit.toLocaleString()}</p>
             <p className="text-lg font-bold text-gray-900">¥{pricing.total.toLocaleString()}</p>
           </div>
-          <span className="text-xs text-[#C9A227] font-medium bg-black/5 px-2.5 py-1 rounded-full">Estimated fare</span>
+          <span className="text-xs text-amber-800 font-medium bg-amber-100 px-2.5 py-1 rounded-full">Estimated fare</span>
         </div>
       )}
 

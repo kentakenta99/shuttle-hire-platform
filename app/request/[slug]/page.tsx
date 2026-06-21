@@ -43,10 +43,10 @@ export default async function RequestPage({ params }: Props) {
 
         {/* ヒーロー */}
         <div className="space-y-1">
-          <p className="text-xs text-gray-400 font-medium uppercase tracking-widest">for guests of {hotel.name}</p>
+          <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">for guests of {hotel.name}</p>
           <h1 className="text-3xl font-bold text-gray-900 leading-tight">
             Narita Airport<br />
-            <span className="text-[#C9A227]">Shared Transfer</span>
+            <span className="text-[#A07D1C]">Shared Transfer</span>
           </h1>
           <p className="text-sm text-gray-500 mt-2">
             Direct express service in premium vehicles.<br />

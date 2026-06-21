@@ -173,7 +173,7 @@ export default function FlightNumberInput({
           className={className}
         />
         {status === 'checking' && (
-          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-400 animate-pulse">
+          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-gray-500 animate-pulse">
             確認中…
           </span>
         )}
@@ -220,7 +220,7 @@ export default function FlightNumberInput({
       <button
         type="button"
         onClick={() => setLazyOpen(v => !v)}
-        className="mt-2 text-xs text-gray-400 hover:text-gray-600 underline underline-offset-2 transition"
+        className="mt-2 text-xs text-gray-600 hover:text-gray-800 underline underline-offset-2 transition"
       >
         {lazyOpen ? '▲ 閉じる' : 'Are you too lazy to check your flight number? →'}
       </button>
@@ -326,7 +326,7 @@ export default function FlightNumberInput({
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-400 text-center py-1">
+              <p className="text-xs text-gray-500 text-center py-1">
                 該当する便が見つかりませんでした。条件を変えてお試しください。
               </p>
             )
