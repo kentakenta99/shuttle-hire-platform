@@ -126,6 +126,36 @@ export default async function DriverSlotPage({ params }: Props) {
     return a.earliestDep < b.earliestDep ? -1 : 1
   })
 
+  // 出発判断アドバイザリーを計算
+  const pendingBookings = bookings.filter(b => b.status === 'confirmed')
+  type DepartureAdvisory = {
+    verdict: 'go' | 'wait' | 'check'
+    pendingCount: number
+    delayedPending: Array<{ name: string; flight: string; delayMinutes: number }>
+    ontimePending: Array<{ name: string; flight: string }>
+    unknownPending: Array<{ name: string; flight: string }>
+  }
+  const advisory: DepartureAdvisory = (() => {
+    if (pendingBookings.length === 0) {
+      return { verdict: 'go', pendingCount: 0, delayedPending: [], ontimePending: [], unknownPending: [] }
+    }
+    const delayed: DepartureAdvisory['delayedPending'] = []
+    const ontime:  DepartureAdvisory['ontimePending']  = []
+    const unknown: DepartureAdvisory['unknownPending'] = []
+    for (const b of pendingBookings) {
+      const fi = flightMap[b.flight_number]
+      if (!fi) {
+        unknown.push({ name: b.guest_name, flight: b.flight_number })
+      } else if (fi.delayMinutes && fi.delayMinutes > 0) {
+        delayed.push({ name: b.guest_name, flight: b.flight_number, delayMinutes: fi.delayMinutes })
+      } else {
+        ontime.push({ name: b.guest_name, flight: b.flight_number })
+      }
+    }
+    const verdict = delayed.length > 0 ? 'wait' : unknown.length > 0 ? 'check' : 'go'
+    return { verdict, pendingCount: pendingBookings.length, delayedPending: delayed, ontimePending: ontime, unknownPending: unknown }
+  })()
+
   const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-500'
   const statusLabel = SLOT_LABEL[slot.status] ?? slot.status
 
@@ -198,6 +228,51 @@ export default async function DriverSlotPage({ params }: Props) {
           />
         )}
       </div>
+
+      {/* 出発判断アドバイザリー（未搭乗者がいる場合のみ表示） */}
+      {!allArrived && (
+        advisory.verdict === 'go' && bookings.length > 0 ? (
+          <div className="bg-green-950 border border-green-700 rounded-2xl px-4 py-3 flex items-center gap-3">
+            <span className="text-2xl">✅</span>
+            <div>
+              <p className="text-sm font-bold text-green-400">出発OK — 全員搭乗確認済</p>
+              <p className="text-xs text-green-600 mt-0.5">空港へ向かってください</p>
+            </div>
+          </div>
+        ) : advisory.verdict === 'wait' ? (
+          <div className="bg-orange-950 border border-orange-700 rounded-2xl px-4 py-4 space-y-2.5">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">⏳</span>
+              <p className="text-sm font-bold text-orange-400">待機推奨 — 遅延便あり</p>
+            </div>
+            {advisory.delayedPending.map(d => (
+              <div key={d.flight} className="flex items-center justify-between bg-orange-900/40 rounded-xl px-3 py-2">
+                <span className="text-xs text-orange-200">{d.name} 様 / {d.flight}</span>
+                <span className="text-xs font-bold text-orange-400">+{d.delayMinutes}分遅延</span>
+              </div>
+            ))}
+            {advisory.ontimePending.length > 0 && (
+              <p className="text-xs text-orange-600">
+                定刻未搭乗: {advisory.ontimePending.map(o => o.name).join('・')} 様
+              </p>
+            )}
+          </div>
+        ) : advisory.verdict === 'check' && advisory.pendingCount > 0 ? (
+          <div className="bg-yellow-950 border border-yellow-700 rounded-2xl px-4 py-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">❓</span>
+              <p className="text-sm font-bold text-yellow-400">未搭乗 {advisory.pendingCount}名 — フライト情報取得中</p>
+            </div>
+            {advisory.unknownPending.map(u => (
+              <div key={u.flight} className="flex items-center justify-between bg-yellow-900/30 rounded-xl px-3 py-2">
+                <span className="text-xs text-yellow-200">{u.name} 様</span>
+                <span className="text-xs text-yellow-600 font-mono">{u.flight}</span>
+              </div>
+            ))}
+            <p className="text-xs text-yellow-600">更新ボタンで最新情報を取得してください</p>
+          </div>
+        ) : null
+      )}
 
       {/* ターミナル順序（APIでターミナル情報が取得できた場合のみ表示） */}
       {terminalRoute.length >= 2 && (
