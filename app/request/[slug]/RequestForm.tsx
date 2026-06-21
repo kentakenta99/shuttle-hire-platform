@@ -3,6 +3,7 @@
 import { useState, useActionState, useEffect, useCallback, useRef } from 'react'
 import { submitBookingRequest, checkRequestStatus } from '@/app/actions/request'
 import type { RequestStatusResult } from '@/app/actions/request'
+import FlightNumberInput from '@/app/components/FlightNumberInput'
 
 type Tier = { party_size: number; per_person_price: number }
 
@@ -340,7 +341,7 @@ export default function RequestForm({
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Flight Number <span className="text-red-400">*</span>
         </label>
-        <input
+        <FlightNumberInput
           name="flightNumber"
           required
           placeholder="e.g. NH832"
