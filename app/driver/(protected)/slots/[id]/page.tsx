@@ -358,6 +358,28 @@ export default async function DriverSlotPage({ params }: Props) {
           この便はまだアサインされていません。管理者にご確認ください。
         </div>
       )}
+
+      {/* 配車センターへ連絡 */}
+      {(() => {
+        const waNumber = process.env.DISPATCH_WHATSAPP_NUMBER
+        const phone    = process.env.DISPATCH_PHONE ?? ''
+        const msgText  = `【配車センターへ連絡】\n便: ${slot.date} ${slot.departure_time.slice(0, 5)}発\nスロットID: ${id}\n内容: `
+        const href     = waNumber
+          ? `https://wa.me/${waNumber}?text=${encodeURIComponent(msgText)}`
+          : phone ? `tel:${phone}` : null
+        if (!href) return null
+        return (
+          <a
+            href={href}
+            target={waNumber ? '_blank' : '_self'}
+            rel="noopener noreferrer"
+            className="flex items-center justify-center gap-2 w-full py-3.5 bg-zinc-800 border border-zinc-700 text-gray-300 rounded-2xl text-sm font-medium hover:bg-zinc-700 transition"
+          >
+            <span>{waNumber ? '💬' : '📞'}</span>
+            <span>配車センターへ連絡</span>
+          </a>
+        )
+      })()}
     </div>
   )
 }
