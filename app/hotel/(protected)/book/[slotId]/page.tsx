@@ -52,6 +52,7 @@ export default async function BookPage({ params }: Props) {
       <BookingForm
         slotId={slotId}
         slotLabel={slotLabel}
+        slotDate={slot.date}
         capacity={slot.remaining_seats}
         pricingTiers={pricingTiers}
         billingType={billingType}

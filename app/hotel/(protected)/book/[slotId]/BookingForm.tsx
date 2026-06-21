@@ -2,12 +2,14 @@
 
 import { useActionState, useState } from 'react'
 import { createBooking } from '@/app/actions/booking'
+import FlightNumberInput from '@/app/components/FlightNumberInput'
 
 type PricingTier = { party_size: number; per_person_price: number }
 
 type Props = {
   slotId: string
   slotLabel: string
+  slotDate: string   // YYYY-MM-DD
   capacity: number
   pricingTiers: PricingTier[]
   billingType: 'hotel_invoice' | 'direct_guest'
@@ -25,7 +27,7 @@ function getPricing(tiers: PricingTier[], partySize: number) {
   return { unitPrice: tier.per_person_price, totalPrice: tier.per_person_price * partySize }
 }
 
-export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers, billingType }: Props) {
+export default function BookingForm({ slotId, slotLabel, slotDate, capacity, pricingTiers, billingType }: Props) {
   const [partySize, setPartySize] = useState(1)
 
   const [state, formAction, pending] = useActionState(
@@ -119,7 +121,7 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
             </div>
           </div>
         ) : pricingTiers.length > 0 ? (
-          <p className="text-xs text-gray-400">この人数の料金設定はありません</p>
+          <p className="text-xs text-gray-500">この人数の料金設定はありません</p>
         ) : null
       )}
 
@@ -127,10 +129,11 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
         <label className="block text-sm font-medium text-gray-700 mb-1.5">
           フライト番号 <span className="text-red-500">*</span>
         </label>
-        <input
+        <FlightNumberInput
           name="flightNumber"
           required
           placeholder="例：NH832"
+          date={slotDate}
           className={inputCls}
         />
       </div>
@@ -164,7 +167,7 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
           placeholder="例：guest@example.com"
           className={inputCls}
         />
-        <p className="text-xs text-gray-400 mt-1">入力するとゲスト本人にQRコード付き乗車案内メールを送信します</p>
+        <p className="text-xs text-gray-500 mt-1">入力するとゲスト本人にQRコード付き乗車案内メールを送信します</p>
       </div>
 
       {state?.error && (

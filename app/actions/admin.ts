@@ -3,7 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { sendSuspensionNotice, sendCancellationNotice } from '@/lib/email'
+import { sendSuspensionNotice, sendCancellationNotice, sendDriverAssignment } from '@/lib/email'
 
 export async function createSlot(formData: FormData): Promise<{ error: string } | never> {
   const supabase = await createClient()
@@ -319,7 +319,7 @@ export async function assignDriver(
 
   const { data: driver } = await adminDb
     .from('driver_users')
-    .select('id')
+    .select('id, user_id, display_name')
     .eq('employee_code', employeeCode)
     .single()
 
@@ -332,6 +332,35 @@ export async function assignDriver(
     assigned_by: user.id,
   })
   if (error) return { error: error.message }
+
+  // アサイン通知メールを非同期で送信（失敗してもアサイン自体は成功扱い）
+  void (async () => {
+    try {
+      const [authUser, slotRes] = await Promise.all([
+        adminDb.auth.admin.getUserById(driver.user_id),
+        adminDb.from('shuttle_slots')
+          .select('date, departure_time, capacity, remaining_seats, vehicle_type, notes')
+          .eq('id', slotId)
+          .single(),
+      ])
+      const email = authUser.data.user?.email
+      const slot = slotRes.data
+      if (email && slot) {
+        await sendDriverAssignment(email, {
+          driverName: driver.display_name ?? employeeCode,
+          date: slot.date,
+          departureTime: slot.departure_time,
+          capacity: slot.capacity,
+          remainingSeats: slot.remaining_seats,
+          vehicleType: slot.vehicle_type ?? '未定',
+          notes: slot.notes,
+        })
+      }
+    } catch (e) {
+      console.error('[assignDriver] 通知メール送信失敗:', e)
+    }
+  })()
+
   return {}
 }
 

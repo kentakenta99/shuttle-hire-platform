@@ -83,7 +83,7 @@ export default function QRCameraScanner({ onDetected, onClose }: Props) {
         <button
           type="button"
           onClick={onClose}
-          className="text-gray-400 hover:text-white text-2xl leading-none px-2"
+          className="text-gray-500 hover:text-white text-2xl leading-none px-2"
         >
           ×
         </button>

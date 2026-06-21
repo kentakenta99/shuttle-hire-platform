@@ -75,7 +75,7 @@ export default async function AdminSecurityPage() {
           { label: '1h 不審IP数', value: suspiciousIPs.length, cls: hasSuspicious ? 'text-red-700' : 'text-gray-500' },
         ].map(({ label, value, cls }) => (
           <div key={label} className="bg-white rounded-xl border border-gray-200 px-5 py-4">
-            <p className="text-xs text-gray-400">{label}</p>
+            <p className="text-xs text-gray-500">{label}</p>
             <p className={`text-3xl font-bold mt-1 ${cls}`}>{value}</p>
           </div>
         ))}
@@ -87,7 +87,7 @@ export default async function AdminSecurityPage() {
           <h2 className="text-sm font-semibold text-gray-700">直近24時間のログイン履歴</h2>
         </div>
         {events.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-10">ログがありません</p>
+          <p className="text-sm text-gray-500 text-center py-10">ログがありません</p>
         ) : (
           <div className="divide-y divide-gray-50 max-h-[600px] overflow-y-auto">
             {events.map(e => {
@@ -97,10 +97,10 @@ export default async function AdminSecurityPage() {
                   <span className={`shrink-0 px-2 py-0.5 rounded-full font-medium mt-0.5 ${badge.cls}`}>
                     {badge.label}
                   </span>
-                  <span className="text-gray-400 shrink-0 w-8">{ROLE_LABEL[e.role] ?? e.role}</span>
+                  <span className="text-gray-500 shrink-0 w-8">{ROLE_LABEL[e.role] ?? e.role}</span>
                   <span className="text-gray-700 flex-1 min-w-0 truncate">{e.email}</span>
-                  <span className="text-gray-400 font-mono shrink-0">{e.ip_address ?? '─'}</span>
-                  <span className="text-gray-400 shrink-0">{formatDT(e.created_at)}</span>
+                  <span className="text-gray-500 font-mono shrink-0">{e.ip_address ?? '─'}</span>
+                  <span className="text-gray-500 shrink-0">{formatDT(e.created_at)}</span>
                 </div>
               )
             })}

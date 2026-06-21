@@ -70,8 +70,43 @@ function SeatIcons({ capacity, remaining }: { capacity: number; remaining: numbe
         {Array.from({ length: Math.min(remaining, 5) }, (_, i) => (
           <SeatIcon key={`r${i}`} filled={false} />
         ))}
-        {remaining > 5 && <span className="text-xs text-gray-400 font-medium ml-0.5">+{remaining - 5}</span>}
+        {remaining > 5 && <span className="text-xs text-gray-500 font-medium ml-0.5">+{remaining - 5}</span>}
       </div>
+    </div>
+  )
+}
+
+function SlotAlternatives({ slot, dateSlots }: {
+  slot: ShuttleSlot
+  dateSlots: ShuttleSlot[]
+}) {
+  const now = new Date()
+  const sameDayAlts = dateSlots.filter(s =>
+    s.id !== slot.id &&
+    s.status === 'open' &&
+    s.remaining_seats > 0 &&
+    new Date(s.cutoff_at) > now
+  )
+  if (sameDayAlts.length > 0) {
+    return (
+      <div className="text-right">
+        <span className="text-xs text-gray-500 block mb-1">他の便</span>
+        <div className="flex gap-1 justify-end">
+          {sameDayAlts.slice(0, 2).map(alt => (
+            <Link key={alt.id} href={`/hotel/book/${alt.id}`}
+              className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg font-medium hover:bg-blue-100 transition">
+              {formatTime(alt.departure_time)}
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  // 同日に空きがない場合は通常ハイヤーへ誘導（翌日以降の便は表示しない）
+  return (
+    <div className="text-right">
+      <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
+      <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
     </div>
   )
 }
@@ -120,7 +155,7 @@ export default function SlotList({ initialSlots }: Props) {
 
   if (slots.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16 text-gray-500">
         <p className="text-4xl mb-3">🚗</p>
         <p className="text-sm">本日以降の出発枠はありません</p>
         <p className="text-xs mt-1">東京エムケイ 配車センター：03-XXXX-XXXX</p>
@@ -153,16 +188,16 @@ export default function SlotList({ initialSlots }: Props) {
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
                             {st.label}
                           </span>
-                          <span className="text-xs text-gray-400">{slot.vehicle_type}</span>
+                          <span className="text-xs text-gray-500">{slot.vehicle_type}</span>
                         </div>
                         {slot.status === 'open' && isPastCutoff && (
-                          <p className="text-xs mt-0.5 text-gray-400">締切済</p>
+                          <p className="text-xs mt-0.5 text-gray-500">締切済</p>
                         )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs text-gray-400">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
+                      <span className="text-xs text-gray-500">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
                       {isBookable ? (
                         <Link
                           href={`/hotel/book/${slot.id}`}
@@ -171,12 +206,9 @@ export default function SlotList({ initialSlots }: Props) {
                           予約する
                         </Link>
                       ) : slot.status === 'full' ? (
-                        <div className="text-right">
-                          <span className="text-xs text-gray-400 block">通常ハイヤーへ</span>
-                          <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
-                        </div>
+                        <SlotAlternatives slot={slot} dateSlots={dateSlots} />
                       ) : (
-                        <span className="text-sm text-gray-400">─</span>
+                        <span className="text-sm text-gray-500">─</span>
                       )}
                     </div>
                   </div>

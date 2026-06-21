@@ -1,4 +1,5 @@
 @AGENTS.md
+@PERSONAS.md
 
 # Shuttle Hire Platform — Claude Code Settings
 

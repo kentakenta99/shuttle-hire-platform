@@ -91,7 +91,7 @@ export function ConvertButton({
                     {' '}{slot.departure_time.slice(0, 5)} 発
                     {isPreferred && <span className="ml-1 text-[10px] text-blue-600 font-semibold">希望</span>}
                   </p>
-                  <p className="text-[10px] text-gray-400">残{slot.remaining_seats}席</p>
+                  <p className="text-[10px] text-gray-500">残{slot.remaining_seats}席</p>
                 </div>
                 {selectedSlotId === slot.id && <span className="text-blue-600 text-xs">✓</span>}
               </label>
@@ -138,7 +138,7 @@ export function RejectButton({ requestId }: { requestId: string }) {
           router.refresh()
         })
       }}
-      className="px-3 py-2 text-xs text-gray-400 hover:text-red-500 transition disabled:opacity-60"
+      className="px-3 py-2 text-xs text-gray-500 hover:text-red-500 transition disabled:opacity-60"
     >
       {isPending ? '...' : '見送る'}
     </button>

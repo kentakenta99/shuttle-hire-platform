@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { StatusToggle, SlotEditForm, DriverAssignForm } from './SlotActions'
 import PrintButton from './PrintButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,8 +75,9 @@ export default async function SlotDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl space-y-5">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
         <Link href="/admin/slots" className="text-sm text-blue-600 hover:underline">← 出発枠一覧</Link>
+        <RefreshButton />
       </div>
 
       {/* ヘッダー */}
@@ -111,7 +113,7 @@ export default async function SlotDetailPage({ params }: Props) {
               ['備考', slot.notes ?? '─'],
             ].map(([label, value]) => (
               <div key={label}>
-                <dt className="text-xs text-gray-400">{label}</dt>
+                <dt className="text-xs text-gray-500">{label}</dt>
                 <dd className="text-sm text-gray-800 mt-0.5">{value}</dd>
               </div>
             ))}
@@ -123,14 +125,6 @@ export default async function SlotDetailPage({ params }: Props) {
         {/* ドライバーアサイン */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
           <h2 className="text-sm font-semibold text-gray-800">ドライバーアサイン</h2>
-          {driver ? (
-            <div className="bg-blue-50 rounded-lg px-3 py-3">
-              <p className="text-sm font-medium text-blue-800">{driver.display_name ?? '名前未設定'}</p>
-              <p className="text-xs text-blue-500 mt-0.5">{driver.employee_code}</p>
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400">未アサイン</p>
-          )}
           <DriverAssignForm
             slotId={slot.id}
             currentEmployeeCode={assignment?.employee_code ?? null}
@@ -144,7 +138,7 @@ export default async function SlotDetailPage({ params }: Props) {
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
           <h2 className="text-sm font-semibold text-gray-800">
             乗車リスト
-            <span className="ml-2 text-xs text-gray-400 font-normal">
+            <span className="ml-2 text-xs text-gray-500 font-normal">
               {bookings.length}件 / {bookings.reduce((a, b) => a + b.party_size, 0)}名
             </span>
           </h2>
@@ -152,11 +146,11 @@ export default async function SlotDetailPage({ params }: Props) {
         </div>
 
         {bookings.length === 0 ? (
-          <p className="text-sm text-gray-400 px-5 py-8 text-center">予約なし</p>
+          <p className="text-sm text-gray-500 px-5 py-8 text-center">予約なし</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-400">
+              <thead className="bg-gray-50 text-xs text-gray-500">
                 <tr>
                   <th className="text-left px-4 py-2.5 font-medium">No.</th>
                   <th className="text-left px-4 py-2.5 font-medium">お客様名</th>
@@ -173,7 +167,7 @@ export default async function SlotDetailPage({ params }: Props) {
                   const bst = BOOKING_STATUS[b.status] ?? { label: b.status, cls: 'text-gray-500 bg-gray-100' }
                   return (
                   <tr key={b.id} className="hover:bg-gray-50 transition">
-                    <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{i + 1}</td>
                     <td className="px-4 py-3 font-medium text-gray-900">
                       <Link href={`/admin/bookings/${b.id}`} className="hover:text-blue-600 transition">
                         {b.guest_name}
@@ -182,13 +176,13 @@ export default async function SlotDetailPage({ params }: Props) {
                     <td className="px-4 py-3 text-center text-gray-700">{b.party_size}名</td>
                     <td className="px-4 py-3 text-center text-gray-700">{b.luggage_count}個</td>
                     <td className="px-4 py-3 text-gray-600 font-mono text-xs">{b.flight_number}</td>
-                    <td className="px-4 py-3 text-gray-400 font-mono text-xs">{b.confirmation_code}</td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{b.confirmation_code}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${bst.cls}`}>
                         {bst.label}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-gray-400 text-xs">{b.notes ?? '─'}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{b.notes ?? '─'}</td>
                   </tr>
                   )
                 })}

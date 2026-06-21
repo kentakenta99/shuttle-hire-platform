@@ -107,7 +107,7 @@ export default async function SuperAdminDashboard() {
           <div key={label} className="bg-white rounded-xl border border-gray-200 p-4">
             <p className="text-xs text-gray-500 mb-1">{label}</p>
             <p className="text-xl font-bold text-gray-900 leading-tight">{value}</p>
-            <p className="text-xs text-gray-400 mt-1">{sub}</p>
+            <p className="text-xs text-gray-500 mt-1">{sub}</p>
           </div>
         ))}
       </div>
@@ -123,13 +123,13 @@ export default async function SuperAdminDashboard() {
                 className="w-full bg-blue-500 rounded-t min-h-[4px]"
                 style={{ height: `${Math.max(4, Math.round(bookings / maxBookings * 112))}px` }}
               />
-              <span className="text-xs text-gray-400">{month.slice(5)}月</span>
+              <span className="text-xs text-gray-500">{month.slice(5)}月</span>
             </div>
           ))}
         </div>
         <table className="w-full text-xs mt-3">
           <thead>
-            <tr className="text-gray-400 border-b border-gray-100">
+            <tr className="text-gray-500 border-b border-gray-100">
               <th className="text-left py-1.5">月</th>
               <th className="text-right">予約数</th>
               <th className="text-right">名数</th>
@@ -154,14 +154,14 @@ export default async function SuperAdminDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-3">今月のホテル別予約数</h2>
           {hotelRanking.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">今月の予約データなし</p>
+            <p className="text-sm text-gray-500 py-4 text-center">今月の予約データなし</p>
           ) : (
             <div className="space-y-2.5">
               {hotelRanking.map(({ name, count }, i) => {
                 const pct = Math.round(count / Math.max(...hotelRanking.map(h => h.count), 1) * 100)
                 return (
                   <div key={name} className="flex items-center gap-3">
-                    <span className="text-xs text-gray-400 w-4 shrink-0">{i + 1}</span>
+                    <span className="text-xs text-gray-500 w-4 shrink-0">{i + 1}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between mb-0.5">
                         <span className="text-xs text-gray-700 truncate">{name}</span>
@@ -182,7 +182,7 @@ export default async function SuperAdminDashboard() {
         <div className="bg-white rounded-xl border border-gray-200 p-5">
           <h2 className="text-sm font-semibold text-gray-900 mb-3">今月の便別稼働率</h2>
           {slots.length === 0 ? (
-            <p className="text-sm text-gray-400 py-4 text-center">今月の便データなし</p>
+            <p className="text-sm text-gray-500 py-4 text-center">今月の便データなし</p>
           ) : (
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
               {[...slots]
@@ -192,7 +192,7 @@ export default async function SuperAdminDashboard() {
                   const pct = sl.capacity > 0 ? Math.round(booked / sl.capacity * 100) : 0
                   return (
                     <div key={sl.id} className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400 w-12 shrink-0">{sl.date.slice(5)}</span>
+                      <span className="text-xs text-gray-500 w-12 shrink-0">{sl.date.slice(5)}</span>
                       <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${pct >= 90 ? 'bg-red-400' : pct >= 60 ? 'bg-orange-400' : 'bg-blue-400'}`}

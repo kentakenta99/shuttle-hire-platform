@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { ConvertButton, RejectButton } from './ConvertButton'
+import RefreshButton from '@/app/components/RefreshButton'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -80,19 +81,22 @@ export default async function HotelRequestsPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-gray-900">シャトルリクエスト</h1>
-          <p className="text-xs text-gray-400 mt-0.5">QRコード経由でゲストが送信したリクエスト</p>
+          <p className="text-xs text-gray-500 mt-0.5">QRコード経由でゲストが送信したリクエスト</p>
         </div>
-        {pending.length > 0 && (
-          <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
-            未処理 {pending.length}件
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {pending.length > 0 && (
+            <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
+              未処理 {pending.length}件
+            </span>
+          )}
+          <RefreshButton />
+        </div>
       </div>
 
       {/* 未処理リクエスト */}
       {pending.length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-12 text-center">
-          <p className="text-sm text-gray-400">未処理のリクエストはありません</p>
+          <p className="text-sm text-gray-500">未処理のリクエストはありません</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -106,7 +110,7 @@ export default async function HotelRequestsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="text-sm font-bold text-gray-900">{req.guest_name}</p>
-                      <span className="text-xs text-gray-400">客室 {req.room_number}</span>
+                      <span className="text-xs text-gray-500">客室 {req.room_number}</span>
                     </div>
                     <div className="flex flex-wrap gap-x-3 gap-y-0.5 mt-1">
                       <span className="text-xs text-gray-600">
@@ -141,7 +145,7 @@ export default async function HotelRequestsPage() {
       {/* 処理済みリクエスト */}
       {processed.length > 0 && (
         <div className="space-y-2">
-          <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wide">処理済み（直近30日）</h2>
+          <h2 className="text-xs font-semibold text-gray-500 uppercase tracking-wide">処理済み（直近30日）</h2>
           <div className="bg-white rounded-xl border border-gray-200 divide-y divide-gray-50">
             {processed.map(req => {
               const badge = STATUS_BADGE[req.status as keyof typeof STATUS_BADGE]
@@ -152,7 +156,7 @@ export default async function HotelRequestsPage() {
                   </span>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm text-gray-700 font-medium">{req.guest_name}</p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-gray-500">
                       {formatDate(req.preferred_date)} {req.preferred_time} / {req.party_size}名 / {req.flight_number}
                     </p>
                   </div>

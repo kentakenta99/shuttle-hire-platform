@@ -181,6 +181,8 @@ export function DriverAssignForm({
   const eligible   = drivers.filter(d => d.is_shuttle_eligible)
   const ineligible = drivers.filter(d => !d.is_shuttle_eligible)
 
+  const isUnchanged = selected === (currentEmployeeCode ?? '')
+
   const filtered = (q: string, list: DriverOption[]) =>
     q.trim() === ''
       ? list
@@ -188,8 +190,9 @@ export function DriverAssignForm({
           (d.display_name ?? '').includes(q) || d.employee_code.includes(q)
         )
 
-  const matchedEligible   = filtered(query, eligible)
-  const matchedIneligible = filtered(query, ineligible)
+  // 選択済みはバナーで表示するのでリストから除外
+  const matchedEligible   = filtered(query, eligible).filter(d => d.employee_code !== selected)
+  const matchedIneligible = filtered(query, ineligible).filter(d => d.employee_code !== selected)
   const showIneligible    = query.trim() !== '' && matchedIneligible.length > 0
 
   return (
@@ -224,8 +227,8 @@ export function DriverAssignForm({
         </div>
       )}
 
-      {/* シャトル対象乗務員リスト */}
-      {matchedEligible.length > 0 && (
+      {/* シャトル対象乗務員リスト（対象者がいない場合は全員表示） */}
+      {matchedEligible.length > 0 ? (
         <div className="border border-gray-200 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
           {matchedEligible.map(d => (
             <button
@@ -237,16 +240,20 @@ export function DriverAssignForm({
               }`}
             >
               <span className="font-medium text-gray-800">{d.display_name ?? '─'}</span>
-              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+              <span className="text-gray-500 font-mono">{d.employee_code}</span>
             </button>
           ))}
         </div>
-      )}
+      ) : eligible.length === 0 && query.trim() === '' ? (
+        <p className="text-xs text-gray-500 text-center py-2">
+          シャトル対象乗務員がいません。名前または社員番号で検索してください。
+        </p>
+      ) : null}
 
       {/* 非対象乗務員（検索ヒット時のみ表示） */}
       {showIneligible && (
         <div className="border border-gray-100 rounded-lg overflow-hidden max-h-32 overflow-y-auto opacity-60">
-          <p className="text-xs text-gray-400 px-3 py-1.5 bg-gray-50">シャトル非対象</p>
+          <p className="text-xs text-gray-500 px-3 py-1.5 bg-gray-50">シャトル非対象</p>
           {matchedIneligible.map(d => (
             <button
               key={d.id}
@@ -255,7 +262,7 @@ export function DriverAssignForm({
               className="w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-gray-50 transition border-b border-gray-100 last:border-0"
             >
               <span className="text-gray-600">{d.display_name ?? '─'}</span>
-              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+              <span className="text-gray-500 font-mono">{d.employee_code}</span>
             </button>
           ))}
         </div>
@@ -263,10 +270,10 @@ export function DriverAssignForm({
 
       <button
         type="submit"
-        disabled={pending}
-        className="w-full py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-60"
+        disabled={pending || isUnchanged}
+        className="w-full py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {pending ? '保存中...' : selected ? 'アサインする' : 'アサイン解除'}
+        {pending ? '保存中...' : !selected ? 'アサイン解除' : 'アサインする'}
       </button>
     </form>
   )

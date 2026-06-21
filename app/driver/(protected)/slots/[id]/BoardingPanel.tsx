@@ -99,7 +99,7 @@ export function BoardingRow({
             )}
           </div>
           <div className="flex flex-wrap items-center gap-x-2 mt-0.5">
-            <span className="text-xs text-gray-400">
+            <span className="text-xs text-gray-500">
               {booking.party_size}名 / 荷物{booking.luggage_count}個
             </span>
             <span className="text-xs text-gray-500">·</span>
@@ -131,7 +131,7 @@ export function BoardingRow({
               {booking.original_unit_price != null && booking.unit_price < booking.original_unit_price && (
                 <div className="inline-flex items-center gap-1.5 bg-green-900/60 border border-green-700/60 rounded-lg px-2 py-1">
                   <span className="text-xs text-green-400 font-bold">🎉 料金が安くなりました！</span>
-                  <span className="text-xs text-gray-400 line-through">¥{booking.original_unit_price.toLocaleString()}</span>
+                  <span className="text-xs text-gray-500 line-through">¥{booking.original_unit_price.toLocaleString()}</span>
                   <span className="text-xs text-green-300 font-bold">→ ¥{booking.unit_price.toLocaleString()}/名</span>
                 </div>
               )}
@@ -226,7 +226,7 @@ export function QRScanInput({ slotId }: { slotId: string }) {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-white">搭乗確認</p>
-            <p className="text-xs text-gray-400 mt-0.5">QRコードをスキャンするか、確認番号を入力</p>
+            <p className="text-xs text-gray-500 mt-0.5">QRコードをスキャンするか、確認番号を入力</p>
           </div>
           {/* カメラスキャンボタン */}
           <button

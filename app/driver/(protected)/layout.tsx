@@ -32,11 +32,11 @@ export default async function DriverLayout({ children }: { children: React.React
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Link href="/driver" className="text-xs text-gray-400 hover:text-[#C9A227] transition px-2 py-1 rounded hover:bg-white/5">
+            <Link href="/driver" className="text-xs text-gray-500 hover:text-[#C9A227] transition px-2 py-1 rounded hover:bg-white/5">
               担当便
             </Link>
             <form action={async () => { 'use server'; await logout('/driver/login') }}>
-              <button type="submit" className="text-xs text-gray-600 hover:text-gray-400 transition">
+              <button type="submit" className="text-xs text-gray-600 hover:text-gray-500 transition">
                 ログアウト
               </button>
             </form>

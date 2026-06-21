@@ -52,7 +52,7 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">請求管理</h1>
-        <span className="text-xs text-gray-400 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full">
+        <span className="text-xs text-gray-500 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full">
           Phase 1 — 基本実装
         </span>
       </div>
@@ -74,7 +74,7 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
             検索
           </button>
         </form>
-        <span className="text-xs text-gray-400 ml-auto">
+        <span className="text-xs text-gray-500 ml-auto">
           合計: ¥{totalAmount.toLocaleString()}
         </span>
       </div>
@@ -83,13 +83,13 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {!invoices || invoices.length === 0 ? (
           <div className="px-5 py-12 text-center space-y-3">
-            <p className="text-sm text-gray-400">{currentMonth} の請求データがありません</p>
+            <p className="text-sm text-gray-500">{currentMonth} の請求データがありません</p>
             <p className="text-xs text-gray-300">請求書は予約完了後に管理者が手動で作成します</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-gray-50 text-xs text-gray-400 border-b border-gray-100">
+              <thead className="bg-gray-50 text-xs text-gray-500 border-b border-gray-100">
                 <tr>
                   <th className="text-left px-4 py-3 font-medium">ホテル</th>
                   <th className="text-left px-4 py-3 font-medium">対象月</th>
@@ -116,7 +116,7 @@ export default async function AdminInvoicesPage({ searchParams }: Props) {
                       <td className="px-4 py-3">
                         <span className={`text-xs px-2 py-0.5 rounded-full ${s.cls}`}>{s.label}</span>
                       </td>
-                      <td className="px-4 py-3 text-gray-400 text-xs">
+                      <td className="px-4 py-3 text-gray-500 text-xs">
                         {inv.issued_at ? new Date(inv.issued_at).toLocaleDateString('ja-JP') : '─'}
                       </td>
                     </tr>

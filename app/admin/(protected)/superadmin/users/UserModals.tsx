@@ -15,7 +15,7 @@ function Modal({ title, onClose, children }: {
       <div className="bg-white rounded-2xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 sticky top-0 bg-white">
           <h3 className="font-semibold text-gray-900">{title}</h3>
-          <button type="button" onClick={onClose} className="text-gray-400 hover:text-gray-600 text-xl leading-none">×</button>
+          <button type="button" onClick={onClose} className="text-gray-500 hover:text-gray-600 text-xl leading-none">×</button>
         </div>
         <div className="px-6 py-5">{children}</div>
       </div>

@@ -49,7 +49,7 @@ export default function SlotNewForm() {
             className={`flex-1 py-3 text-sm font-medium transition ${
               tab === t
                 ? 'text-slate-800 border-b-2 border-slate-800 bg-white'
-                : 'text-gray-400 hover:text-gray-600 bg-gray-50'
+                : 'text-gray-500 hover:text-gray-600 bg-gray-50'
             }`}
           >
             {t === 'single' ? '単発作成' : '一括作成（繰り返し）'}
@@ -211,7 +211,7 @@ export default function SlotNewForm() {
               <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
             </Field>
           </div>
-          <p className="text-xs text-gray-400">※ 受付締切は各便の前日17:00に自動設定されます</p>
+          <p className="text-xs text-gray-500">※ 受付締切は各便の前日17:00に自動設定されます</p>
 
           <button
             type="submit"

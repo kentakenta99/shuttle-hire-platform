@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import QRCode from 'qrcode'
 import CancelButton from './CancelButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,8 +51,9 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center justify-between mb-6">
         <Link href="/hotel/bookings" className="text-blue-600 text-sm hover:underline">← 予約履歴</Link>
+        <RefreshButton />
       </div>
 
       {isNew && (
@@ -63,7 +65,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
       {/* QRコード */}
       {booking.status === 'confirmed' && (
         <div className="bg-white rounded-2xl border border-gray-200 p-6 mb-4 text-center">
-          <p className="text-xs text-gray-400 mb-3">ゲストのスマートフォンでスキャンしてください</p>
+          <p className="text-xs text-gray-500 mb-3">ゲストのスマートフォンでスキャンしてください</p>
           <div
             className="inline-block"
             dangerouslySetInnerHTML={{ __html: qrSvg.replace('<svg', '<svg width="200" height="200"') }}
@@ -86,7 +88,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
           ...(booking.booked_by_name ? [['担当スタッフ', booking.booked_by_name]] : []),
         ].map(([label, value]) => (
           <div key={label} className="flex px-5 py-3 gap-4">
-            <span className="text-sm text-gray-400 w-28 shrink-0">{label}</span>
+            <span className="text-sm text-gray-500 w-28 shrink-0">{label}</span>
             <span className="text-sm text-gray-900">{value}</span>
           </div>
         ))}
@@ -109,7 +111,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
       )}
 
       {booking.status === 'cancelled' && (
-        <div className="mt-4 text-center text-sm text-gray-400">
+        <div className="mt-4 text-center text-sm text-gray-500">
           このご予約はキャンセルされています
         </div>
       )}
