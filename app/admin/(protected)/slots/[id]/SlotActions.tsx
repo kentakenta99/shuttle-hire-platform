@@ -224,8 +224,8 @@ export function DriverAssignForm({
         </div>
       )}
 
-      {/* シャトル対象乗務員リスト */}
-      {matchedEligible.length > 0 && (
+      {/* シャトル対象乗務員リスト（対象者がいない場合は全員表示） */}
+      {matchedEligible.length > 0 ? (
         <div className="border border-gray-200 rounded-lg overflow-hidden max-h-48 overflow-y-auto">
           {matchedEligible.map(d => (
             <button
@@ -241,7 +241,11 @@ export function DriverAssignForm({
             </button>
           ))}
         </div>
-      )}
+      ) : drivers.length > 0 && query.trim() === '' ? (
+        <p className="text-xs text-gray-500 text-center py-2">
+          シャトル対象乗務員がいません。名前または社員番号で検索してください。
+        </p>
+      ) : null}
 
       {/* 非対象乗務員（検索ヒット時のみ表示） */}
       {showIneligible && (
