@@ -57,7 +57,7 @@ export default async function RequestPage({ params }: Props) {
         {/* 便スケジュール + 料金 */}
         <div className="bg-white rounded-2xl border border-gray-100 divide-y divide-gray-50 overflow-hidden">
           <div className="px-5 py-4">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Daily Departures</p>
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Daily Departures</p>
             <div className="flex gap-2 flex-wrap">
               {['11:00', '12:00', '13:00', '14:00'].map(t => (
                 <span key={t} className="px-3 py-1.5 bg-gray-50 rounded-full text-sm font-mono font-medium text-gray-700 border border-gray-100">
@@ -65,12 +65,12 @@ export default async function RequestPage({ params }: Props) {
                 </span>
               ))}
             </div>
-            <p className="text-xs text-gray-400 mt-2">Additional times 10:30–14:30 available on request.</p>
+            <p className="text-xs text-gray-500 mt-2">Additional times 10:30–14:30 available on request.</p>
           </div>
 
           {tiers && tiers.length > 0 && (
             <div className="px-5 py-4">
-              <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">Transfer Rates</p>
+              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Transfer Rates</p>
               <div className="space-y-1.5">
                 {tiers.map(t => (
                   <div key={t.party_size} className="flex items-center justify-between">
@@ -82,7 +82,7 @@ export default async function RequestPage({ params }: Props) {
                         ¥{(t.per_person_price * t.party_size).toLocaleString()}
                       </span>
                       {t.party_size > 1 && (
-                        <span className="text-xs text-gray-400 ml-1">
+                        <span className="text-xs text-gray-500 ml-1">
                           (¥{t.per_person_price.toLocaleString()} / person)
                         </span>
                       )}
@@ -90,7 +90,7 @@ export default async function RequestPage({ params }: Props) {
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-2">Up to 4 passengers per vehicle.</p>
+              <p className="text-xs text-gray-500 mt-2">Up to 4 passengers per vehicle.</p>
             </div>
           )}
         </div>
@@ -98,13 +98,13 @@ export default async function RequestPage({ params }: Props) {
         {/* リクエストフォーム */}
         <div className="bg-white rounded-2xl border border-gray-100 px-5 py-6">
           <h2 className="text-base font-bold text-gray-900 mb-1">Request a Transfer</h2>
-          <p className="text-xs text-gray-400 mb-5">
+          <p className="text-xs text-gray-500 mb-5">
             Fill in your details below. The concierge will confirm your booking and send a QR ticket.
           </p>
           <RequestForm hotelId={hotel.id} tiers={tiers ?? []} />
         </div>
 
-        <p className="text-xs text-gray-400 text-center pb-4">
+        <p className="text-xs text-gray-500 text-center pb-4">
           © Tokyo MK Co., Ltd. — For enquiries, contact the Hotel Concierge.
         </p>
       </main>

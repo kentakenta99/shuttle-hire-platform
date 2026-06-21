@@ -40,7 +40,7 @@ function formatDate(d: string) {
 // ──────────────────────────────
 function ListView({ bookings }: { bookings: Booking[] }) {
   if (bookings.length === 0) {
-    return <p className="text-sm text-gray-400 text-center py-12">予約履歴はありません</p>
+    return <p className="text-sm text-gray-500 text-center py-12">予約履歴はありません</p>
   }
   return (
     <div className="space-y-2">
@@ -56,7 +56,7 @@ function ListView({ bookings }: { bookings: Booking[] }) {
             <div className="flex items-center justify-between gap-3">
               <div className="min-w-0">
                 <p className="text-sm font-medium text-gray-900 truncate">{b.guest_name}</p>
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-gray-500 mt-0.5">
                   {slot ? `${formatDate(slot.date)} ${slot.departure_time.slice(0,5)}発` : '─'} ·{' '}
                   {b.party_size}名 · {b.flight_number}
                 </p>
@@ -95,7 +95,7 @@ function SlotView({ bookings }: { bookings: Booking[] }) {
   })
 
   if (groups.length === 0) {
-    return <p className="text-sm text-gray-400 text-center py-12">予約履歴はありません</p>
+    return <p className="text-sm text-gray-500 text-center py-12">予約履歴はありません</p>
   }
 
   return (
@@ -121,7 +121,7 @@ function SlotView({ bookings }: { bookings: Booking[] }) {
                     {activeCount}件 · {totalPax}名
                     {boardedCount > 0 && <span className="ml-1 text-blue-600">搭乗済{boardedCount}</span>}
                     {noShowCount  > 0 && <span className="ml-1 text-red-500">NO SHOW {noShowCount}</span>}
-                    {cancelledCount > 0 && <span className="ml-1 text-gray-400">取消{cancelledCount}</span>}
+                    {cancelledCount > 0 && <span className="ml-1 text-gray-500">取消{cancelledCount}</span>}
                   </p>
                 </div>
                 {/* 未搭乗数バッジ */}
@@ -144,10 +144,10 @@ function SlotView({ bookings }: { bookings: Booking[] }) {
                     className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition"
                   >
                     <div className="min-w-0">
-                      <p className={`text-sm font-medium ${b.status === 'cancelled' ? 'text-gray-400 line-through' : 'text-gray-900'} truncate`}>
+                      <p className={`text-sm font-medium ${b.status === 'cancelled' ? 'text-gray-500 line-through' : 'text-gray-900'} truncate`}>
                         {b.guest_name}
                       </p>
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-gray-500 mt-0.5">
                         {b.party_size}名 · {b.flight_number} ·{' '}
                         <span className="font-mono">{b.confirmation_code}</span>
                       </p>

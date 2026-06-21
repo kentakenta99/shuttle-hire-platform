@@ -43,7 +43,7 @@ export default function GeneratePanel({
     <div className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-gray-900">月次請求生成</h2>
-        <span className="text-xs text-gray-400">ホテル請求タイプのみ対象</span>
+        <span className="text-xs text-gray-500">ホテル請求タイプのみ対象</span>
       </div>
 
       <div className="flex flex-wrap gap-3 items-end">
@@ -88,7 +88,7 @@ export default function GeneratePanel({
         </p>
       )}
 
-      <p className="text-xs text-gray-400">
+      <p className="text-xs text-gray-500">
         completed / arrived 状態の予約を料金ティアで計算し、月次請求レコードを生成します。
         既存レコードは金額のみ再計算します（入金済みは変更不可）。
       </p>

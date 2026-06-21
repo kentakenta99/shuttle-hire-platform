@@ -121,7 +121,7 @@ export default function BookingForm({ slotId, slotLabel, slotDate, capacity, pri
             </div>
           </div>
         ) : pricingTiers.length > 0 ? (
-          <p className="text-xs text-gray-400">この人数の料金設定はありません</p>
+          <p className="text-xs text-gray-500">この人数の料金設定はありません</p>
         ) : null
       )}
 
@@ -167,7 +167,7 @@ export default function BookingForm({ slotId, slotLabel, slotDate, capacity, pri
           placeholder="例：guest@example.com"
           className={inputCls}
         />
-        <p className="text-xs text-gray-400 mt-1">入力するとゲスト本人にQRコード付き乗車案内メールを送信します</p>
+        <p className="text-xs text-gray-500 mt-1">入力するとゲスト本人にQRコード付き乗車案内メールを送信します</p>
       </div>
 
       {state?.error && (

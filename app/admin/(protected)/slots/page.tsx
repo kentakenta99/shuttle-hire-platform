@@ -124,7 +124,7 @@ export default async function AdminSlotsPage({ searchParams }: Props) {
 
       {Object.entries(byDate).length === 0 ? (
         <div className="bg-white rounded-xl border border-gray-200 px-6 py-12 text-center">
-          <p className="text-gray-400 text-sm">この期間に出発枠がありません</p>
+          <p className="text-gray-500 text-sm">この期間に出発枠がありません</p>
           <Link href="/admin/slots/new" className="mt-3 inline-block text-sm text-blue-600 hover:underline">
             枠を作成する →
           </Link>
@@ -148,7 +148,7 @@ export default async function AdminSlotsPage({ searchParams }: Props) {
                     <span className="text-sm font-mono font-medium text-gray-800 w-14 shrink-0">
                       {slot.departure_time.slice(0, 5)}
                     </span>
-                    <span className="text-xs text-gray-400 w-28 shrink-0">{slot.vehicle_type}</span>
+                    <span className="text-xs text-gray-500 w-28 shrink-0">{slot.vehicle_type}</span>
                     <div className="flex-1 flex items-center gap-3">
                       <SeatIcons capacity={slot.capacity} booked={booked} />
                       <span className="text-xs text-gray-500 shrink-0">

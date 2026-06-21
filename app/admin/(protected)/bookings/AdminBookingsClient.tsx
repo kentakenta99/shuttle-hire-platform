@@ -38,12 +38,12 @@ function TableView({ bookings, slotMap, hotelMap }: {
   hotelMap: Record<string, string>
 }) {
   if (bookings.length === 0) {
-    return <p className="text-sm text-gray-400 text-center py-12">該当する予約がありません</p>
+    return <p className="text-sm text-gray-500 text-center py-12">該当する予約がありません</p>
   }
   return (
     <div className="overflow-x-auto">
       <table className="w-full text-sm">
-        <thead className="text-xs text-gray-400 border-b border-gray-100">
+        <thead className="text-xs text-gray-500 border-b border-gray-100">
           <tr>
             <th className="text-left px-4 py-3 font-medium">確認番号</th>
             <th className="text-left px-4 py-3 font-medium">お客様名</th>
@@ -116,7 +116,7 @@ function SlotView({ bookings, slotMap, hotelMap }: {
   })
 
   if (sorted.length === 0) {
-    return <p className="text-sm text-gray-400 text-center py-12">該当する予約がありません</p>
+    return <p className="text-sm text-gray-500 text-center py-12">該当する予約がありません</p>
   }
 
   return (
@@ -139,7 +139,7 @@ function SlotView({ bookings, slotMap, hotelMap }: {
                 <p className="text-sm font-bold text-gray-900 font-mono">
                   {slot ? `${slot.date} ${slot.departure_time.slice(0, 5)}発` : '日時不明'}
                 </p>
-                <p className="text-xs text-gray-400 mt-0.5">{hotelNames}</p>
+                <p className="text-xs text-gray-500 mt-0.5">{hotelNames}</p>
               </div>
               <div className="flex items-center gap-2 flex-wrap text-xs">
                 <span className="text-gray-500 font-medium">{sBookings.length}件 · {totalPax}名 · 荷物{totalLuggage}個</span>
@@ -232,7 +232,7 @@ export default function AdminBookingsClient({ bookings, slotMap, hotelMap }: {
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs text-gray-400">
+        <div className="px-4 py-3 border-b border-gray-100 bg-gray-50 text-xs text-gray-500">
           {bookings.length} 件
         </div>
         {view === 'list'

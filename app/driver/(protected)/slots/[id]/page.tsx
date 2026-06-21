@@ -19,7 +19,7 @@ function formatDate(d: string) {
 const SLOT_BADGE: Record<string, string> = {
   open:      'bg-green-900 text-green-400',
   full:      'bg-orange-900 text-orange-400',
-  closed:    'bg-gray-700 text-gray-400',
+  closed:    'bg-gray-700 text-gray-500',
   suspended: 'bg-red-900 text-red-400',
 }
 const SLOT_LABEL: Record<string, string> = {
@@ -126,7 +126,7 @@ export default async function DriverSlotPage({ params }: Props) {
     return a.earliestDep < b.earliestDep ? -1 : 1
   })
 
-  const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-400'
+  const statusBadge = SLOT_BADGE[slot.status] ?? 'bg-gray-700 text-gray-500'
   const statusLabel = SLOT_LABEL[slot.status] ?? slot.status
 
   return (
@@ -147,12 +147,12 @@ export default async function DriverSlotPage({ params }: Props) {
       <div className="bg-zinc-900 rounded-2xl border border-zinc-800 p-5">
         <div className="flex items-start justify-between">
           <div>
-            <p className="text-xs text-gray-400">{formatDate(slot.date)}</p>
+            <p className="text-xs text-gray-500">{formatDate(slot.date)}</p>
             <p className="text-4xl font-bold font-mono text-white mt-1">
               {slot.departure_time.slice(0, 5)}
-              <span className="text-lg text-gray-400 ml-1">発</span>
+              <span className="text-lg text-gray-500 ml-1">発</span>
             </p>
-            <p className="text-sm text-gray-400 mt-1">{slot.vehicle_type}</p>
+            <p className="text-sm text-gray-500 mt-1">{slot.vehicle_type}</p>
           </div>
           <span className={`text-xs px-2.5 py-1 rounded-full font-medium ${statusBadge}`}>
             {statusLabel}
@@ -161,7 +161,7 @@ export default async function DriverSlotPage({ params }: Props) {
 
         {/* 乗車進捗バー */}
         <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between text-xs text-gray-400">
+          <div className="flex items-center justify-between text-xs text-gray-500">
             <span>搭乗確認済</span>
             <span className="font-medium text-white">
               {boardedCount + arrivedCount}/{bookings.length}件 ({boardedPax}/{totalPax}名)
@@ -209,7 +209,7 @@ export default async function DriverSlotPage({ params }: Props) {
                 <div className="flex flex-col items-center bg-blue-900/60 border border-[#C9A227]/40 rounded-xl px-4 py-2 min-w-[72px] text-center">
                   <span className="text-xs text-[#C9A227] font-medium">第{i + 1}停車</span>
                   <span className="text-2xl font-black text-white leading-tight">T{g.terminal}</span>
-                  <span className="text-xs text-gray-400 mt-0.5">{g.pax}名</span>
+                  <span className="text-xs text-gray-500 mt-0.5">{g.pax}名</span>
                 </div>
                 {i < terminalRoute.length - 1 && (
                   <span className="text-gray-500 text-xl">→</span>
@@ -224,7 +224,7 @@ export default async function DriverSlotPage({ params }: Props) {
         <div className="bg-zinc-900 rounded-2xl border border-zinc-800 px-4 py-3 flex items-center gap-3">
           <span className="text-[#C9A227] text-lg">🛫</span>
           <div>
-            <p className="text-xs text-gray-400">全員同じターミナル</p>
+            <p className="text-xs text-gray-500">全員同じターミナル</p>
             <p className="text-lg font-bold text-white">第{terminalRoute[0].terminal}ターミナル</p>
           </div>
         </div>
@@ -241,12 +241,12 @@ export default async function DriverSlotPage({ params }: Props) {
           <div className="flex items-center gap-4">
             <div className="text-center">
               <p className="text-3xl font-bold text-white leading-none">{totalPax}</p>
-              <p className="text-xs text-gray-400 mt-0.5">名</p>
+              <p className="text-xs text-gray-500 mt-0.5">名</p>
             </div>
             <div className="w-px h-10 bg-zinc-800" />
             <div className="text-center">
               <p className="text-3xl font-bold text-yellow-400 leading-none">{totalLuggage}</p>
-              <p className="text-xs text-gray-400 mt-0.5">個</p>
+              <p className="text-xs text-gray-500 mt-0.5">個</p>
             </div>
           </div>
         </div>

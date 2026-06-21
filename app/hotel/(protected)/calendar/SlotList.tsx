@@ -70,7 +70,7 @@ function SeatIcons({ capacity, remaining }: { capacity: number; remaining: numbe
         {Array.from({ length: Math.min(remaining, 5) }, (_, i) => (
           <SeatIcon key={`r${i}`} filled={false} />
         ))}
-        {remaining > 5 && <span className="text-xs text-gray-400 font-medium ml-0.5">+{remaining - 5}</span>}
+        {remaining > 5 && <span className="text-xs text-gray-500 font-medium ml-0.5">+{remaining - 5}</span>}
       </div>
     </div>
   )
@@ -120,7 +120,7 @@ export default function SlotList({ initialSlots }: Props) {
 
   if (slots.length === 0) {
     return (
-      <div className="text-center py-16 text-gray-400">
+      <div className="text-center py-16 text-gray-500">
         <p className="text-4xl mb-3">🚗</p>
         <p className="text-sm">本日以降の出発枠はありません</p>
         <p className="text-xs mt-1">東京エムケイ 配車センター：03-XXXX-XXXX</p>
@@ -153,16 +153,16 @@ export default function SlotList({ initialSlots }: Props) {
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
                             {st.label}
                           </span>
-                          <span className="text-xs text-gray-400">{slot.vehicle_type}</span>
+                          <span className="text-xs text-gray-500">{slot.vehicle_type}</span>
                         </div>
                         {slot.status === 'open' && isPastCutoff && (
-                          <p className="text-xs mt-0.5 text-gray-400">締切済</p>
+                          <p className="text-xs mt-0.5 text-gray-500">締切済</p>
                         )}
                       </div>
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0">
-                      <span className="text-xs text-gray-400">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
+                      <span className="text-xs text-gray-500">¥{slot.price_per_seat_yen.toLocaleString()}/席</span>
                       {isBookable ? (
                         <Link
                           href={`/hotel/book/${slot.id}`}
@@ -172,11 +172,11 @@ export default function SlotList({ initialSlots }: Props) {
                         </Link>
                       ) : slot.status === 'full' ? (
                         <div className="text-right">
-                          <span className="text-xs text-gray-400 block">通常ハイヤーへ</span>
+                          <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
                           <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
                         </div>
                       ) : (
-                        <span className="text-sm text-gray-400">─</span>
+                        <span className="text-sm text-gray-500">─</span>
                       )}
                     </div>
                   </div>

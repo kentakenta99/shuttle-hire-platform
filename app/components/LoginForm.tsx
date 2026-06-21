@@ -78,7 +78,7 @@ export default function LoginForm({ action, title, subtitle, accentColor }: Prop
           </form>
         </div>
 
-        <p className="text-center text-xs text-gray-400 mt-6">
+        <p className="text-center text-xs text-gray-500 mt-6">
           東京エムケイ株式会社 シャトルハイヤー予約システム
         </p>
       </div>

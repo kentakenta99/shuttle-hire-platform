@@ -7,7 +7,7 @@ export const dynamic = 'force-dynamic'
 const STATUS_LABEL: Record<string, { label: string; cls: string }> = {
   open:      { label: '受付中', cls: 'text-green-400' },
   full:      { label: '満席',   cls: 'text-orange-400' },
-  closed:    { label: 'クローズ', cls: 'text-gray-400' },
+  closed:    { label: 'クローズ', cls: 'text-gray-500' },
   suspended: { label: '運休',   cls: 'text-red-400' },
 }
 
@@ -95,7 +95,7 @@ export default async function DriverHomePage() {
     const doneCount = counts.completed + counts.arrived
     const allArrived = total > 0 && counts.arrived === total
     const allBoarded = total > 0 && doneCount === total
-    const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'text-gray-400' }
+    const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'text-gray-500' }
 
     return (
       <Link
@@ -106,9 +106,9 @@ export default async function DriverHomePage() {
           <div>
             <p className="text-2xl font-bold font-mono text-white">
               {slot.departure_time.slice(0, 5)}
-              <span className="text-sm text-gray-400 ml-1">発</span>
+              <span className="text-sm text-gray-500 ml-1">発</span>
             </p>
-            <p className="text-xs text-gray-400 mt-0.5">{slot.vehicle_type}</p>
+            <p className="text-xs text-gray-500 mt-0.5">{slot.vehicle_type}</p>
           </div>
           <span className={`text-xs font-medium ${s.cls}`}>{s.label}</span>
         </div>
@@ -122,7 +122,7 @@ export default async function DriverHomePage() {
               style={{ width: total > 0 ? `${Math.round(doneCount / total * 100)}%` : '0%' }}
             />
           </div>
-          <span className="text-xs text-gray-400 shrink-0">
+          <span className="text-xs text-gray-500 shrink-0">
             {allArrived ? `到着済 ${total}/${total}` : `搭乗 ${doneCount}/${total}`}件
           </span>
         </div>
@@ -134,7 +134,7 @@ export default async function DriverHomePage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <p className="text-gray-400 text-xs mb-1">{todayStr}</p>
+          <p className="text-gray-500 text-xs mb-1">{todayStr}</p>
           <h1 className="text-xl font-bold text-white">本日の担当便</h1>
         </div>
         <RefreshButton dark />
@@ -149,7 +149,7 @@ export default async function DriverHomePage() {
               <p className="text-gray-500 text-xs mt-1">{todayDoneCount}便 · お疲れさまでした</p>
             </>
           ) : (
-            <p className="text-gray-400 text-sm">本日の担当便はありません</p>
+            <p className="text-gray-500 text-sm">本日の担当便はありません</p>
           )}
         </div>
       ) : (
@@ -160,7 +160,7 @@ export default async function DriverHomePage() {
 
       {futureSlots.length > 0 && (
         <div className="space-y-3">
-          <h2 className="text-sm font-medium text-gray-400">今後の担当便</h2>
+          <h2 className="text-sm font-medium text-gray-500">今後の担当便</h2>
           {futureSlots.map(s => (
             <Link
               key={s.id}
@@ -168,7 +168,7 @@ export default async function DriverHomePage() {
               className="flex items-center gap-4 bg-gray-800 rounded-xl border border-gray-700 px-4 py-3 hover:border-gray-500 transition"
             >
               <div className="text-center w-16 shrink-0">
-                <p className="text-xs text-gray-400">{formatDateShort(s.date)}</p>
+                <p className="text-xs text-gray-500">{formatDateShort(s.date)}</p>
                 <p className="text-sm font-bold font-mono text-white">{s.departure_time.slice(0, 5)}</p>
               </div>
               <div className="flex-1">

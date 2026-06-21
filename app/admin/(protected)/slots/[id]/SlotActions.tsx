@@ -237,7 +237,7 @@ export function DriverAssignForm({
               }`}
             >
               <span className="font-medium text-gray-800">{d.display_name ?? '─'}</span>
-              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+              <span className="text-gray-500 font-mono">{d.employee_code}</span>
             </button>
           ))}
         </div>
@@ -246,7 +246,7 @@ export function DriverAssignForm({
       {/* 非対象乗務員（検索ヒット時のみ表示） */}
       {showIneligible && (
         <div className="border border-gray-100 rounded-lg overflow-hidden max-h-32 overflow-y-auto opacity-60">
-          <p className="text-xs text-gray-400 px-3 py-1.5 bg-gray-50">シャトル非対象</p>
+          <p className="text-xs text-gray-500 px-3 py-1.5 bg-gray-50">シャトル非対象</p>
           {matchedIneligible.map(d => (
             <button
               key={d.id}
@@ -255,7 +255,7 @@ export function DriverAssignForm({
               className="w-full flex items-center justify-between px-3 py-2 text-left text-xs hover:bg-gray-50 transition border-b border-gray-100 last:border-0"
             >
               <span className="text-gray-600">{d.display_name ?? '─'}</span>
-              <span className="text-gray-400 font-mono">{d.employee_code}</span>
+              <span className="text-gray-500 font-mono">{d.employee_code}</span>
             </button>
           ))}
         </div>

@@ -88,7 +88,7 @@ export default function HotelSettingsClient({
       <section className="bg-white rounded-xl border border-gray-200 p-5 space-y-4">
         <div>
           <h2 className="text-sm font-semibold text-gray-900">人数別単価（1人あたり）</h2>
-          <p className="text-xs text-gray-400 mt-0.5">¥0 の行は「料金なし」として扱います</p>
+          <p className="text-xs text-gray-500 mt-0.5">¥0 の行は「料金なし」として扱います</p>
         </div>
 
         <div className="space-y-2">
@@ -98,7 +98,7 @@ export default function HotelSettingsClient({
               <div key={tier.party_size} className="flex items-center gap-3">
                 <span className="text-sm text-gray-600 w-12 shrink-0">{tier.party_size}名</span>
                 <div className="relative flex-1">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">¥</span>
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">¥</span>
                   <input
                     type="text"
                     inputMode="numeric"
@@ -108,7 +108,7 @@ export default function HotelSettingsClient({
                     className="w-full pl-7 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A227]/40 focus:border-[#C9A227]"
                   />
                 </div>
-                <span className="text-xs text-gray-400 w-28 shrink-0 text-right">
+                <span className="text-xs text-gray-500 w-28 shrink-0 text-right">
                   {total > 0 ? `合計 ¥${total.toLocaleString()}` : '─'}
                 </span>
               </div>

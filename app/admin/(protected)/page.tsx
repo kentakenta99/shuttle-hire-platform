@@ -78,7 +78,7 @@ export default async function AdminDashboardPage() {
         <span className="text-sm font-mono text-gray-700 w-16 shrink-0">
           {slot.departure_time.slice(0, 5)}
         </span>
-        <span className="text-xs text-gray-400 w-24 shrink-0">{slot.vehicle_type}</span>
+        <span className="text-xs text-gray-500 w-24 shrink-0">{slot.vehicle_type}</span>
         <div className="flex-1">
           <div className="flex items-center gap-2">
             <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
@@ -102,7 +102,7 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">ダッシュボード</h1>
-        <span className="text-sm text-gray-400">{todayStr}</span>
+        <span className="text-sm text-gray-500">{todayStr}</span>
       </div>
 
       {/* 当月サマリー */}
@@ -113,7 +113,7 @@ export default async function AdminDashboardPage() {
           { label: '本日の出発枠', value: `${todaySlots.length}枠` },
         ].map(({ label, value }) => (
           <div key={label} className="bg-white rounded-xl border border-gray-200 px-5 py-4">
-            <p className="text-xs text-gray-400 mb-1">{label}</p>
+            <p className="text-xs text-gray-500 mb-1">{label}</p>
             <p className="text-2xl font-bold text-gray-900">{value}</p>
           </div>
         ))}
@@ -128,7 +128,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="py-1">
             {todaySlots.length === 0 ? (
-              <p className="text-sm text-gray-400 px-4 py-4 text-center">枠なし</p>
+              <p className="text-sm text-gray-500 px-4 py-4 text-center">枠なし</p>
             ) : (
               todaySlots.map(s => <SlotRow key={s.id} slot={s} />)
             )}
@@ -143,7 +143,7 @@ export default async function AdminDashboardPage() {
           </div>
           <div className="py-1">
             {tomorrowSlots.length === 0 ? (
-              <p className="text-sm text-gray-400 px-4 py-4 text-center">枠なし</p>
+              <p className="text-sm text-gray-500 px-4 py-4 text-center">枠なし</p>
             ) : (
               tomorrowSlots.map(s => <SlotRow key={s.id} slot={s} />)
             )}
@@ -158,7 +158,7 @@ export default async function AdminDashboardPage() {
         </div>
         <div className="divide-y divide-gray-50">
           {events.length === 0 ? (
-            <p className="text-sm text-gray-400 px-4 py-4 text-center">アクティビティなし</p>
+            <p className="text-sm text-gray-500 px-4 py-4 text-center">アクティビティなし</p>
           ) : (
             events.map(ev => {
               const payload = ev.payload as Record<string, string> | null
@@ -174,7 +174,7 @@ export default async function AdminDashboardPage() {
                       <span className="text-xs text-gray-600 ml-2">{payload.guest_name}</span>
                     )}
                     {payload?.confirmation_code && (
-                      <span className="text-xs text-gray-400 ml-1">#{payload.confirmation_code}</span>
+                      <span className="text-xs text-gray-500 ml-1">#{payload.confirmation_code}</span>
                     )}
                   </div>
                   <span className="text-xs text-gray-300 shrink-0">

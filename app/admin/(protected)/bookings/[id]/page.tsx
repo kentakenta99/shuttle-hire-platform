@@ -79,7 +79,7 @@ export default async function AdminBookingDetailPage({ params }: Props) {
           ...(booking.cancelled_reason ? [['キャンセル理由', booking.cancelled_reason]] : []),
         ].map(([label, value]) => (
           <div key={label} className="flex px-5 py-3 gap-4">
-            <span className="text-sm text-gray-400 w-32 shrink-0">{label}</span>
+            <span className="text-sm text-gray-500 w-32 shrink-0">{label}</span>
             <span className="text-sm text-gray-900">{value}</span>
           </div>
         ))}
@@ -98,7 +98,7 @@ export default async function AdminBookingDetailPage({ params }: Props) {
       )}
 
       {booking.status === 'cancelled' && (
-        <p className="text-center text-sm text-gray-400">この予約はキャンセル済みです</p>
+        <p className="text-center text-sm text-gray-500">この予約はキャンセル済みです</p>
       )}
     </div>
   )

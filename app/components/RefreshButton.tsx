@@ -19,8 +19,8 @@ export default function RefreshButton({ className, dark }: Props) {
   }
 
   const base = dark
-    ? 'text-gray-400 hover:text-white border-gray-600 hover:border-gray-400'
-    : 'text-gray-400 hover:text-gray-700 border-gray-200 hover:border-gray-400'
+    ? 'text-gray-500 hover:text-white border-gray-600 hover:border-gray-400'
+    : 'text-gray-500 hover:text-gray-700 border-gray-200 hover:border-gray-400'
 
   return (
     <button

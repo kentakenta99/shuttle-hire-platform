@@ -113,7 +113,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {hotels.length === 0 && (
-                  <tr><td colSpan={5} className="py-10 text-center text-sm text-gray-400">データなし</td></tr>
+                  <tr><td colSpan={5} className="py-10 text-center text-sm text-gray-500">データなし</td></tr>
                 )}
                 {hotels.map(h => (
                   <tr key={h.id} className={h.is_active ? '' : 'opacity-50 bg-gray-50'}>
@@ -139,7 +139,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
         <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
           <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
             <h2 className="text-sm font-semibold text-gray-900">ドライバーアカウント</h2>
-            <span className="text-xs text-gray-400 bg-gray-100 px-3 py-1 rounded-full">乗務員マスタはDOS管理</span>
+            <span className="text-xs text-gray-500 bg-gray-100 px-3 py-1 rounded-full">乗務員マスタはDOS管理</span>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -156,14 +156,14 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {drivers.length === 0 && (
-                  <tr><td colSpan={7} className="py-10 text-center text-sm text-gray-400">データなし</td></tr>
+                  <tr><td colSpan={7} className="py-10 text-center text-sm text-gray-500">データなし</td></tr>
                 )}
                 {drivers.map(d => (
                   <tr key={d.id} className={d.is_active ? '' : 'opacity-50 bg-gray-50'}>
                     <td className={tdCls + ' font-medium text-gray-900'}>{d.display_name ?? '—'}</td>
                     <td className={tdCls + ' text-gray-500 font-mono text-xs'}>{emailMap.get(d.user_id) ?? '—'}</td>
                     <td className={tdCls + ' font-mono text-xs text-gray-600'}>{d.employee_code}</td>
-                    <td className={tdCls + ' font-mono text-xs text-gray-400'}>{(d as { driver_code?: string | null }).driver_code ?? '—'}</td>
+                    <td className={tdCls + ' font-mono text-xs text-gray-500'}>{(d as { driver_code?: string | null }).driver_code ?? '—'}</td>
                     <td className={tdCls + ' text-center text-xs'}>{(d as { is_emirates_route?: boolean }).is_emirates_route ? '✓' : '—'}</td>
                     <td className={tdCls + ' text-center'}><StatusBadge active={d.is_active} /></td>
                     <td className={tdCls + ' text-center'}>
@@ -197,7 +197,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
               </thead>
               <tbody className="divide-y divide-gray-100">
                 {admins.length === 0 && (
-                  <tr><td colSpan={5} className="py-10 text-center text-sm text-gray-400">データなし</td></tr>
+                  <tr><td colSpan={5} className="py-10 text-center text-sm text-gray-500">データなし</td></tr>
                 )}
                 {admins.map(a => (
                   <tr key={a.id} className={a.is_active ? '' : 'opacity-50 bg-gray-50'}>
@@ -206,7 +206,7 @@ export default async function SuperAdminUsersPage({ searchParams }: Props) {
                     <td className={tdCls + ' text-center'}>
                       {superAdminMap.get(a.id)
                         ? <span className="text-xs bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full">👑 スーパー</span>
-                        : <span className="text-xs text-gray-400">一般</span>
+                        : <span className="text-xs text-gray-500">一般</span>
                       }
                     </td>
                     <td className={tdCls + ' text-center'}><StatusBadge active={a.is_active} /></td>

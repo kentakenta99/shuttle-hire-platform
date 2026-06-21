@@ -106,7 +106,7 @@ function FaqItem({ q, a }: Item) {
         className="w-full text-left flex items-start justify-between gap-3 px-4 py-4"
       >
         <span className="text-sm font-medium text-gray-800 leading-snug">{q}</span>
-        <span className={`text-gray-400 text-lg leading-none shrink-0 transition-transform ${open ? 'rotate-45' : ''}`}>
+        <span className={`text-gray-500 text-lg leading-none shrink-0 transition-transform ${open ? 'rotate-45' : ''}`}>
           +
         </span>
       </button>
@@ -135,7 +135,7 @@ export default function FaqPage() {
           </div>
         ))}
       </div>
-      <p className="text-xs text-gray-400 text-center mt-8">
+      <p className="text-xs text-gray-500 text-center mt-8">
         解決しない場合は TMK 配車センターへご連絡ください
       </p>
     </div>

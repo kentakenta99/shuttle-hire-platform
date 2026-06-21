@@ -106,7 +106,7 @@ function WaitingScreen({
 
         {/* QRコード */}
         <div className="bg-white border-2 border-gray-900 rounded-2xl p-6 text-center space-y-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Your QR Ticket</p>
+          <p className="text-xs font-semibold text-gray-500 uppercase tracking-widest">Your QR Ticket</p>
 
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
@@ -116,14 +116,14 @@ function WaitingScreen({
           />
 
           <div className="space-y-1">
-            <p className="text-xs text-gray-400">Confirmation Code</p>
+            <p className="text-xs text-gray-500">Confirmation Code</p>
             <p className="text-xl font-mono font-bold text-gray-900 tracking-widest">{result.confirmationCode}</p>
           </div>
 
           <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-700 space-y-0.5">
             <p className="font-semibold">{formatDate(result.date)}</p>
             <p>{result.departureTime.slice(0, 5)} Departure · {result.partySize} {result.partySize === 1 ? 'guest' : 'guests'}</p>
-            <p className="text-xs text-gray-400">{result.hotelName} → Narita Airport</p>
+            <p className="text-xs text-gray-500">{result.hotelName} → Narita Airport</p>
           </div>
         </div>
 
@@ -182,13 +182,13 @@ function WaitingScreen({
         >
           {isChecking ? '確認中...' : '今すぐ更新する'}
         </button>
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-500">
           {isChecking ? 'Checking...' : `${countdown}秒後に自動更新 · Auto-refresh in ${countdown}s`}
         </p>
       </div>
 
       {/* スクショ案内（先出し） */}
-      <p className="text-xs text-gray-400 text-center leading-relaxed">
+      <p className="text-xs text-gray-500 text-center leading-relaxed">
         確定したらQRチケットがこの画面に表示されます。<br />
         スクリーンショットして保管してください。
       </p>
@@ -353,7 +353,7 @@ export default function RequestForm({
       <div className="space-y-1.5">
         <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide">
           Email Address
-          <span className="ml-1 text-gray-400 font-normal normal-case">(optional)</span>
+          <span className="ml-1 text-gray-500 font-normal normal-case">(optional)</span>
         </label>
         <input
           type="email"
@@ -361,7 +361,7 @@ export default function RequestForm({
           placeholder="you@example.com"
           className={inputCls}
         />
-        <p className="text-xs text-gray-400">
+        <p className="text-xs text-gray-500">
           For backup delivery only. Your QR ticket will appear on the next screen — keep this page open after submitting.
         </p>
       </div>
@@ -385,7 +385,7 @@ export default function RequestForm({
         {pending ? 'Sending...' : 'Request Transfer →'}
       </button>
 
-      <p className="text-xs text-gray-400 text-center">
+      <p className="text-xs text-gray-500 text-center">
         This is a request, not a confirmed booking.<br />
         The concierge will confirm — keep this page open to receive your QR ticket.
       </p>

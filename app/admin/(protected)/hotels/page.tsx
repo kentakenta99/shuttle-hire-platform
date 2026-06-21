@@ -15,14 +15,14 @@ export default async function AdminHotelsPage() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">ホテル管理</h1>
-        <span className="text-xs text-gray-400 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full">
+        <span className="text-xs text-gray-500 bg-amber-50 border border-amber-200 text-amber-700 px-3 py-1 rounded-full">
           Phase 2 — 追加機能実装予定
         </span>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
         {!hotels || hotels.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center py-12">ホテルが登録されていません</p>
+          <p className="text-sm text-gray-500 text-center py-12">ホテルが登録されていません</p>
         ) : (
           <div className="divide-y divide-gray-50">
             {hotels.map(hotel => (
@@ -34,11 +34,11 @@ export default async function AdminHotelsPage() {
                       {hotel.is_active ? '有効' : '無効'}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-400 mt-0.5">{hotel.pickup_address}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{hotel.pickup_address}</p>
                 </div>
                 <div className="text-right shrink-0 space-y-0.5">
                   <p className="text-xs text-gray-500">{hotel.contact_email ?? '─'}</p>
-                  <p className="text-xs text-gray-400">セッション: {hotel.session_timeout_min}分</p>
+                  <p className="text-xs text-gray-500">セッション: {hotel.session_timeout_min}分</p>
                 </div>
                 <Link
                   href={`/admin/hotels/${hotel.id}`}

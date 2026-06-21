@@ -19,7 +19,7 @@ function LicensePlate({ plate }: { plate: string }) {
         <p className="text-xs text-green-800 font-bold tracking-widest mt-1 mb-0.5 text-center">TOKYO MK</p>
         <p className="text-3xl font-black tracking-[0.15em] text-gray-900 font-mono">{plate}</p>
       </div>
-      <p className="text-xs text-gray-400 mt-1.5">お乗りになる車両</p>
+      <p className="text-xs text-gray-500 mt-1.5">お乗りになる車両</p>
     </div>
   )
 }
@@ -110,14 +110,14 @@ export default async function GuestConfirmPage({ params }: Props) {
           <p className="font-mono text-base font-bold text-gray-700 mt-3 tracking-widest">
             {booking.confirmation_code}
           </p>
-          <p className="text-xs text-gray-400 mt-1">ドライバーにこの画面を見せてください</p>
-          <p className="text-xs text-gray-400">Please show this screen to your driver</p>
+          <p className="text-xs text-gray-500 mt-1">ドライバーにこの画面を見せてください</p>
+          <p className="text-xs text-gray-500">Please show this screen to your driver</p>
         </div>
 
         {/* 車両ナンバープレート */}
         {slot?.vehicle_plate && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center shadow-sm">
-            <p className="text-xs text-gray-400 mb-3">お乗りの車両 / Your Vehicle</p>
+            <p className="text-xs text-gray-500 mb-3">お乗りの車両 / Your Vehicle</p>
             <LicensePlate plate={slot.vehicle_plate} />
           </div>
         )}
@@ -141,7 +141,7 @@ export default async function GuestConfirmPage({ params }: Props) {
               ...(booking.notes ? [['備考 / Note', booking.notes]] : []),
             ].map(([label, value]) => (
               <div key={label} className="flex px-5 py-3 gap-3">
-                <span className="text-xs text-gray-400 w-32 shrink-0 mt-0.5">{label}</span>
+                <span className="text-xs text-gray-500 w-32 shrink-0 mt-0.5">{label}</span>
                 <span className="text-sm text-gray-900 font-medium">{value}</span>
               </div>
             ))}
@@ -149,12 +149,12 @@ export default async function GuestConfirmPage({ params }: Props) {
             {isDirectGuest && unitPrice != null && (
               <div className="px-5 py-3 space-y-1.5">
                 <div className="flex gap-3">
-                  <span className="text-xs text-gray-400 w-32 shrink-0 mt-0.5">料金 / Fare</span>
+                  <span className="text-xs text-gray-500 w-32 shrink-0 mt-0.5">料金 / Fare</span>
                   <div>
                     {priceDropped && (
                       <div className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 rounded-lg px-2 py-0.5 mb-1">
                         <span className="text-xs text-green-700 font-bold">🎉 割引適用</span>
-                        <span className="text-xs text-gray-400 line-through">¥{originalUnitPrice!.toLocaleString()}/名</span>
+                        <span className="text-xs text-gray-500 line-through">¥{originalUnitPrice!.toLocaleString()}/名</span>
                         <span className="text-xs text-green-600 font-bold">→ ¥{unitPrice.toLocaleString()}/名</span>
                       </div>
                     )}
@@ -162,7 +162,7 @@ export default async function GuestConfirmPage({ params }: Props) {
                       {booking.party_size}名 × ¥{unitPrice.toLocaleString()} ={' '}
                       <span className="text-blue-700">¥{(totalPrice ?? unitPrice * booking.party_size).toLocaleString()}</span>
                     </p>
-                    <p className="text-xs text-gray-400 mt-0.5">車内決済 / Paid in vehicle</p>
+                    <p className="text-xs text-gray-500 mt-0.5">車内決済 / Paid in vehicle</p>
                   </div>
                 </div>
               </div>
@@ -172,7 +172,7 @@ export default async function GuestConfirmPage({ params }: Props) {
 
         {/* 問い合わせ */}
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 shadow-sm">
-          <p className="text-xs text-gray-400 mb-1">当日のお問い合わせ / Inquiries</p>
+          <p className="text-xs text-gray-500 mb-1">当日のお問い合わせ / Inquiries</p>
           <p className="text-sm font-medium text-gray-900">東京エムケイ 配車センター</p>
           <p className="text-blue-600 font-bold text-lg mt-0.5">03-XXXX-XXXX</p>
         </div>
