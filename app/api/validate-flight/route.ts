@@ -6,7 +6,7 @@ export type FlightSuggestion = {
   airline: string
   terminal: string | null
   dest: string
-  scheduledDep: string | null  // ISO 8601
+  scheduledDep: string | null
 }
 
 type AviationFlight = {
@@ -37,67 +37,65 @@ function toSuggestion(f: AviationFlight): FlightSuggestion {
   }
 }
 
-async function searchAviationStack(params: URLSearchParams): Promise<AviationFlight[]> {
+// flight_date は AviationStack 無料プランで非対応のため使用しない
+async function fetchAirlineFlights(airlineCode: string): Promise<AviationFlight[]> {
   const key = process.env.AVIATIONSTACK_API_KEY
   if (!key) return []
-  params.set('access_key', key)
-  // 無料プランはHTTPのみ
-  const res = await fetch(`http://api.aviationstack.com/v1/flights?${params}`, {
-    next: { revalidate: 300 },
+
+  const params = new URLSearchParams({
+    access_key:   key,
+    airline_iata: airlineCode,
+    dep_iata:     'NRT',
+    limit:        '100',
   })
-  if (!res.ok) return []
-  const json = await res.json()
-  return (json.data ?? []) as AviationFlight[]
+
+  try {
+    const res = await fetch(`http://api.aviationstack.com/v1/flights?${params}`, {
+      next: { revalidate: 300 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    if (json.error) return []
+    return (json.data ?? []) as AviationFlight[]
+  } catch {
+    return []
+  }
 }
 
 export async function GET(req: NextRequest) {
-  const raw   = req.nextUrl.searchParams.get('q') ?? ''
-  const date  = req.nextUrl.searchParams.get('date') ?? ''
-  const q     = raw.replace(/\s+/g, '').toUpperCase()
+  const raw = req.nextUrl.searchParams.get('q') ?? ''
+  const q   = raw.replace(/\s+/g, '').toUpperCase()
 
   if (q.length < 3) {
     return NextResponse.json({ exact: null, suggestions: [] })
   }
 
-  // ステップ1: 成田発で完全一致
-  const p1 = new URLSearchParams({ flight_iata: q, dep_iata: 'NRT', limit: '5' })
-  if (date) p1.set('flight_date', date)
-  let flights = await searchAviationStack(p1)
-
-  // ステップ2: 成田限定で見つからない場合、成田制限なしで再試行（コードシェア等考慮）
-  if (flights.length === 0) {
-    const p2 = new URLSearchParams({ flight_iata: q, limit: '5' })
-    if (date) p2.set('flight_date', date)
-    flights = await searchAviationStack(p2)
-  }
-
-  if (flights.length > 0) {
-    return NextResponse.json({ exact: toSuggestion(flights[0]), suggestions: [] })
-  }
-
-  // ステップ3: 候補検索（同一キャリア・成田発で近い番号）
-  const carrierMatch = q.match(/^([A-Z]{2,3})(\d+)$/)
-  if (!carrierMatch) {
+  const match = q.match(/^([A-Z]{2,3})(\d+)$/)
+  if (!match) {
     return NextResponse.json({ exact: null, suggestions: [] })
   }
 
-  const [, airlineCode, flightNum] = carrierMatch
-  const targetNum = parseInt(flightNum, 10)
+  const [, airlineCode, flightNumStr] = match
+  const targetNum = parseInt(flightNumStr, 10)
 
-  const p3 = new URLSearchParams({ airline_iata: airlineCode, dep_iata: 'NRT', limit: '100' })
-  if (date) p3.set('flight_date', date)
-  const candidates = await searchAviationStack(p3)
+  const flights = await fetchAirlineFlights(airlineCode)
 
-  const suggestions = candidates
+  // 完全一致を探す
+  const exact = flights.find(f => parseInt(f.flight.number, 10) === targetNum)
+  if (exact) {
+    return NextResponse.json({ exact: toSuggestion(exact), suggestions: [] })
+  }
+
+  // 近い番号の候補（±100 以内、最大3件）
+  const suggestions = flights
     .filter(f => {
       const num = parseInt(f.flight.number, 10)
       return !isNaN(num) && Math.abs(num - targetNum) <= 100
     })
-    .sort((a, b) => {
-      const da = Math.abs(parseInt(a.flight.number, 10) - targetNum)
-      const db = Math.abs(parseInt(b.flight.number, 10) - targetNum)
-      return da - db
-    })
+    .sort((a, b) =>
+      Math.abs(parseInt(a.flight.number, 10) - targetNum) -
+      Math.abs(parseInt(b.flight.number, 10) - targetNum)
+    )
     .slice(0, 3)
     .map(toSuggestion)
 

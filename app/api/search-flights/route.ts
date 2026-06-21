@@ -53,7 +53,6 @@ export async function GET(req: NextRequest) {
   const airline   = searchParams.get('airline')?.toUpperCase().trim()
   const dest      = searchParams.get('dest')?.toUpperCase().trim()
   const timeRange = searchParams.get('timeRange')?.toLowerCase()
-  const date      = searchParams.get('date') ?? ''
 
   if (!airline) {
     return NextResponse.json({ error: 'airline is required', suggestions: [] }, { status: 400 })
@@ -67,13 +66,13 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ suggestions: [] })
   }
 
+  // flight_date は AviationStack 無料プランで非対応のため使用しない
   const params = new URLSearchParams({
     access_key:   key,
     airline_iata: airline,
     dep_iata:     'NRT',
     limit:        '100',
   })
-  if (date) params.set('flight_date', date)
   if (dest) params.set('arr_iata', dest)
 
   try {
@@ -83,6 +82,7 @@ export async function GET(req: NextRequest) {
     if (!res.ok) return NextResponse.json({ suggestions: [] })
 
     const json = await res.json()
+    if (json.error) return NextResponse.json({ suggestions: [] })
     let flights: AviationFlight[] = json.data ?? []
 
     // 時間帯フィルタ（API側にパラメーターがないためクライアント側でフィルタ）
