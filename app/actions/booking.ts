@@ -3,7 +3,12 @@
 import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { redirect } from 'next/navigation'
-import { sendBookingConfirmation, sendGuestBookingConfirmation, sendCancellationNotice } from '@/lib/email'
+import {
+  sendBookingConfirmation,
+  sendGuestBookingConfirmation,
+  sendCancellationNotice,
+  sendGuestCancellationEmail,
+} from '@/lib/email'
 
 export async function createBooking(formData: FormData): Promise<{ error: string } | never> {
   const supabase = await createClient()
@@ -161,4 +166,84 @@ export async function cancelBooking(
   }
 
   return { success: true }
+}
+
+// ゲスト自身によるキャンセル（認証不要）
+// 出発2時間以上前: 無料 / 2時間以内: total_price の 25% を徴収
+export async function guestCancelBooking(
+  confirmationCode: string
+): Promise<{ error: string } | { success: true; fee: number }> {
+  const db = createAdminClient()
+
+  const { data: booking } = await db
+    .from('bookings')
+    .select('*, shuttle_slots(id, date, departure_time, remaining_seats, capacity, status)')
+    .eq('confirmation_code', confirmationCode.toUpperCase())
+    .eq('status', 'confirmed')
+    .single()
+
+  if (!booking) {
+    return { error: 'この予約は見つかりません。すでにキャンセル済みかご利用済みの可能性があります。' }
+  }
+
+  const slot = booking.shuttle_slots as unknown as {
+    id: string
+    date: string
+    departure_time: string
+    remaining_seats: number
+    capacity: number
+    status: string
+  } | null
+
+  if (!slot) return { error: 'スロット情報が取得できません。' }
+
+  // 出発日時を JST で構築（departure_time は HH:MM:SS のローカル時刻）
+  const departureAt = new Date(`${slot.date}T${slot.departure_time}+09:00`)
+  const now = new Date()
+  const msUntilDeparture = departureAt.getTime() - now.getTime()
+
+  if (msUntilDeparture < 0) {
+    return { error: 'すでに出発時刻を過ぎているためキャンセルできません。' }
+  }
+
+  const TWO_HOURS_MS = 2 * 60 * 60 * 1000
+  const b = booking as unknown as Record<string, unknown>
+  const totalPrice = (b.total_price as number | null) ?? 0
+  const isFeeApplicable = msUntilDeparture < TWO_HOURS_MS
+  const cancellationFee = isFeeApplicable ? Math.round(totalPrice * 0.25) : 0
+
+  // 予約をキャンセル（eq('status','confirmed') で二重キャンセルを防ぐ）
+  const { error: updateError } = await db
+    .from('bookings')
+    .update({
+      status: 'cancelled',
+      cancelled_reason: isFeeApplicable ? 'guest_cancel_with_fee' : 'guest_cancel_free',
+      cancelled_at: new Date().toISOString(),
+      cancellation_fee: cancellationFee,
+    })
+    .eq('id', booking.id)
+    .eq('status', 'confirmed')
+
+  if (updateError) return { error: 'キャンセル処理に失敗しました。もう一度お試しください。' }
+
+  // スロットの空席を復元
+  const newRemaining = Math.min(slot.remaining_seats + booking.party_size, slot.capacity)
+  const slotUpdate: Record<string, unknown> = { remaining_seats: newRemaining }
+  if (slot.status === 'full') slotUpdate.status = 'open'
+  await db.from('shuttle_slots').update(slotUpdate).eq('id', slot.id)
+
+  // ゲストへのキャンセル確認メール
+  const guestEmail = (b.guest_email as string | null)
+  if (guestEmail) {
+    await sendGuestCancellationEmail(guestEmail, {
+      guestName: booking.guest_name,
+      confirmationCode: booking.confirmation_code,
+      date: slot.date,
+      departureTime: slot.departure_time,
+      cancellationFee,
+      totalPrice,
+    }).catch(e => console.error('[email] ゲストキャンセルメール送信失敗:', e))
+  }
+
+  return { success: true, fee: cancellationFee }
 }

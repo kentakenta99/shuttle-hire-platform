@@ -1,6 +1,7 @@
 import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import QRCode from 'qrcode'
+import GuestCancelButton from './GuestCancelButton'
 
 type Props = { params: Promise<{ confirmationCode: string }> }
 
@@ -14,7 +15,6 @@ function LicensePlate({ plate }: { plate: string }) {
   return (
     <div className="inline-flex flex-col items-center">
       <div className="bg-white border-4 border-green-700 rounded-lg px-6 py-3 shadow-md relative">
-        {/* 上部の緑帯 */}
         <div className="absolute top-0 left-0 right-0 h-1.5 bg-green-700 rounded-t" />
         <p className="text-xs text-green-800 font-bold tracking-widest mt-1 mb-0.5 text-center">TOKYO MK</p>
         <p className="text-3xl font-black tracking-[0.15em] text-gray-900 font-mono">{plate}</p>
@@ -28,11 +28,11 @@ export default async function GuestConfirmPage({ params }: Props) {
   const { confirmationCode } = await params
   const supabase = createServiceClient()
 
+  // キャンセル済みも含めて取得（.neq('status','cancelled') を外した）
   const { data: booking } = await supabase
     .from('bookings')
     .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
     .eq('confirmation_code', confirmationCode.toUpperCase())
-    .neq('status', 'cancelled')
     .single()
 
   if (!booking) notFound()
@@ -43,13 +43,56 @@ export default async function GuestConfirmPage({ params }: Props) {
     vehicle_plate: string | null
   } | null
 
-  // 型定義に含まれない新カラムは unknown 経由でアクセス
+  // ── キャンセル済み表示 ──────────────────────────────
+  if (booking.status === 'cancelled') {
+    const b = booking as unknown as Record<string, unknown>
+    const cancellationFee = (b.cancellation_fee as number | null) ?? 0
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-start justify-center py-12 px-4">
+        <div className="w-full max-w-sm space-y-4 text-center">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center shadow">
+              <span className="text-white text-lg font-black tracking-tight">MK</span>
+            </div>
+            <div className="text-left">
+              <p className="text-base font-bold text-gray-900 leading-tight">東京エムケイ</p>
+              <p className="text-xs text-gray-500">Shuttle Hire</p>
+            </div>
+          </div>
+
+          <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-8 space-y-2">
+            <p className="text-4xl">❌</p>
+            <p className="text-red-700 font-bold text-lg">この予約はキャンセル済みです</p>
+            <p className="font-mono text-sm text-gray-500">{booking.confirmation_code}</p>
+          </div>
+
+          {slot && (
+            <div className="bg-white rounded-xl border border-gray-200 px-5 py-3 text-sm text-gray-500">
+              {formatDate(slot.date)} {slot.departure_time.slice(0, 5)} 発便
+            </div>
+          )}
+
+          {cancellationFee > 0 && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl px-5 py-3 text-sm">
+              <p className="text-amber-700">
+                キャンセル料：<strong className="text-amber-900">¥{cancellationFee.toLocaleString()}</strong>
+              </p>
+              <p className="text-amber-600 text-xs mt-1">担当よりご連絡いたします</p>
+            </div>
+          )}
+
+          <p className="text-center text-xs text-gray-300">© 東京エムケイ株式会社</p>
+        </div>
+      </div>
+    )
+  }
+
+  // ── 通常チケット表示 ──────────────────────────────
   const b = booking as unknown as Record<string, unknown>
   const unitPrice: number | null = (b.unit_price as number | null) ?? null
   const totalPrice: number | null = (b.total_price as number | null) ?? null
   const originalUnitPrice: number | null = (b.original_unit_price as number | null) ?? null
 
-  // billing_type を別取得（hotel_invoice は料金非表示）
   let isDirectGuest = false
   if (unitPrice != null && booking.hotel_id) {
     const { data: hotel } = await supabase
@@ -62,7 +105,6 @@ export default async function GuestConfirmPage({ params }: Props) {
 
   const priceDropped = isDirectGuest && unitPrice != null && originalUnitPrice != null && unitPrice < originalUnitPrice
 
-  // ドライバーがスキャンするQR → 確認番号のみエンコード（URLではない）
   const qrSvg = await QRCode.toString(booking.confirmation_code, {
     type: 'svg',
     margin: 1,
@@ -76,7 +118,7 @@ export default async function GuestConfirmPage({ params }: Props) {
     <div className="min-h-screen bg-slate-50 flex items-start justify-center py-6 px-4">
       <div className="w-full max-w-sm space-y-4">
 
-        {/* ヘッダー: MKロゴ */}
+        {/* ヘッダー */}
         <div className="text-center">
           <div className="inline-flex items-center gap-3 mb-2">
             <div className="w-12 h-12 bg-blue-700 rounded-xl flex items-center justify-center shadow">
@@ -96,7 +138,7 @@ export default async function GuestConfirmPage({ params }: Props) {
           </div>
         )}
 
-        {/* QRコード — チケットの主役 */}
+        {/* QRコード */}
         <div className="bg-white rounded-2xl border border-gray-200 p-6 text-center shadow-sm">
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">
             乗車チケット — Boarding Pass
@@ -145,7 +187,6 @@ export default async function GuestConfirmPage({ params }: Props) {
                 <span className="text-sm text-gray-900 font-medium">{value}</span>
               </div>
             ))}
-            {/* 車内決済の場合のみ料金表示 */}
             {isDirectGuest && unitPrice != null && (
               <div className="px-5 py-3 space-y-1.5">
                 <div className="flex gap-3">
@@ -169,6 +210,23 @@ export default async function GuestConfirmPage({ params }: Props) {
             )}
           </div>
         </div>
+
+        {/* キャンセルポリシー + ボタン（搭乗済みは非表示） */}
+        {!isBoarded && slot && (
+          <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
+            <div className="text-xs text-gray-400 space-y-0.5">
+              <p className="font-semibold text-gray-500">キャンセルポリシー</p>
+              <p>• 出発2時間以上前：無料</p>
+              <p>• 出発2時間以内：予約額の25%</p>
+            </div>
+            <GuestCancelButton
+              confirmationCode={booking.confirmation_code}
+              date={slot.date}
+              departureTime={slot.departure_time}
+              totalPrice={totalPrice}
+            />
+          </div>
+        )}
 
         {/* 問い合わせ */}
         <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 shadow-sm">

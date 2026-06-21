@@ -397,3 +397,66 @@ export async function sendDriverAssignment(to: string, info: {
 </html>`,
   })
 }
+
+export async function sendGuestCancellationEmail(to: string, info: {
+  guestName: string
+  confirmationCode: string
+  date: string
+  departureTime: string
+  cancellationFee: number
+  totalPrice: number
+}) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  const isFee = info.cancellationFee > 0
+  const feeLabel = isFee
+    ? `¥${info.cancellationFee.toLocaleString()}（ご予約額の25%）`
+    : '無料'
+
+  return send({
+    from: FROM,
+    to,
+    subject: `【キャンセル確認】${info.guestName} 様 / ${departureLabel}`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#ef4444;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#fecaca;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">予約をキャンセルしました</h1>
+  </div>
+
+  <p style="color:#475569;font-size:14px">${info.guestName} 様、以下の予約がキャンセルされました。</p>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    ${[
+      ['確認番号', `<span style="font-family:monospace">${info.confirmationCode}</span>`],
+      ['出発日時', departureLabel],
+      ['キャンセル料', `<strong${isFee ? ' style="color:#dc2626"' : ' style="color:#16a34a"'}>${feeLabel}</strong>`],
+    ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b;width:35%">${label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px">${value}</td>
+    </tr>`).join('')}
+  </table>
+
+  ${isFee ? `
+  <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:16px;margin:16px 0">
+    <p style="font-size:13px;color:#dc2626;margin:0">
+      出発2時間以内のキャンセルのため、キャンセル料 ¥${info.cancellationFee.toLocaleString()} が発生しました。<br>
+      お支払い方法については担当スタッフよりご連絡いたします。
+    </p>
+  </div>` : `
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0">
+    <p style="font-size:13px;color:#16a34a;margin:0">
+      キャンセル料は発生しません。またのご利用をお待ちしております。
+    </p>
+  </div>`}
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    東京エムケイ株式会社 シャトルハイヤー予約システム
+  </p>
+</body>
+</html>`,
+  })
+}
