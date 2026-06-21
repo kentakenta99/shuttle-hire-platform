@@ -38,12 +38,10 @@ type Props = {
 }
 
 function formatTime(iso: string | null): string {
-  if (!iso) return ''
-  try {
-    return new Date(iso).toLocaleTimeString('ja-JP', {
-      hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Tokyo',
-    })
-  } catch { return '' }
+  if (!iso || iso.length < 16) return ''
+  // AviationStack 無料プランはローカル出発時刻を UTC として誤ラベリングするため
+  // タイムゾーン変換せずに ISO 文字列から時刻を直接取得する
+  return iso.substring(11, 16)
 }
 
 function SuggestionCard({
