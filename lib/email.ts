@@ -230,3 +230,58 @@ export async function sendSuspensionNotice(to: string, info: {
 </html>`,
   })
 }
+
+export async function sendDriverAssignment(to: string, info: {
+  driverName: string
+  date: string
+  departureTime: string
+  capacity: number
+  remainingSeats: number
+  vehicleType: string
+  notes: string | null
+}) {
+  const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  const booked = info.capacity - info.remainingSeats
+  return send({
+    from: FROM,
+    to,
+    subject: `【乗務アサイン】${departureLabel} シャトルハイヤー`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:600px;margin:0 auto;padding:24px">
+  <div style="background:#0f172a;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#94a3b8;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:22px;margin:4px 0 0">乗務アサインのご連絡</h1>
+  </div>
+
+  <p style="color:#475569;font-size:14px">${info.driverName} 乗務員 殿<br><br>
+  以下の便に乗務をアサインしました。ご確認ください。</p>
+
+  <table style="width:100%;border-collapse:collapse;margin:16px 0">
+    ${[
+      ['出発日時', `<strong style="font-size:18px;color:#0f172a">${departureLabel}</strong>`],
+      ['車両種別', info.vehicleType || '未定'],
+      ['予約人数', `${booked}名 / 定員${info.capacity}名`],
+      ...(info.notes ? [['備考', info.notes]] : []),
+    ].map(([label, value]) => `
+    <tr>
+      <td style="padding:10px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:13px;color:#64748b;width:35%">${label}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #e2e8f0;font-size:14px">${value}</td>
+    </tr>`).join('')}
+  </table>
+
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:16px;margin:20px 0">
+    <p style="font-size:13px;color:#0369a1;margin:0">
+      ご不明な点は配車センターまでご連絡ください。
+    </p>
+  </div>
+
+  <p style="font-size:12px;color:#94a3b8;margin-top:24px">
+    東京エムケイ株式会社 シャトルハイヤー予約システム
+  </p>
+</body>
+</html>`,
+  })
+}
