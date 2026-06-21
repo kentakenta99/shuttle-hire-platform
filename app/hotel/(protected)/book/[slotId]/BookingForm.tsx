@@ -168,14 +168,27 @@ export default function BookingForm({ slotId, slotLabel, capacity, pricingTiers,
       </div>
 
       {state?.error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
-          {state.error}
-        </div>
+        state.error.includes('満席') || state.error.includes('締切') ? (
+          <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-4 space-y-3">
+            <p className="text-sm font-medium text-orange-800">この便は満席または締切済みです</p>
+            <p className="text-xs text-orange-700">別の便をお選びください。</p>
+            <a
+              href="/hotel/calendar"
+              className="block text-center w-full border border-orange-400 text-orange-700 py-2 rounded-lg text-sm hover:bg-orange-100 transition font-medium"
+            >
+              ← 空き枠一覧に戻る
+            </a>
+          </div>
+        ) : (
+          <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-3 text-sm text-red-700">
+            {state.error}
+          </div>
+        )
       )}
 
       <button
         type="submit"
-        disabled={pending}
+        disabled={pending || (!!state?.error && (state.error.includes('満席') || state.error.includes('締切')))}
         className="w-full bg-blue-600 text-white py-3 rounded-xl text-sm font-medium hover:bg-blue-700 transition disabled:opacity-60"
       >
         {pending ? '予約を処理中...' : '予約を確定する'}
