@@ -388,6 +388,13 @@ export default function RequestForm({
         This is a request, not a confirmed booking.<br />
         The concierge will confirm — keep this page open to receive your QR ticket.
       </p>
+      <p className="text-[11px] text-gray-300 text-center">
+        送信することで
+        <a href="/privacy" target="_blank" rel="noopener noreferrer" className="underline hover:text-gray-500 transition">
+          プライバシーポリシー
+        </a>
+        に同意したものとみなします
+      </p>
     </form>
   )
 }

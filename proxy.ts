@@ -10,7 +10,7 @@ const AUTH_ROUTES: { prefix: string; login: string }[] = [
 ]
 
 // ログインページ自体やパブリックルート（チェック不要）
-const PUBLIC_PREFIXES = ['/hotel/login', '/admin/login', '/driver/login', '/confirm', '/request']
+const PUBLIC_PREFIXES = ['/hotel/login', '/admin/login', '/driver/login', '/confirm', '/request', '/privacy']
 
 export async function proxy(request: NextRequest) {
   let response = NextResponse.next({ request })
