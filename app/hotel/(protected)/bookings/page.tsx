@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import RefreshButton from '@/app/components/RefreshButton'
 import BookingsClient from './BookingsClient'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,6 +17,9 @@ export default async function BookingsPage() {
 
   return (
     <div>
+      <div className="mb-4">
+        <Link href="/hotel/calendar" className="text-blue-600 text-sm hover:underline">← 空き枠一覧</Link>
+      </div>
       <div className="flex items-center justify-between mb-4">
         <h1 className="text-lg font-bold text-gray-900">予約履歴（直近30日）</h1>
         <RefreshButton />
