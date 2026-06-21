@@ -1,3 +1,5 @@
+import { getNrtTerminalFromFlight } from './nrt-terminals'
+
 export type FlightInfo = {
   flightNumber:        string
   scheduledDeparture:  string | null  // ISO 8601
@@ -52,7 +54,7 @@ export async function fetchFlightInfo(
       estimatedDeparture: estimated,
       status:             f.flight_status ?? null,
       airline:            f.airline?.name  ?? null,
-      terminal:           f.departure?.terminal ?? null,
+      terminal:           f.departure?.terminal ?? getNrtTerminalFromFlight(iata),
       delayMinutes,
     }
   } catch {

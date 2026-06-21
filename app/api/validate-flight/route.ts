@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getNrtTerminalFromFlight } from '@/lib/nrt-terminals'
 
 export type FlightSuggestion = {
   iata: string
@@ -25,10 +26,12 @@ type AviationFlight = {
 }
 
 function toSuggestion(f: AviationFlight): FlightSuggestion {
+  const flightIata = f.flight.iata.toUpperCase()
+  const terminal = f.departure.terminal ?? getNrtTerminalFromFlight(flightIata)
   return {
-    iata:         f.flight.iata.toUpperCase(),
+    iata:         flightIata,
     airline:      f.airline.name,
-    terminal:     f.departure.terminal ?? null,
+    terminal,
     dest:         f.arrival.airport,
     scheduledDep: f.departure.estimated ?? f.departure.scheduled ?? null,
   }
