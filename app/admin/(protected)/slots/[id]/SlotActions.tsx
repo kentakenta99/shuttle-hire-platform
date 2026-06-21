@@ -181,6 +181,8 @@ export function DriverAssignForm({
   const eligible   = drivers.filter(d => d.is_shuttle_eligible)
   const ineligible = drivers.filter(d => !d.is_shuttle_eligible)
 
+  const isUnchanged = selected === (currentEmployeeCode ?? '')
+
   const filtered = (q: string, list: DriverOption[]) =>
     q.trim() === ''
       ? list
@@ -188,8 +190,9 @@ export function DriverAssignForm({
           (d.display_name ?? '').includes(q) || d.employee_code.includes(q)
         )
 
-  const matchedEligible   = filtered(query, eligible)
-  const matchedIneligible = filtered(query, ineligible)
+  // 選択済みはバナーで表示するのでリストから除外
+  const matchedEligible   = filtered(query, eligible).filter(d => d.employee_code !== selected)
+  const matchedIneligible = filtered(query, ineligible).filter(d => d.employee_code !== selected)
   const showIneligible    = query.trim() !== '' && matchedIneligible.length > 0
 
   return (
@@ -241,7 +244,7 @@ export function DriverAssignForm({
             </button>
           ))}
         </div>
-      ) : drivers.length > 0 && query.trim() === '' ? (
+      ) : eligible.length === 0 && query.trim() === '' ? (
         <p className="text-xs text-gray-500 text-center py-2">
           シャトル対象乗務員がいません。名前または社員番号で検索してください。
         </p>
@@ -267,10 +270,10 @@ export function DriverAssignForm({
 
       <button
         type="submit"
-        disabled={pending}
-        className="w-full py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-60"
+        disabled={pending || isUnchanged}
+        className="w-full py-2 bg-slate-800 text-white text-xs rounded-lg hover:bg-slate-700 transition disabled:opacity-40 disabled:cursor-not-allowed"
       >
-        {pending ? '保存中...' : selected ? 'アサインする' : 'アサイン解除'}
+        {pending ? '保存中...' : !selected ? 'アサイン解除' : 'アサインする'}
       </button>
     </form>
   )
