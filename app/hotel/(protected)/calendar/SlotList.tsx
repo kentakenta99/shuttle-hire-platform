@@ -76,6 +76,61 @@ function SeatIcons({ capacity, remaining }: { capacity: number; remaining: numbe
   )
 }
 
+function SlotAlternatives({ slot, dateSlots, allSlots }: {
+  slot: ShuttleSlot
+  dateSlots: ShuttleSlot[]
+  allSlots: ShuttleSlot[]
+}) {
+  const now = new Date()
+  const sameDayAlts = dateSlots.filter(s =>
+    s.id !== slot.id &&
+    s.status === 'open' &&
+    s.remaining_seats > 0 &&
+    new Date(s.cutoff_at) > now
+  )
+  if (sameDayAlts.length > 0) {
+    return (
+      <div className="text-right">
+        <span className="text-xs text-gray-500 block mb-1">他の便</span>
+        <div className="flex gap-1 justify-end">
+          {sameDayAlts.slice(0, 2).map(alt => (
+            <Link key={alt.id} href={`/hotel/book/${alt.id}`}
+              className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg font-medium hover:bg-blue-100 transition">
+              {formatTime(alt.departure_time)}
+            </Link>
+          ))}
+        </div>
+      </div>
+    )
+  }
+  const nextSlot = allSlots.find(s =>
+    s.id !== slot.id &&
+    s.status === 'open' &&
+    s.remaining_seats > 0 &&
+    new Date(s.cutoff_at) > now &&
+    (s.date > slot.date || (s.date === slot.date && s.departure_time > slot.departure_time))
+  )
+  if (nextSlot) {
+    const d = new Date(nextSlot.date + 'T00:00:00')
+    const wd = ['日','月','火','水','木','金','土'][d.getDay()]
+    return (
+      <div className="text-right">
+        <span className="text-xs text-gray-500 block mb-1">次の便</span>
+        <Link href={`/hotel/book/${nextSlot.id}`}
+          className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg font-medium hover:bg-blue-100 transition block">
+          {d.getMonth()+1}/{d.getDate()}（{wd}）{formatTime(nextSlot.departure_time)}
+        </Link>
+      </div>
+    )
+  }
+  return (
+    <div className="text-right">
+      <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
+      <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
+    </div>
+  )
+}
+
 function groupByDate(slots: ShuttleSlot[]) {
   const map = new Map<string, ShuttleSlot[]>()
   for (const s of slots) {
@@ -171,10 +226,7 @@ export default function SlotList({ initialSlots }: Props) {
                           予約する
                         </Link>
                       ) : slot.status === 'full' ? (
-                        <div className="text-right">
-                          <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
-                          <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
-                        </div>
+                        <SlotAlternatives slot={slot} dateSlots={dateSlots} allSlots={slots} />
                       ) : (
                         <span className="text-sm text-gray-500">─</span>
                       )}
