@@ -29,11 +29,22 @@ export default async function GuestConfirmPage({ params }: Props) {
   const supabase = createServiceClient()
 
   // キャンセル済みも含めて取得（.neq('status','cancelled') を外した）
-  const { data: booking } = await supabase
-    .from('bookings')
-    .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
-    .eq('confirmation_code', confirmationCode.toUpperCase())
-    .single()
+  const [{ data: booking }, { data: rawPolicy }] = await Promise.all([
+    supabase
+      .from('bookings')
+      .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
+      .eq('confirmation_code', confirmationCode.toUpperCase())
+      .single(),
+    supabase
+      .from('cancellation_policies')
+      .select('threshold_hours, fee_pct')
+      .limit(1)
+      .single(),
+  ])
+
+  const policy = rawPolicy as unknown as { threshold_hours: number; fee_pct: number } | null
+  const thresholdHours = policy?.threshold_hours ?? 2
+  const feePct = policy?.fee_pct ?? 25
 
   if (!booking) notFound()
 
@@ -216,14 +227,16 @@ export default async function GuestConfirmPage({ params }: Props) {
           <div className="bg-white rounded-2xl border border-gray-200 p-5 shadow-sm space-y-3">
             <div className="text-xs text-gray-400 space-y-0.5">
               <p className="font-semibold text-gray-500">キャンセルポリシー</p>
-              <p>• 出発2時間以上前：無料</p>
-              <p>• 出発2時間以内：予約額の25%</p>
+              <p>• 出発{thresholdHours % 1 === 0 ? `${thresholdHours}時間` : `${thresholdHours}時間`}以上前：無料</p>
+              <p>• 出発{thresholdHours % 1 === 0 ? `${thresholdHours}時間` : `${thresholdHours}時間`}以内：予約額の{feePct}%</p>
             </div>
             <GuestCancelButton
               confirmationCode={booking.confirmation_code}
               date={slot.date}
               departureTime={slot.departure_time}
               totalPrice={totalPrice}
+              thresholdHours={thresholdHours}
+              feePct={feePct}
             />
           </div>
         )}

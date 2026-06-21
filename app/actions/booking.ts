@@ -206,11 +206,19 @@ export async function guestCancelBooking(
     return { error: 'すでに出発時刻を過ぎているためキャンセルできません。' }
   }
 
-  const TWO_HOURS_MS = 2 * 60 * 60 * 1000
+  // キャンセルポリシーを DB から取得（見つからない場合はデフォルト値）
+  const { data: rawPolicy } = await db
+    .from('cancellation_policies')
+    .select('threshold_hours, fee_pct')
+    .limit(1)
+    .single()
+  const policyThresholdMs = ((rawPolicy as unknown as { threshold_hours?: number } | null)?.threshold_hours ?? 2) * 60 * 60 * 1000
+  const policyFeePct = (rawPolicy as unknown as { fee_pct?: number } | null)?.fee_pct ?? 25
+
   const b = booking as unknown as Record<string, unknown>
   const totalPrice = (b.total_price as number | null) ?? 0
-  const isFeeApplicable = msUntilDeparture < TWO_HOURS_MS
-  const cancellationFee = isFeeApplicable ? Math.round(totalPrice * 0.25) : 0
+  const isFeeApplicable = msUntilDeparture < policyThresholdMs
+  const cancellationFee = isFeeApplicable ? Math.round(totalPrice * policyFeePct / 100) : 0
 
   // 予約をキャンセル（eq('status','confirmed') で二重キャンセルを防ぐ）
   const { error: updateError } = await db

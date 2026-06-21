@@ -8,30 +8,45 @@ type Props = {
   date: string
   departureTime: string
   totalPrice: number | null
+  thresholdHours: number
+  feePct: number
 }
 
-function calcPolicy(date: string, departureTime: string, totalPrice: number | null) {
+function calcPolicy(
+  date: string,
+  departureTime: string,
+  totalPrice: number | null,
+  thresholdHours: number,
+  feePct: number
+) {
   const departureAt = new Date(`${date}T${departureTime}+09:00`)
   const msUntil = departureAt.getTime() - Date.now()
   const isPast = msUntil < 0
-  const isFee = !isPast && msUntil < 2 * 60 * 60 * 1000
-  const fee = isFee && totalPrice != null ? Math.round(totalPrice * 0.25) : null
+  const isFee = !isPast && msUntil < thresholdHours * 60 * 60 * 1000
+  const fee = isFee && totalPrice != null ? Math.round(totalPrice * feePct / 100) : null
   return { isPast, isFee, fee }
 }
 
-export default function GuestCancelButton({ confirmationCode, date, departureTime, totalPrice }: Props) {
+function formatThreshold(hours: number) {
+  if (hours % 1 === 0) return `${hours}時間`
+  return `${hours}時間（${hours * 60}分）`
+}
+
+export default function GuestCancelButton({
+  confirmationCode, date, departureTime, totalPrice, thresholdHours, feePct,
+}: Props) {
   const [open, setOpen]       = useState(false)
   const [pending, setPending] = useState(false)
   const [done, setDone]       = useState(false)
   const [paidFee, setPaidFee] = useState<number | null>(null)
   const [error, setError]     = useState<string | null>(null)
 
-  const { isPast, isFee, fee } = calcPolicy(date, departureTime, totalPrice)
+  const { isPast, isFee, fee } = calcPolicy(date, departureTime, totalPrice, thresholdHours, feePct)
+  const thresholdLabel = formatThreshold(thresholdHours)
 
   if (isPast || done) {
     if (!done) return null
 
-    // キャンセル完了画面
     return (
       <div className="bg-red-50 border border-red-200 rounded-2xl px-5 py-6 text-center space-y-2">
         <p className="text-2xl">❌</p>
@@ -67,7 +82,7 @@ export default function GuestCancelButton({ confirmationCode, date, departureTim
               <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 space-y-1">
                 <p className="text-amber-800 text-sm font-semibold">⚠️ キャンセル料が発生します</p>
                 <p className="text-amber-700 text-xs leading-relaxed">
-                  出発2時間以内のキャンセルには予約額の25%のキャンセル料がかかります。
+                  出発{thresholdLabel}以内のキャンセルには予約額の{feePct}%のキャンセル料がかかります。
                 </p>
                 {fee != null && (
                   <p className="text-amber-900 font-bold text-lg mt-1">
@@ -78,7 +93,9 @@ export default function GuestCancelButton({ confirmationCode, date, departureTim
             ) : (
               <div className="bg-green-50 border border-green-200 rounded-xl px-4 py-3 space-y-1">
                 <p className="text-green-800 text-sm font-semibold">✓ 無料でキャンセルできます</p>
-                <p className="text-green-700 text-xs">出発2時間以上前のためキャンセル料はかかりません。</p>
+                <p className="text-green-700 text-xs">
+                  出発{thresholdLabel}以上前のためキャンセル料はかかりません。
+                </p>
               </div>
             )}
 

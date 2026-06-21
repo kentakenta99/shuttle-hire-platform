@@ -154,6 +154,61 @@ export async function toggleUserActive(formData: FormData): Promise<ActionResult
   return { success: true }
 }
 
+export async function updateCancellationPolicy(
+  _prev: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const caller = await verifySuperAdmin()
+  if (!caller) return { error: '権限がありません' }
+
+  const thresholdHours = parseFloat(formData.get('threshold_hours') as string)
+  const feePct = parseInt(formData.get('fee_pct') as string, 10)
+  const note = (formData.get('note') as string)?.trim() || null
+
+  if (isNaN(thresholdHours) || thresholdHours <= 0) return { error: '閾値時間数は正の数を入力してください' }
+  if (isNaN(feePct) || feePct < 0 || feePct > 100) return { error: 'キャンセル料率は 0〜100 の整数で入力してください' }
+
+  const adminDb = createAdminClient()
+
+  const { data: adminUser } = await adminDb
+    .from('tmk_admin_users')
+    .select('name')
+    .eq('user_id', caller.id)
+    .single()
+
+  const updaterName = (adminUser as unknown as { name?: string } | null)?.name ?? caller.email ?? 'unknown'
+
+  // 唯一の行を upsert（なければ INSERT、あれば UPDATE）
+  const { data: existing } = await adminDb
+    .from('cancellation_policies')
+    .select('id')
+    .limit(1)
+    .single()
+
+  if (existing) {
+    await adminDb
+      .from('cancellation_policies')
+      .update({
+        threshold_hours: thresholdHours,
+        fee_pct: feePct,
+        note,
+        updated_at: new Date().toISOString(),
+        updated_by_name: updaterName,
+      })
+      .eq('id', existing.id)
+  } else {
+    await adminDb.from('cancellation_policies').insert({
+      threshold_hours: thresholdHours,
+      fee_pct: feePct,
+      note,
+      updated_by_name: updaterName,
+    })
+  }
+
+  revalidatePath('/admin/superadmin/settings')
+  return { success: true }
+}
+
 export async function generatePasswordResetLink(
   _prev: ActionResult | null,
   formData: FormData

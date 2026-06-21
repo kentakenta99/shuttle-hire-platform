@@ -31,6 +31,7 @@ export default async function SuperAdminLayout({ children }: { children: React.R
         {[
           { href: '/admin/superadmin', label: 'ダッシュボード' },
           { href: '/admin/superadmin/users', label: 'ユーザー管理' },
+          { href: '/admin/superadmin/settings', label: 'システム設定' },
         ].map(({ href, label }) => (
           <Link
             key={href}
