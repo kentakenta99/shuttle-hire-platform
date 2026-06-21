@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 
 type Item = { q: string; a: string }
 type Section = { title: string; items: Item[] }
@@ -122,6 +123,9 @@ function FaqItem({ q, a }: Item) {
 export default function FaqPage() {
   return (
     <div>
+      <div className="mb-4">
+        <Link href="/hotel/calendar" className="text-blue-600 text-sm hover:underline">← 空き枠一覧</Link>
+      </div>
       <h1 className="text-lg font-bold text-gray-900 mb-6">よくある質問</h1>
       <div className="space-y-5">
         {SECTIONS.map(section => (
