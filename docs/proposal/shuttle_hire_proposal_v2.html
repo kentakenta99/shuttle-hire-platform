@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MKシャトルハイヤー予約プラットフォーム v2.0 提案書</title>
+<title>MKシャトルハイヤー予約プラットフォーム v2.2 提案書</title>
 <style>
   :root {
     --mk-blue: #1a3a6b;
@@ -511,7 +511,7 @@
   <div class="cover-logo">MK</div>
   <h1>シャトルハイヤー<br>予約プラットフォーム</h1>
   <p class="cover-sub">ホテル × 東京エムケイ × ドライバー をつなぐ B2B 予約システム</p>
-  <div class="cover-version">提案書 v2.1 ― 2026年6月</div>
+  <div class="cover-version">提案書 v2.2 ― 2026年6月</div>
   <div class="cover-tags">
     <span class="cover-tag">🏨 ホテルスタッフ向けUI</span>
     <span class="cover-tag">🚗 ドライバー向けUI</span>
@@ -522,6 +522,9 @@
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">🎫 ゲストセルフ予約LP</span>
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">⏱ リアルタイムQRポーリング</span>
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">💰 動的価格・最安値確約</span>
+    <span class="cover-tag" style="background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4)">📧 メール通知 稼働中</span>
+    <span class="cover-tag" style="background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4)">🛡️ レートリミット実装済</span>
+    <span class="cover-tag" style="background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.4)">❓ スタッフFAQ</span>
   </div>
 </div>
 
@@ -1459,6 +1462,7 @@
           <li>Row Level Security（Supabase RLS）で全テーブル保護</li>
           <li>管理操作はサービスロールキー + 呼び出し元ロール検証</li>
           <li>Refresh Token Rotation + 競合対策（getSession()）</li>
+          <li>IP別レートリミット（60分に3件）でスパム予約を防止</li>
         </ul>
       </div>
       <div class="security-card">
@@ -1519,8 +1523,8 @@
       </div>
       <div class="arch-card">
         <div class="arch-icon">📧</div>
-        <h3>Resend（予定）</h3>
-        <p>予約確認メール・ホテルへの通知メールを送信。確認URLとQRコードを自動添付。</p>
+        <h3>Resend <span style="font-size:.7rem;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:99px;font-weight:700;vertical-align:middle">稼働中</span></h3>
+        <p>予約確認・キャンセル通知をゲスト・ホテル双方へ自動送信。QRコード付き乗車案内メールも即時配信。</p>
       </div>
       <div class="arch-card">
         <div class="arch-icon">🔗</div>
@@ -1531,6 +1535,53 @@
         <div class="arch-icon">🤖</div>
         <h3>Booknetics API（Phase 4）</h3>
         <p>エミレーツ便乗客数を自動取得し、シャトル枠の自動生成・ホテル通知まで全自動化。</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
+     NEW v2.2: Operational Updates
+════════════════════════════════════════════════ -->
+<div class="section" style="background: var(--bg-light);">
+  <div class="container">
+    <p class="section-label">New in v2.2 — Operational Quality</p>
+    <h2 class="section-title">v2.2 運用品質アップデート <span class="new-badge">NEW</span></h2>
+    <p class="section-desc">
+      ホテルオークラ東京での本格稼働に向けて、メール通知の実装・セキュリティ強化・
+      スタッフUX改善を一括実施。
+    </p>
+
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="feature-icon">📧</div>
+        <h3>メール通知 稼働開始</h3>
+        <p>RESEND連携が完了し本番稼働中。予約確定・キャンセル時にゲストとホテルへQRコード付きメールを自動送信。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>IPレートリミット</h3>
+        <p>同一IPからの booking_request を60分あたり3件に制限。スパム予約・DoS攻撃をDB層で遮断。外部依存ゼロの軽量実装。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">❌</div>
+        <h3>キャンセルフロー強化</h3>
+        <p>キャンセル理由の入力欄を追加。ホテル・ゲスト双方へ理由付きキャンセル通知メールを自動送信。請求タイプ（月末請求 / 車内決済）に応じた案内を画面に表示。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚠️</div>
+        <h3>エラーUX改善</h3>
+        <p>満席エラー時は「空き枠一覧に戻る」リンク付きオレンジバナーを表示し、送信ボタンを自動無効化。予期しないサーバーエラー時の専用エラー画面も追加。</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">❓</div>
+        <h3>ホテルスタッフFAQ</h3>
+        <p>ナビバーに「FAQ」を追加。予約フロー・キャンセル・メール・料金・トラブル対応の5セクション・18問をアコーディオン形式で掲載。</p>
+      </div>
+      <div class="feature-card" style="background:#f0fdf4;border-color:#86efac;">
+        <div class="feature-icon">✅</div>
+        <h3>本番稼働確認済み</h3>
+        <p>ホテルオークラ東京スタッフアカウントにて動作確認完了。予約確定→ゲストへのQRメール送信→ドライバー乗車確認のフルフローが本番環境で稼働中。</p>
       </div>
     </div>
   </div>
@@ -1567,6 +1618,10 @@
           <li>✓ コンシェルジュ・リクエスト管理画面</li>
           <li>✓ 動的価格・最安値確約システム</li>
           <li>✓ 月次請求書の自動生成（total_price対応）</li>
+          <li>✓ メール通知稼働（RESEND連携）</li>
+          <li>✓ スパム防止レートリミット</li>
+          <li>✓ キャンセルフロー改善（理由・メール通知）</li>
+          <li>✓ ホテルスタッフFAQページ</li>
           <li>→ ホテルオークラ東京 本格稼働</li>
           <li>→ 追加ホテルへのオンボーディング</li>
         </ul>
@@ -1600,7 +1655,7 @@
 ════════════════════════════════════════════════ -->
 <div class="footer">
   <p style="margin-bottom:8px"><strong>東京エムケイ株式会社</strong></p>
-  <p>MKシャトルハイヤー予約プラットフォーム — 提案書 v2.1（2026年6月）</p>
+  <p>MKシャトルハイヤー予約プラットフォーム — 提案書 v2.2（2026年6月）</p>
   <p style="margin-top:8px;font-size:.75rem;opacity:.5">本文書の内容は予告なく変更される場合があります。</p>
 </div>
 
