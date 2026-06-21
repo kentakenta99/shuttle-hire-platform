@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MKシャトルハイヤー予約プラットフォーム v2.0 提案書</title>
+<title>MKシャトルハイヤー予約プラットフォーム v2.2 提案書</title>
 <style>
   :root {
     --mk-blue: #1a3a6b;
@@ -511,7 +511,7 @@
   <div class="cover-logo">MK</div>
   <h1>シャトルハイヤー<br>予約プラットフォーム</h1>
   <p class="cover-sub">ホテル × 東京エムケイ × ドライバー をつなぐ B2B 予約システム</p>
-  <div class="cover-version">提案書 v2.1 ― 2026年6月</div>
+  <div class="cover-version">提案書 v2.2 ― 2026年6月</div>
   <div class="cover-tags">
     <span class="cover-tag">🏨 ホテルスタッフ向けUI</span>
     <span class="cover-tag">🚗 ドライバー向けUI</span>
@@ -522,6 +522,9 @@
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">🎫 ゲストセルフ予約LP</span>
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">⏱ リアルタイムQRポーリング</span>
     <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">💰 動的価格・最安値確約</span>
+    <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">✈️ フライト番号サジェスト</span>
+    <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">🔔 出発前リマインダー通知</span>
+    <span class="cover-tag" style="background:rgba(201,162,39,.25);border-color:rgba(201,162,39,.4)">📋 DRアサイン履歴ログ</span>
   </div>
 </div>
 
@@ -1493,6 +1496,111 @@
 </div>
 
 <!-- ════════════════════════════════════════════════
+     NEW v2.2: Feature Summary
+════════════════════════════════════════════════ -->
+<div class="section" style="background:#0a0a0a;">
+  <div class="container">
+    <p class="section-label" style="color:#C9A227">New in v2.2 — Flight Intelligence &amp; DR Operations</p>
+    <h2 class="section-title" style="color:#fff">v2.2 新機能サマリー</h2>
+    <p class="section-desc" style="color:rgba(255,255,255,.6)">本セッションで追加・完成した9機能。フライト連携の精度向上と、DRアサイン運用の抜本改善が中心。</p>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:32px;">
+
+      <!-- フライト番号バリデーション -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">✈️</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">フライト番号バリデーション</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">ゲストがフライト番号を入力すると1秒後に自動確認。AviationStack APIで正確な便情報（ターミナル・出発時刻・目的地）をリアルタイム表示。誤入力を未然に防ぐ。</p>
+      </div>
+
+      <!-- フライト便検索パネル -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🔍</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">フライト便検索パネル</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">フライト番号を知らないゲスト向けに「エアライン ＋ 時間帯（午前/午後/夕方）または目的地」で検索できるパネルを提供。候補をタップするだけでフォームに自動入力。</p>
+      </div>
+
+      <!-- AviationStack タイムゾーンバグ修正 -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🐛→✅</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">フライト時刻バグ修正</h3>
+          <span class="new-badge">FIX</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">AviationStack無料プランがJST時刻をUTCとして誤ラベリングする仕様を検出・修正。ISOタイムスタンプから直接時刻を取得することで、午後便が正しく表示されるようになった。</p>
+      </div>
+
+      <!-- DRアサインUI redesign -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">👤</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">DRアサインUI リデザイン</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">テキスト検索→チェックボックス選択→アサインボタンの3ステップUXに刷新。アサイン済み状態はグリーンカード表示＋解除ボタンのみに整理。誤操作を排除。</p>
+      </div>
+
+      <!-- アサイン履歴イベントログ -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">📋</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">アサイン履歴イベントログ</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;"><code style="color:#C9A227;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;">driver_assignment_logs</code> テーブルで assigned/unassigned イベントを全件記録。スロット詳細画面の「アサイン履歴」タブで操作者・日時を追跡可能。監査証跡として機能。</p>
+      </div>
+
+      <!-- 出発前リマインダー通知Cron -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🔔</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">出発前リマインダー通知</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">出発15分前にVercel Cron（5分毎実行）が対象スロットを検出し、Resend経由でゲスト全員に自動メール送信。二重送信防止フラグ（<code style="color:#C9A227;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;">reminder_sent</code>）付き。</p>
+      </div>
+
+      <!-- QRルックアップページ -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">📱</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">乗客QRルックアップ</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;"><code style="color:#C9A227;background:rgba(255,255,255,.1);padding:1px 6px;border-radius:4px;">/lookup</code> ページでDRがゲストのQRをスキャンすると、予約詳細（搭乗者名・フライト・座席数）を即座に表示。フロント引き渡し時の本人確認を高速化。</p>
+      </div>
+
+      <!-- 代替スロット提案 -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🔄</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">代替スロット自動提案</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">満席スロットを選択したゲストに、同日の空き便を自動表示。予約離脱率を低減し、コンバージョンを最大化。</p>
+      </div>
+
+      <!-- リフレッシュボタン -->
+      <div style="background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:24px;">
+        <div style="font-size:1.6rem;margin-bottom:10px;">🔄</div>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <h3 style="color:#fff;font-size:1rem;font-weight:700;margin:0;">ライブデータ リフレッシュ</h3>
+          <span class="new-badge">NEW</span>
+        </div>
+        <p style="color:rgba(255,255,255,.55);font-size:.85rem;line-height:1.6;">ホテルスタッフ・管理者の全ライブデータページにリフレッシュボタンを追加。Server Actionをトリガーして最新データを即時反映。ページ全体リロード不要。</p>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════
      ARCHITECTURE
 ════════════════════════════════════════════════ -->
 <div class="section" style="background: var(--bg-light);">
@@ -1560,13 +1668,21 @@
       </div>
       <div class="phase-card active">
         <div class="phase-num">PHASE 2 → 進行中</div>
-        <h3>ゲスト直販チャネル</h3>
+        <h3>ゲスト直販チャネル &amp; フライト連携強化</h3>
         <ul>
           <li>✓ ゲストセルフ予約LP（QRチラシ連動）</li>
           <li>✓ リアルタイムQRポーリング（メール不要）</li>
           <li>✓ コンシェルジュ・リクエスト管理画面</li>
           <li>✓ 動的価格・最安値確約システム</li>
           <li>✓ 月次請求書の自動生成（total_price対応）</li>
+          <li>✓ フライト番号バリデーション（自動確認・サジェスト）</li>
+          <li>✓ フライト便検索パネル（エアライン＋時間帯/目的地）</li>
+          <li>✓ DRアサインUI リデザイン（検索→選択→アサイン）</li>
+          <li>✓ アサイン履歴イベントログ（監査証跡）</li>
+          <li>✓ 出発前リマインダーCron（15分前自動メール）</li>
+          <li>✓ 乗客QRルックアップ（/lookupページ）</li>
+          <li>✓ 代替スロット自動提案（満席時）</li>
+          <li>✓ ライブデータ リフレッシュボタン</li>
           <li>→ ホテルオークラ東京 本格稼働</li>
           <li>→ 追加ホテルへのオンボーディング</li>
         </ul>
@@ -1600,7 +1716,7 @@
 ════════════════════════════════════════════════ -->
 <div class="footer">
   <p style="margin-bottom:8px"><strong>東京エムケイ株式会社</strong></p>
-  <p>MKシャトルハイヤー予約プラットフォーム — 提案書 v2.1（2026年6月）</p>
+  <p>MKシャトルハイヤー予約プラットフォーム — 提案書 v2.2（2026年6月）</p>
   <p style="margin-top:8px;font-size:.75rem;opacity:.5">本文書の内容は予告なく変更される場合があります。</p>
 </div>
 
