@@ -100,7 +100,10 @@ async function sendBookingConfirmationEmail(
   }
 }
 
-export async function cancelBooking(bookingId: string): Promise<{ error: string } | { success: true }> {
+export async function cancelBooking(
+  bookingId: string,
+  reason?: string
+): Promise<{ error: string } | { success: true }> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -125,6 +128,7 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   const { data, error } = await supabase.rpc('cancel_booking_by_hotel', {
     p_booking_id: bookingId,
     p_hotel_id:   hotel.id,
+    p_reason:     reason ?? null,
   })
 
   if (error) return { error: 'システムエラーが発生しました。' }
@@ -134,17 +138,25 @@ export async function cancelBooking(bookingId: string): Promise<{ error: string 
   if (result.error === 'BOOKING_NOT_FOUND') return { error: '予約が見つかりません。' }
   if (result.error) return { error: 'エラーが発生しました。' }
 
-  // キャンセル通知メール（非同期）
-  if (booking && hotel.contact_email) {
-    const slot = booking.shuttle_slots as { date: string; departure_time: string } | null
-    if (slot) {
-      sendCancellationNotice(hotel.contact_email, {
-        guestName: booking.guest_name,
-        confirmationCode: booking.confirmation_code,
-        date: slot.date,
-        departureTime: slot.departure_time,
-        hotelName: hotel.name,
-      }).catch(e => console.error('[email] キャンセルメール送信失敗:', e))
+  const slot = booking?.shuttle_slots as { date: string; departure_time: string } | null
+  if (booking && slot) {
+    const cancelInfo = {
+      guestName:        booking.guest_name,
+      confirmationCode: booking.confirmation_code,
+      date:             slot.date,
+      departureTime:    slot.departure_time,
+      reason,
+      hotelName:        hotel.name,
+    }
+    // ホテルへの通知
+    if (hotel.contact_email) {
+      sendCancellationNotice(hotel.contact_email, cancelInfo)
+        .catch(e => console.error('[email] キャンセル通知（ホテル）失敗:', e))
+    }
+    // ゲストへの通知（メール登録がある場合）
+    if (booking.guest_email) {
+      sendCancellationNotice(booking.guest_email, cancelInfo)
+        .catch(e => console.error('[email] キャンセル通知（ゲスト）失敗:', e))
     }
   }
 

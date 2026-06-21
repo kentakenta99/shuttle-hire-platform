@@ -24,7 +24,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
 
   const { data: booking } = await supabase
     .from('bookings')
-    .select('*, shuttle_slots(date, departure_time, cutoff_at, status)')
+    .select('*, shuttle_slots(date, departure_time, cutoff_at, status), hotels(billing_type)')
     .eq('id', id)
     .single()
 
@@ -33,6 +33,8 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
   const slot = booking.shuttle_slots as {
     date: string; departure_time: string; cutoff_at: string; status: string
   } | null
+  const hotelInfo = booking.hotels as { billing_type: string } | null
+  const billingType = hotelInfo?.billing_type ?? 'hotel_invoice'
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
   const confirmUrl = `${baseUrl}/confirm/${booking.confirmation_code}`
@@ -92,7 +94,16 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
 
       {/* キャンセルボタン */}
       {canCancel && (
-        <div className="mt-6">
+        <div className="mt-6 space-y-3">
+          <div className={`rounded-xl px-4 py-3 text-sm ${
+            billingType === 'direct_guest'
+              ? 'bg-blue-50 border border-blue-100 text-blue-700'
+              : 'bg-gray-50 border border-gray-200 text-gray-600'
+          }`}>
+            {billingType === 'direct_guest'
+              ? 'このゲストはドライバーへの直接払いのため、返金手続きは不要です。'
+              : 'キャンセル後はこの予約が月末請求書から除外されます。'}
+          </div>
           <CancelButton bookingId={id} />
         </div>
       )}
