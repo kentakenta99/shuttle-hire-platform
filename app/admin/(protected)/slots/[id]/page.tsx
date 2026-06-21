@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { StatusToggle, SlotEditForm, DriverAssignForm } from './SlotActions'
 import PrintButton from './PrintButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,8 +75,9 @@ export default async function SlotDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-4xl space-y-5">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
         <Link href="/admin/slots" className="text-sm text-blue-600 hover:underline">← 出発枠一覧</Link>
+        <RefreshButton />
       </div>
 
       {/* ヘッダー */}

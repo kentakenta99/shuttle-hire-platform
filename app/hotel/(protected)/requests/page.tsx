@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { ConvertButton, RejectButton } from './ConvertButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -78,11 +79,14 @@ export default async function HotelRequestsPage() {
           <h1 className="text-lg font-bold text-gray-900">シャトルリクエスト</h1>
           <p className="text-xs text-gray-500 mt-0.5">QRコード経由でゲストが送信したリクエスト</p>
         </div>
-        {pending.length > 0 && (
-          <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
-            未処理 {pending.length}件
-          </span>
-        )}
+        <div className="flex items-center gap-2">
+          {pending.length > 0 && (
+            <span className="bg-amber-100 text-amber-700 text-xs font-semibold px-3 py-1 rounded-full">
+              未処理 {pending.length}件
+            </span>
+          )}
+          <RefreshButton />
+        </div>
       </div>
 
       {/* 未処理リクエスト */}

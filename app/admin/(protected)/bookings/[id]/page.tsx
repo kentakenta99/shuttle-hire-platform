@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import AdminCancelButton from './AdminCancelButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -48,8 +49,9 @@ export default async function AdminBookingDetailPage({ params }: Props) {
 
   return (
     <div className="max-w-2xl space-y-5">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between">
         <Link href="/admin/bookings" className="text-sm text-blue-600 hover:underline">← 予約一覧</Link>
+        <RefreshButton />
       </div>
 
       <div className="flex items-start justify-between">

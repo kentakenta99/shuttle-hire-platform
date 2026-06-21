@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import QRCode from 'qrcode'
 import CancelButton from './CancelButton'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -50,8 +51,9 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
 
   return (
     <div>
-      <div className="flex items-center gap-2 mb-6">
+      <div className="flex items-center justify-between mb-6">
         <Link href="/hotel/bookings" className="text-blue-600 text-sm hover:underline">← 予約履歴</Link>
+        <RefreshButton />
       </div>
 
       {isNew && (

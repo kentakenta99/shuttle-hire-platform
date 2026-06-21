@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,7 +103,10 @@ export default async function AdminDashboardPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">ダッシュボード</h1>
-        <span className="text-sm text-gray-500">{todayStr}</span>
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500">{todayStr}</span>
+          <RefreshButton />
+        </div>
       </div>
 
       {/* 当月サマリー */}

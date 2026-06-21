@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import BookingFilters from './BookingFilters'
 import AdminBookingsClient from './AdminBookingsClient'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -53,12 +54,15 @@ export default async function AdminBookingsPage({ searchParams }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">予約管理</h1>
-        <a
-          href={`/api/admin/bookings/csv?${csvParams.toString()}`}
-          className="px-4 py-2 border border-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition"
-        >
-          CSV出力
-        </a>
+        <div className="flex items-center gap-2">
+          <RefreshButton />
+          <a
+            href={`/api/admin/bookings/csv?${csvParams.toString()}`}
+            className="px-4 py-2 border border-gray-200 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition"
+          >
+            CSV出力
+          </a>
+        </div>
       </div>
 
       <BookingFilters hotels={hotels ?? []} />

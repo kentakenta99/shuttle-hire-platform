@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
+import RefreshButton from '@/app/components/RefreshButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -95,12 +96,15 @@ export default async function AdminSlotsPage({ searchParams }: Props) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h1 className="text-lg font-bold text-gray-900">出発枠一覧</h1>
-        <Link
-          href="/admin/slots/new"
-          className="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition"
-        >
-          + 枠を作成
-        </Link>
+        <div className="flex items-center gap-2">
+          <RefreshButton />
+          <Link
+            href="/admin/slots/new"
+            className="px-4 py-2 bg-slate-800 text-white text-sm rounded-lg hover:bg-slate-700 transition"
+          >
+            + 枠を作成
+          </Link>
+        </div>
       </div>
 
       {/* 週ナビゲーション */}
