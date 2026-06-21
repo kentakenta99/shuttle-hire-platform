@@ -60,6 +60,12 @@ export default async function HotelLayout({ children }: { children: React.ReactN
                   </span>
                 )}
               </Link>
+              <Link
+                href="/hotel/faq"
+                className="px-3 py-1.5 rounded-lg text-sm text-[#C9A227]/80 hover:bg-white/10 hover:text-[#C9A227] transition"
+              >
+                FAQ
+              </Link>
             </nav>
           </div>
           <form action={async () => { 'use server'; await logout('/hotel/login') }}>
