@@ -76,10 +76,9 @@ function SeatIcons({ capacity, remaining }: { capacity: number; remaining: numbe
   )
 }
 
-function SlotAlternatives({ slot, dateSlots, allSlots }: {
+function SlotAlternatives({ slot, dateSlots }: {
   slot: ShuttleSlot
   dateSlots: ShuttleSlot[]
-  allSlots: ShuttleSlot[]
 }) {
   const now = new Date()
   const sameDayAlts = dateSlots.filter(s =>
@@ -103,26 +102,7 @@ function SlotAlternatives({ slot, dateSlots, allSlots }: {
       </div>
     )
   }
-  const nextSlot = allSlots.find(s =>
-    s.id !== slot.id &&
-    s.status === 'open' &&
-    s.remaining_seats > 0 &&
-    new Date(s.cutoff_at) > now &&
-    (s.date > slot.date || (s.date === slot.date && s.departure_time > slot.departure_time))
-  )
-  if (nextSlot) {
-    const d = new Date(nextSlot.date + 'T00:00:00')
-    const wd = ['日','月','火','水','木','金','土'][d.getDay()]
-    return (
-      <div className="text-right">
-        <span className="text-xs text-gray-500 block mb-1">次の便</span>
-        <Link href={`/hotel/book/${nextSlot.id}`}
-          className="text-xs bg-blue-50 text-blue-700 border border-blue-200 px-2.5 py-1 rounded-lg font-medium hover:bg-blue-100 transition block">
-          {d.getMonth()+1}/{d.getDate()}（{wd}）{formatTime(nextSlot.departure_time)}
-        </Link>
-      </div>
-    )
-  }
+  // 同日に空きがない場合は通常ハイヤーへ誘導（翌日以降の便は表示しない）
   return (
     <div className="text-right">
       <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
@@ -226,7 +206,7 @@ export default function SlotList({ initialSlots }: Props) {
                           予約する
                         </Link>
                       ) : slot.status === 'full' ? (
-                        <SlotAlternatives slot={slot} dateSlots={dateSlots} allSlots={slots} />
+                        <SlotAlternatives slot={slot} dateSlots={dateSlots} />
                       ) : (
                         <span className="text-sm text-gray-500">─</span>
                       )}
