@@ -38,14 +38,11 @@ function toSuggestion(f: AviationFlight): FlightSuggestion {
 }
 
 function scheduledHourJst(iso: string | null): number | null {
-  if (!iso) return null
-  try {
-    const utcMs = new Date(iso).getTime()
-    // UTC+9
-    return Math.floor((utcMs / 3_600_000 + 9) % 24)
-  } catch {
-    return null
-  }
+  if (!iso || iso.length < 13) return null
+  // AviationStack 無料プランはローカル出発時刻を UTC (+00:00) として誤ラベリングするため
+  // タイムゾーン変換せずに ISO 文字列から時刻を直接取得する
+  const h = parseInt(iso.substring(11, 13), 10)
+  return isNaN(h) ? null : h
 }
 
 export async function GET(req: NextRequest) {
