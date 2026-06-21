@@ -1,6 +1,6 @@
 import { Resend } from 'resend'
 
-const FROM = 'シャトルハイヤー予約システム <noreply@tokyomk-shuttle.jp>'
+const FROM = 'シャトルハイヤー予約システム <onboarding@resend.dev>'
 
 type SendOpts = Parameters<Resend['emails']['send']>[0]
 
