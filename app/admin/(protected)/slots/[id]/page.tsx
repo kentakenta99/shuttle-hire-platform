@@ -42,7 +42,7 @@ export default async function SlotDetailPage({ params }: Props) {
   const { createAdminClient } = await import('@/lib/supabase/admin')
   const adminDb = createAdminClient()
 
-  const [slotRes, bookingsRes, assignmentRes, driversRes] = await Promise.all([
+  const [slotRes, bookingsRes, assignmentRes, driversRes, logsRes] = await Promise.all([
     supabase.from('shuttle_slots').select('*').eq('id', id).single(),
     supabase
       .from('bookings')
@@ -61,6 +61,12 @@ export default async function SlotDetailPage({ params }: Props) {
       .eq('is_active', true)
       .order('shuttle_score', { ascending: false })
       .order('display_name'),
+    adminDb
+      .from('driver_assignment_logs')
+      .select('id, action, driver_name, employee_code, performed_by_name, created_at')
+      .eq('slot_id', id)
+      .order('created_at', { ascending: false })
+      .limit(20),
   ])
 
   if (!slotRes.data) notFound()
@@ -69,6 +75,7 @@ export default async function SlotDetailPage({ params }: Props) {
   const assignment = assignmentRes.data
   const driver = assignment?.driver_users as { display_name: string | null; employee_code: string } | null
   const allDrivers = driversRes.data ?? []
+  const assignLogs = logsRes.data ?? []
 
   const s = STATUS_LABEL[slot.status] ?? { label: slot.status, cls: 'bg-gray-100 text-gray-500 border-gray-200' }
   const booked = slot.capacity - slot.remaining_seats
@@ -128,6 +135,7 @@ export default async function SlotDetailPage({ params }: Props) {
           <DriverAssignForm
             slotId={slot.id}
             currentEmployeeCode={assignment?.employee_code ?? null}
+            currentDriverName={driver?.display_name ?? null}
             drivers={allDrivers}
           />
         </div>
@@ -203,6 +211,40 @@ export default async function SlotDetailPage({ params }: Props) {
           </div>
         )}
       </div>
+
+      {/* アサインログ */}
+      {assignLogs.length > 0 && (
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100">
+            <h2 className="text-sm font-semibold text-gray-800">アサイン履歴</h2>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {assignLogs.map(log => (
+              <div key={log.id} className="flex items-center gap-3 px-5 py-3">
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${
+                  log.action === 'assigned'
+                    ? 'bg-green-100 text-green-700'
+                    : 'bg-red-100 text-red-600'
+                }`}>
+                  {log.action === 'assigned' ? 'アサイン' : '解除'}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm text-gray-800 font-medium">{log.driver_name}</span>
+                  <span className="text-xs text-gray-400 font-mono ml-1.5">{log.employee_code}</span>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-xs text-gray-500">{log.performed_by_name}</p>
+                  <p className="text-xs text-gray-400">
+                    {new Date(log.created_at).toLocaleString('ja-JP', {
+                      month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                    })}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

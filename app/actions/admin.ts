@@ -292,48 +292,82 @@ export async function cancelBookingByAdmin(
   return {}
 }
 
-export async function assignDriver(
-  slotId: string,
-  formData: FormData
-): Promise<{ error?: string }> {
-  // 管理者セッション確認（通常クライアント）
+async function getAdminUser() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return { error: '認証が必要です。' }
-
+  if (!user) return null
   const { data: admin } = await supabase
     .from('tmk_admin_users')
-    .select('id')
+    .select('id, display_name')
     .eq('user_id', user.id)
     .eq('is_active', true)
     .single()
-  if (!admin) return { error: '管理者権限が必要です。' }
+  if (!admin) return null
+  return { userId: user.id, adminName: (admin as { id: string; display_name?: string }).display_name ?? user.email ?? '管理者' }
+}
 
-  const employeeCode = (formData.get('employee_code') as string).trim()
+export async function assignDriver(
+  slotId: string,
+  employeeCode: string
+): Promise<{ error?: string }> {
+  const adminUser = await getAdminUser()
+  if (!adminUser) return { error: '管理者権限が必要です。' }
 
-  // RLSをバイパスするためサービスロールクライアントでDELETE/INSERT
   const adminDb = createAdminClient()
-  await adminDb.from('driver_assignments').delete().eq('slot_id', slotId)
 
-  if (!employeeCode) return {}
+  // 既存アサインがあれば解除ログを記録してから削除
+  const { data: existing } = await adminDb
+    .from('driver_assignments')
+    .select('employee_code, driver_id, driver_users(display_name)')
+    .eq('slot_id', slotId)
+    .maybeSingle()
+
+  if (existing) {
+    const exDriverArr = existing.driver_users as unknown
+    const exDriver = Array.isArray(exDriverArr) ? exDriverArr[0] : exDriverArr as { display_name: string | null } | null
+    await adminDb.from('driver_assignment_logs').insert({
+      slot_id: slotId,
+      driver_id: existing.driver_id,
+      employee_code: existing.employee_code,
+      driver_name: exDriver?.display_name ?? existing.employee_code,
+      action: 'unassigned',
+      performed_by: adminUser.userId,
+      performed_by_name: adminUser.adminName,
+    })
+    await adminDb.from('driver_assignments').delete().eq('slot_id', slotId)
+  }
+
+  const trimmed = employeeCode.trim()
+  if (!trimmed) return {}
 
   const { data: driver } = await adminDb
     .from('driver_users')
     .select('id, user_id, display_name')
-    .eq('employee_code', employeeCode)
+    .eq('employee_code', trimmed)
     .single()
 
-  if (!driver) return { error: `乗務員コード "${employeeCode}" が見つかりません。` }
+  if (!driver) return { error: `乗務員コード "${trimmed}" が見つかりません。` }
 
   const { error } = await adminDb.from('driver_assignments').insert({
     slot_id: slotId,
-    employee_code: employeeCode,
+    employee_code: trimmed,
     driver_id: driver.id,
-    assigned_by: user.id,
+    assigned_by: adminUser.userId,
   })
   if (error) return { error: error.message }
 
-  // アサイン通知メールを非同期で送信（失敗してもアサイン自体は成功扱い）
+  // アサインログを記録
+  await adminDb.from('driver_assignment_logs').insert({
+    slot_id: slotId,
+    driver_id: driver.id,
+    employee_code: trimmed,
+    driver_name: driver.display_name ?? trimmed,
+    action: 'assigned',
+    performed_by: adminUser.userId,
+    performed_by_name: adminUser.adminName,
+  })
+
+  // アサイン通知メールを非同期で送信
   void (async () => {
     try {
       const [authUser, slotRes] = await Promise.all([
@@ -347,7 +381,7 @@ export async function assignDriver(
       const slot = slotRes.data
       if (email && slot) {
         await sendDriverAssignment(email, {
-          driverName: driver.display_name ?? employeeCode,
+          driverName: driver.display_name ?? trimmed,
           date: slot.date,
           departureTime: slot.departure_time,
           capacity: slot.capacity,
@@ -360,6 +394,38 @@ export async function assignDriver(
       console.error('[assignDriver] 通知メール送信失敗:', e)
     }
   })()
+
+  return {}
+}
+
+export async function unassignDriver(slotId: string): Promise<{ error?: string }> {
+  const adminUser = await getAdminUser()
+  if (!adminUser) return { error: '管理者権限が必要です。' }
+
+  const adminDb = createAdminClient()
+
+  const { data: existing } = await adminDb
+    .from('driver_assignments')
+    .select('employee_code, driver_id, driver_users(display_name)')
+    .eq('slot_id', slotId)
+    .maybeSingle()
+
+  if (!existing) return {}
+
+  const exDriverArr = existing.driver_users as unknown
+  const exDriver = Array.isArray(exDriverArr) ? exDriverArr[0] : exDriverArr as { display_name: string | null } | null
+  await adminDb.from('driver_assignment_logs').insert({
+    slot_id: slotId,
+    driver_id: existing.driver_id,
+    employee_code: existing.employee_code,
+    driver_name: exDriver?.display_name ?? existing.employee_code,
+    action: 'unassigned',
+    performed_by: adminUser.userId,
+    performed_by_name: adminUser.adminName,
+  })
+
+  const { error } = await adminDb.from('driver_assignments').delete().eq('slot_id', slotId)
+  if (error) return { error: error.message }
 
   return {}
 }
