@@ -174,7 +174,7 @@ export default async function DriverHomePage() {
               <div className="flex-1">
                 <p className="text-sm text-gray-300">{s.vehicle_type}</p>
                 <p className="text-xs text-gray-500 mt-0.5">
-                  定員 {s.capacity}名
+                  予約 {s.capacity - s.remaining_seats}名 / 定員 {s.capacity}名
                 </p>
               </div>
               <span className="text-gray-600 text-sm">→</span>
