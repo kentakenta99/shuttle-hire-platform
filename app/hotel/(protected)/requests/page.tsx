@@ -3,6 +3,7 @@ import { createAdminClient } from '@/lib/supabase/admin'
 import { notFound } from 'next/navigation'
 import { ConvertButton, RejectButton } from './ConvertButton'
 import RefreshButton from '@/app/components/RefreshButton'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -74,6 +75,9 @@ export default async function HotelRequestsPage() {
 
   return (
     <div className="space-y-6 max-w-2xl">
+      <div className="mb-2">
+        <Link href="/hotel/calendar" className="text-blue-600 text-sm hover:underline">← 空き枠一覧</Link>
+      </div>
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-lg font-bold text-gray-900">シャトルリクエスト</h1>
