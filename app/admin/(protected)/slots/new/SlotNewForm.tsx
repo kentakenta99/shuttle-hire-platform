@@ -134,6 +134,10 @@ export default function SlotNewForm() {
             </Field>
             <Field label="1席あたり単価（円） *">
               <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-1 leading-relaxed">
+                ⚠️ ホテル別の料金ティア設定がある場合、この単価は上書きされます。<br />
+                実際の請求額は <span className="font-semibold">ホテル設定 → 料金ティア</span> を確認してください。
+              </p>
             </Field>
           </div>
 
@@ -209,6 +213,10 @@ export default function SlotNewForm() {
             </Field>
             <Field label="1席あたり単価（円） *">
               <input type="number" name="price_per_seat_yen" required min={0} defaultValue={5000} className={fieldCls} />
+              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mt-1 leading-relaxed">
+                ⚠️ ホテル別の料金ティア設定がある場合、この単価は上書きされます。<br />
+                実際の請求額は <span className="font-semibold">ホテル設定 → 料金ティア</span> を確認してください。
+              </p>
             </Field>
           </div>
           <p className="text-xs text-gray-500">※ 受付締切は各便の前日17:00に自動設定されます</p>
