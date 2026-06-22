@@ -7,8 +7,9 @@
 東京MK向けホテルシャトルハイヤー予約プラットフォーム。
 ホテルオークラ東京を初期パートナーとした B2B 予約システム。
 
-## 要件定義書
-`docs/requirements/07_shuttle_hire_platform.md`（v1.3）を必ず参照してから実装に入ること。
+## 仕様書
+`docs/spec/specification.md`（v3.0）を必ず参照してから実装に入ること。
+変更履歴は `docs/spec/changelog.md` を参照。
 
 ## 技術スタック
 - Frontend: Next.js 16 (App Router) / TypeScript / Tailwind CSS
