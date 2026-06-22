@@ -119,7 +119,7 @@ export async function convertRequestToBooking(
 
   // ゲストメールを booking に保存
   if (req.guest_email) {
-    await adminDb.from('bookings').update({ guest_email: req.guest_email }).eq('id', bookingId)
+    await adminDb.from('service_orders').update({ guest_email: req.guest_email }).eq('id', bookingId)
   }
 
   // リクエストを confirmed に更新
@@ -131,7 +131,7 @@ export async function convertRequestToBooking(
   // QRチケットメールを送信
   if (req.guest_email) {
     const { data: booking } = await adminDb
-      .from('bookings')
+      .from('service_orders')
       .select('*, shuttle_slots(date, departure_time)')
       .eq('id', bookingId)
       .single()
@@ -143,8 +143,8 @@ export async function convertRequestToBooking(
         const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
         await sendGuestBookingConfirmation(req.guest_email, {
           guestName:        req.guest_name,
-          confirmationCode: booking.confirmation_code,
-          confirmUrl:       `${baseUrl}/confirm/${booking.confirmation_code}`,
+          bookingReference: booking.booking_reference,
+          confirmUrl:       `${baseUrl}/confirm/${booking.booking_reference}`,
           date:             slot.date,
           departureTime:    slot.departure_time,
           partySize:        req.party_size,
@@ -165,7 +165,7 @@ export type RequestStatusResult =
   | { status: 'rejected' }
   | {
       status: 'confirmed'
-      confirmationCode: string
+      bookingReference: string
       confirmUrl: string
       qrDataUrl: string
       date: string
@@ -187,8 +187,8 @@ export async function checkRequestStatus(requestId: string): Promise<RequestStat
   if (req.status === 'rejected') return { status: 'rejected' }
 
   const { data: booking } = await adminDb
-    .from('bookings')
-    .select('confirmation_code, party_size, shuttle_slots(date, departure_time), hotels(name)')
+    .from('service_orders')
+    .select('booking_reference, party_size, shuttle_slots(date, departure_time), hotels(name)')
     .eq('id', req.converted_booking_id)
     .single()
 
@@ -200,7 +200,7 @@ export async function checkRequestStatus(requestId: string): Promise<RequestStat
   const hotel = (Array.isArray(hotelRaw) ? hotelRaw[0] : hotelRaw) as { name: string } | null
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://shuttle-hire-platform.vercel.app'
-  const confirmUrl = `${baseUrl}/confirm/${booking.confirmation_code}`
+  const confirmUrl = `${baseUrl}/confirm/${booking.booking_reference}`
 
   const QRCodeLib = (await import('qrcode')).default
   const qrDataUrl = await QRCodeLib.toDataURL(confirmUrl, {
@@ -211,7 +211,7 @@ export async function checkRequestStatus(requestId: string): Promise<RequestStat
 
   return {
     status: 'confirmed',
-    confirmationCode: booking.confirmation_code,
+    bookingReference: booking.booking_reference,
     confirmUrl,
     qrDataUrl,
     date: slot?.date ?? '',

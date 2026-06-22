@@ -39,8 +39,8 @@ export async function GET(request: Request) {
   }[]) {
     // このスロットの confirmed ゲスト（+ ホテル情報）を取得
     const { data: bookings } = await adminDb
-      .from('bookings')
-      .select('id, guest_name, party_size, confirmation_code, guest_email, hotel_id, hotels(name, contact_email)')
+      .from('service_orders')
+      .select('id, guest_name, party_size, booking_reference, guest_email, hotel_id, hotels(name, contact_email)')
       .eq('slot_id', slot.id)
       .eq('status', 'confirmed')
 
@@ -55,7 +55,7 @@ export async function GET(request: Request) {
     type Booking = {
       guest_name: string
       party_size: number
-      confirmation_code: string
+      booking_reference: string
       guest_email: string | null
       hotel_id: string
       hotels: { name: string; contact_email: string | null } | null
@@ -70,12 +70,12 @@ export async function GET(request: Request) {
         .map(b =>
           sendDepartureReminderGuest(b.guest_email!, {
             guestName: b.guest_name,
-            confirmationCode: b.confirmation_code,
+            bookingReference: b.booking_reference,
             date: slot.date,
             departureTime: slot.departure_time,
             vehicleType: slot.vehicle_type,
             vehiclePlate: slot.vehicle_plate,
-            confirmUrl: `${confirmBase}/confirm/${b.confirmation_code}`,
+            confirmUrl: `${confirmBase}/confirm/${b.booking_reference}`,
           })
         )
     )
@@ -105,7 +105,7 @@ export async function GET(request: Request) {
             guests: guests.map(g => ({
               guestName: g.guest_name,
               partySize: g.party_size,
-              confirmationCode: g.confirmation_code,
+              bookingReference: g.booking_reference,
             })),
           })
         )

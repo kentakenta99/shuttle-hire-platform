@@ -62,7 +62,7 @@ export interface HotelPickupCompletedPayload {
  * SHUTTLE_QR_SCANNED payload
  */
 export interface QrScannedPayload {
-  confirmation_code: string;
+  booking_reference: string;
   hotel_id: string;
   scanned_by_driver_code: string; // DOS employeeCode
 }

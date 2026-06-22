@@ -15,9 +15,9 @@ export default async function LookupPage({ searchParams }: Props) {
   if (trimmed) {
     const supabase = createServiceClient()
     const { data } = await supabase
-      .from('bookings')
-      .select('confirmation_code, status')
-      .eq('confirmation_code', trimmed)
+      .from('service_orders')
+      .select('booking_reference, status')
+      .eq('booking_reference', trimmed)
       .maybeSingle()
 
     if (!data) {
@@ -25,7 +25,7 @@ export default async function LookupPage({ searchParams }: Props) {
     } else if (data.status === 'cancelled') {
       state = 'cancelled'
     } else {
-      redirect(`/confirm/${data.confirmation_code}`)
+      redirect(`/confirm/${data.booking_reference}`)
     }
   }
 

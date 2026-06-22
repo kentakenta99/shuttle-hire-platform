@@ -20,8 +20,8 @@ export default async function AdminBookingsPage({ searchParams }: Props) {
     .order('name')
 
   let query = supabase
-    .from('bookings')
-    .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, status, created_at, hotel_id, slot_id')
+    .from('service_orders')
+    .select('id, booking_reference, guest_name, party_size, luggage_count, flight_number, status, created_at, hotel_id, slot_id')
     .order('created_at', { ascending: false })
     .limit(300)
 

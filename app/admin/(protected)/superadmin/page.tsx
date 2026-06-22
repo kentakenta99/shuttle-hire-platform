@@ -19,12 +19,12 @@ export default async function SuperAdminDashboard() {
   const [bookingsRes, trendRes, slotsRes, hotelsRes, driversRes, adminsRes, hotelListRes] =
     await Promise.all([
       adminDb
-        .from('bookings')
+        .from('service_orders')
         .select('id, party_size, status, hotel_id, shuttle_slots(price_per_seat_yen)')
         .gte('created_at', startOfMonthISO),
 
       adminDb
-        .from('bookings')
+        .from('service_orders')
         .select('id, party_size, status, created_at, shuttle_slots(price_per_seat_yen)')
         .gte('created_at', sixMonthsAgo.toISOString())
         .neq('status', 'cancelled'),

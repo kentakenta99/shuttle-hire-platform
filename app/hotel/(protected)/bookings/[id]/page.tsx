@@ -24,7 +24,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
   const supabase = await createClient()
 
   const { data: booking } = await supabase
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time, cutoff_at, status), hotels(billing_type)')
     .eq('id', id)
     .single()
@@ -38,7 +38,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
   const billingType = hotelInfo?.billing_type ?? 'hotel_invoice'
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
-  const confirmUrl = `${baseUrl}/confirm/${booking.confirmation_code}`
+  const confirmUrl = `${baseUrl}/confirm/${booking.booking_reference}`
 
   const qrSvg = await QRCode.toString(confirmUrl, {
     type: 'svg',
@@ -70,7 +70,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
             className="inline-block"
             dangerouslySetInnerHTML={{ __html: qrSvg.replace('<svg', '<svg width="200" height="200"') }}
           />
-          <p className="font-mono text-sm text-gray-500 mt-3">{booking.confirmation_code}</p>
+          <p className="font-mono text-sm text-gray-500 mt-3">{booking.booking_reference}</p>
         </div>
       )}
 
@@ -82,7 +82,7 @@ export default async function BookingDetailPage({ params, searchParams }: Props)
           ['フライト番号', booking.flight_number],
           ['お荷物', `${booking.luggage_count}個`],
           ['出発日時', slot ? `${formatDate(slot.date)} ${slot.departure_time.slice(0,5)} 発` : '─'],
-          ['確認番号', booking.confirmation_code],
+          ['確認番号', booking.booking_reference],
           ['ステータス', ({ confirmed: '予約OK', cancelled: 'キャンセル済', completed: '搭乗済', arrived: '到着済' } as Record<string,string>)[booking.status] ?? booking.status],
           ...(booking.notes ? [['備考', booking.notes]] : []),
           ...(booking.booked_by_name ? [['担当スタッフ', booking.booked_by_name]] : []),

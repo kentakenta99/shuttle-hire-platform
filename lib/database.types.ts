@@ -173,16 +173,19 @@ export type Database = {
           },
         ]
       }
-      bookings: {
+      service_orders: {
         Row: {
           booked_by_name: string | null
+          booking_reference: string
+          booking_source: string
           cancellation_fee: number
           cancelled_at: string | null
           cancelled_reason: string | null
           completed_at: string | null
-          confirmation_code: string
           created_at: string
           created_by: string | null
+          dos_sync_status: string
+          external_refs: Json | null
           flight_number: string
           guest_email: string | null
           guest_name: string
@@ -200,13 +203,16 @@ export type Database = {
         }
         Insert: {
           booked_by_name?: string | null
+          booking_reference: string
+          booking_source?: string
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_reason?: string | null
           completed_at?: string | null
-          confirmation_code: string
           created_at?: string
           created_by?: string | null
+          dos_sync_status?: string
+          external_refs?: Json | null
           flight_number: string
           guest_email?: string | null
           guest_name: string
@@ -224,13 +230,16 @@ export type Database = {
         }
         Update: {
           booked_by_name?: string | null
+          booking_reference?: string
+          booking_source?: string
           cancellation_fee?: number
           cancelled_at?: string | null
           cancelled_reason?: string | null
           completed_at?: string | null
-          confirmation_code?: string
           created_at?: string
           created_by?: string | null
+          dos_sync_status?: string
+          external_refs?: Json | null
           flight_number?: string
           guest_email?: string | null
           guest_name?: string
@@ -248,14 +257,14 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "bookings_hotel_id_fkey"
+            foreignKeyName: "service_orders_hotel_id_fkey"
             columns: ["hotel_id"]
             isOneToOne: false
             referencedRelation: "hotels"
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "bookings_slot_id_fkey"
+            foreignKeyName: "service_orders_slot_id_fkey"
             columns: ["slot_id"]
             isOneToOne: false
             referencedRelation: "shuttle_slots"
@@ -741,7 +750,7 @@ export type Database = {
           }
       current_hotel_id: { Args: never; Returns: string }
       current_user_role: { Args: never; Returns: string }
-      generate_confirmation_code: { Args: never; Returns: string }
+      generate_booking_reference: { Args: never; Returns: string }
       recalculate_slot_pricing: {
         Args: { p_hotel_id: string; p_slot_id: string }
         Returns: undefined
@@ -881,5 +890,5 @@ export const Constants = {
 
 // 便利型エイリアス
 export type ShuttleSlot = Database['public']['Tables']['shuttle_slots']['Row']
-export type Booking = Database['public']['Tables']['bookings']['Row']
+export type Booking = Database['public']['Tables']['service_orders']['Row']
 export type CancellationPolicy = Database['public']['Tables']['cancellation_policies']['Row']

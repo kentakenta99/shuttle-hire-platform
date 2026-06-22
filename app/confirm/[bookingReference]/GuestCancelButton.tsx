@@ -5,7 +5,7 @@ import { guestCancelBooking } from '@/app/actions/booking'
 import { sendCancelOtp, verifyCancelOtp } from '@/app/actions/cancel-otp'
 
 type Props = {
-  confirmationCode: string
+  bookingReference: string
   date: string
   departureTime: string
   totalPrice: number | null
@@ -36,7 +36,7 @@ function formatThreshold(hours: number) {
 }
 
 export default function GuestCancelButton({
-  confirmationCode, date, departureTime, totalPrice, thresholdHours, feePct, hasEmail,
+  bookingReference, date, departureTime, totalPrice, thresholdHours, feePct, hasEmail,
 }: Props) {
   const [step, setStep]           = useState<Step>('idle')
   const [pending, setPending]     = useState(false)
@@ -131,7 +131,7 @@ export default function GuestCancelButton({
                 onClick={async () => {
                   setPending(true)
                   setError(null)
-                  const result = await sendCancelOtp(confirmationCode)
+                  const result = await sendCancelOtp(bookingReference)
                   setPending(false)
                   if ('error' in result) {
                     setError(result.error)
@@ -180,14 +180,14 @@ export default function GuestCancelButton({
                 setPending(true)
                 setError(null)
                 // OTP検証
-                const verifyResult = await verifyCancelOtp(confirmationCode, otp)
+                const verifyResult = await verifyCancelOtp(bookingReference, otp)
                 if ('error' in verifyResult) {
                   setPending(false)
                   setError(verifyResult.error)
                   return
                 }
                 // 検証OK → キャンセル実行
-                const cancelResult = await guestCancelBooking(confirmationCode)
+                const cancelResult = await guestCancelBooking(bookingReference)
                 setPending(false)
                 if ('error' in cancelResult) {
                   setError(cancelResult.error)
@@ -217,7 +217,7 @@ export default function GuestCancelButton({
                   if (resendPending) return
                   setResendPending(true)
                   setError(null)
-                  const result = await sendCancelOtp(confirmationCode)
+                  const result = await sendCancelOtp(bookingReference)
                   setResendPending(false)
                   if ('error' in result) {
                     setError(result.error)

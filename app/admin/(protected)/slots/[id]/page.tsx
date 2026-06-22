@@ -45,8 +45,8 @@ export default async function SlotDetailPage({ params }: Props) {
   const [slotRes, bookingsRes, assignmentRes, driversRes, logsRes] = await Promise.all([
     supabase.from('shuttle_slots').select('*').eq('id', id).single(),
     supabase
-      .from('bookings')
-      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, status, notes, unit_price, total_price')
+      .from('service_orders')
+      .select('id, booking_reference, guest_name, party_size, luggage_count, flight_number, status, notes, unit_price, total_price')
       .eq('slot_id', id)
       .neq('status', 'cancelled')
       .order('created_at'),
@@ -184,7 +184,7 @@ export default async function SlotDetailPage({ params }: Props) {
                     <td className="px-4 py-3 text-center text-gray-700">{b.party_size}名</td>
                     <td className="px-4 py-3 text-center text-gray-700">{b.luggage_count}個</td>
                     <td className="px-4 py-3 text-gray-600 font-mono text-xs">{b.flight_number}</td>
-                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{b.confirmation_code}</td>
+                    <td className="px-4 py-3 text-gray-500 font-mono text-xs">{b.booking_reference}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${bst.cls}`}>
                         {bst.label}

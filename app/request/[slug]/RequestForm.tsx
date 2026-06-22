@@ -117,7 +117,7 @@ function WaitingScreen({
 
           <div className="space-y-1">
             <p className="text-xs text-gray-500">Confirmation Code</p>
-            <p className="text-xl font-mono font-bold text-gray-900 tracking-widest">{result.confirmationCode}</p>
+            <p className="text-xl font-mono font-bold text-gray-900 tracking-widest">{result.bookingReference}</p>
           </div>
 
           <div className="bg-gray-50 rounded-xl px-4 py-3 text-sm text-gray-700 space-y-0.5">

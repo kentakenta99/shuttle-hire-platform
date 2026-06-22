@@ -60,8 +60,8 @@ export default async function DriverSlotPage({ params }: Props) {
   const [slotRes, bookingsRes] = await Promise.all([
     adminDb.from('shuttle_slots').select('*').eq('id', id).single(),
     adminDb
-      .from('bookings')
-      .select('id, confirmation_code, guest_name, party_size, luggage_count, flight_number, notes, status, hotel_id, unit_price, total_price, original_unit_price')
+      .from('service_orders')
+      .select('id, booking_reference, guest_name, party_size, luggage_count, flight_number, notes, status, hotel_id, unit_price, total_price, original_unit_price')
       .eq('slot_id', id)
       .neq('status', 'cancelled')
       .order('created_at'),

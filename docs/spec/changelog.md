@@ -1,5 +1,48 @@
 # 変更履歴
 
+## v3.2（2026-06-23）
+
+**担当: ENG**
+
+### Dispatch OS 命名規約アライメント（破壊的変更）
+
+DOS（Dispatch OS）のスキーマ命名規約に合わせた全面リネーム。
+
+#### DB変更
+
+```sql
+-- テーブルリネーム（FK・RLSポリシー自動追従）
+ALTER TABLE bookings RENAME TO service_orders;
+
+-- カラムリネーム
+ALTER TABLE service_orders RENAME COLUMN confirmation_code TO booking_reference;
+ALTER TABLE cancel_otps RENAME COLUMN confirmation_code TO booking_reference;
+
+-- DOS integration カラム追加
+ALTER TABLE service_orders
+  ADD COLUMN external_refs    jsonb,                              -- DOS外部参照JSONB
+  ADD COLUMN dos_sync_status  text NOT NULL DEFAULT 'not_applicable',  -- 'not_applicable'|'pending'|'synced'|'sync_failed'
+  ADD COLUMN booking_source   text NOT NULL DEFAULT 'hotel_staff';     -- 'hotel_staff'|'guest_request'|'api_agent'
+
+-- 関数リネーム
+ALTER FUNCTION generate_confirmation_code() RENAME TO generate_booking_reference;
+
+-- インデックスリネーム
+ALTER INDEX idx_cancel_otps_lookup RENAME TO idx_cancel_otps_booking_ref;
+```
+
+#### TypeScript変更
+
+- `lib/database.types.ts`：`bookings` キー → `service_orders`、全カラム型更新、新カラム3列追加
+- `app/types/booking-event.ts`：`QrScannedPayload.confirmation_code` → `booking_reference`
+- 全Server Actions・Pages（~30ファイル）：`from('bookings')` → `from('service_orders')`、`.confirmation_code` → `.booking_reference`、`confirmationCode` → `bookingReference`
+
+#### ルーティング変更
+
+- `app/confirm/[confirmationCode]/` → `app/confirm/[bookingReference]/`（URLの値は不変のため既存QRコード有効）
+
+---
+
 ## v3.1（2026-06-22）
 
 **担当: ENG / SEC**

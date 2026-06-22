@@ -27,7 +27,7 @@ export default async function AdminBookingDetailPage({ params }: Props) {
   const supabase = await createClient()
 
   const { data: booking } = await supabase
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time, cutoff_at, vehicle_type)')
     .eq('id', id)
     .single()
@@ -56,7 +56,7 @@ export default async function AdminBookingDetailPage({ params }: Props) {
 
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-xl font-bold font-mono text-gray-900">{booking.confirmation_code}</h1>
+          <h1 className="text-xl font-bold font-mono text-gray-900">{booking.booking_reference}</h1>
           <p className="text-sm text-gray-500 mt-0.5">{booking.guest_name} 様</p>
         </div>
         <span className={`text-sm px-3 py-1 rounded-full border font-medium ${s.cls}`}>

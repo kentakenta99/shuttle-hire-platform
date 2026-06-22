@@ -10,7 +10,7 @@ type Booking = {
   guest_name: string
   party_size: number
   flight_number: string
-  confirmation_code: string
+  booking_reference: string
   status: string
   slot_id: string
   shuttle_slots: SlotInfo | SlotInfo[] | null
@@ -61,7 +61,7 @@ function ListView({ bookings }: { bookings: Booking[] }) {
                   {b.party_size}名 · {b.flight_number}
                 </p>
 
-                <p className="text-xs text-gray-300 mt-0.5 font-mono">{b.confirmation_code}</p>
+                <p className="text-xs text-gray-300 mt-0.5 font-mono">{b.booking_reference}</p>
               </div>
               <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>
                 {st.label}
@@ -149,7 +149,7 @@ function SlotView({ bookings }: { bookings: Booking[] }) {
                       </p>
                       <p className="text-xs text-gray-500 mt-0.5">
                         {b.party_size}名 · {b.flight_number} ·{' '}
-                        <span className="font-mono">{b.confirmation_code}</span>
+                        <span className="font-mono">{b.booking_reference}</span>
                       </p>
                     </div>
                     <span className={`shrink-0 text-xs font-medium px-2 py-0.5 rounded-full ${st.color}`}>

@@ -46,7 +46,7 @@ export async function markArrived(slotId: string): Promise<{ error?: string }> {
       .eq('id', slotId)
       .is('arrived_at', null),
     adminDb
-      .from('bookings')
+      .from('service_orders')
       .update({ status: 'arrived', completed_at: now })
       .eq('slot_id', slotId)
       .eq('status', 'completed'),
@@ -81,7 +81,7 @@ export async function markBoarded(
   const adminDb = createAdminClient()
 
   const { data: booking } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .select('id, slot_id, status')
     .eq('id', bookingId)
     .single()
@@ -100,7 +100,7 @@ export async function markBoarded(
   if (!assignment) return { error: '担当便の権限がありません' }
 
   const { error } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', bookingId)
 
@@ -117,7 +117,7 @@ export async function markNoShow(
   const adminDb = createAdminClient()
 
   const { data: booking } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .select('id, slot_id, status, guest_name')
     .eq('id', bookingId)
     .single()
@@ -135,7 +135,7 @@ export async function markNoShow(
   if (!assignment) return { error: '担当便の権限がありません' }
 
   const { error } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .update({ status: 'no_show' })
     .eq('id', bookingId)
 
@@ -144,7 +144,7 @@ export async function markNoShow(
 }
 
 export async function markBoardedByCode(
-  confirmationCode: string
+  bookingReference: string
 ): Promise<{ error?: string; guestName?: string }> {
   const { error: authError, driver } = await getVerifiedDriver()
   if (authError || !driver) return { error: authError ?? '権限エラー' }
@@ -152,13 +152,13 @@ export async function markBoardedByCode(
   const adminDb = createAdminClient()
 
   // QRコードにURLが含まれる場合（例: https://xxx.com/confirm/TMK-...）もコードを抽出
-  const rawInput = confirmationCode.trim()
+  const rawInput = bookingReference.trim()
   const code = rawInput.includes('/') ? (rawInput.split('/').pop() ?? rawInput).toUpperCase() : rawInput.toUpperCase()
 
   const { data: booking } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .select('id, slot_id, guest_name, status')
-    .eq('confirmation_code', code)
+    .eq('booking_reference', code)
     .single()
 
   if (!booking) return { error: '確認番号が見つかりません' }
@@ -175,7 +175,7 @@ export async function markBoardedByCode(
   if (!assignment) return { error: 'この便の担当権限がありません' }
 
   const { error } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .update({ status: 'completed', completed_at: new Date().toISOString() })
     .eq('id', booking.id)
 

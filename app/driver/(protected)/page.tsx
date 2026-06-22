@@ -61,7 +61,7 @@ export default async function DriverHomePage() {
   // 各スロットの予約ステータス集計（no_show含む）
   const { data: bookingCounts } = slotIds.length > 0
     ? await supabase
-        .from('bookings')
+        .from('service_orders')
         .select('slot_id, status')
         .in('slot_id', slotIds)
         .in('status', ['confirmed', 'completed', 'arrived', 'no_show'])

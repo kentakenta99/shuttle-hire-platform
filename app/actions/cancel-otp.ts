@@ -7,23 +7,23 @@ import { sendCancelOtpEmail } from '@/lib/email'
 type SendResult   = { error: string } | { maskedEmail: string }
 type VerifyResult = { error: string } | { verified: true }
 
-// OTPをsha256でハッシュ化（confirmation_codeをコンテキストソルトとして使用）
-function hashOtp(otp: string, confirmationCode: string): string {
-  return createHash('sha256').update(`${otp}|${confirmationCode}`).digest('hex')
+// OTPをsha256でハッシュ化（booking_referenceをコンテキストソルトとして使用）
+function hashOtp(otp: string, bookingReference: string): string {
+  return createHash('sha256').update(`${otp}|${bookingReference}`).digest('hex')
 }
 
 // OTP送信 — Email-First Pattern:
 //   メール送信を確認してからDBにInsertする。
 //   送信失敗時はDBを汚さず即エラーを返す。
-export async function sendCancelOtp(confirmationCode: string): Promise<SendResult> {
+export async function sendCancelOtp(bookingReference: string): Promise<SendResult> {
   const db = createAdminClient()
-  const code = confirmationCode.toUpperCase()
+  const code = bookingReference.toUpperCase()
 
   // 予約とゲストメールを取得
   const { data: booking } = await db
-    .from('bookings')
+    .from('service_orders')
     .select('guest_name, guest_email, status')
-    .eq('confirmation_code', code)
+    .eq('booking_reference', code)
     .single()
 
   if (!booking)                    return { error: '予約が見つかりません。' }
@@ -34,7 +34,7 @@ export async function sendCancelOtp(confirmationCode: string): Promise<SendResul
   const { count } = await db
     .from('cancel_otps')
     .select('id', { count: 'exact', head: true })
-    .eq('confirmation_code', code)
+    .eq('booking_reference', code)
     .gte('created_at', new Date(Date.now() - 60 * 60 * 1000).toISOString())
 
   if ((count ?? 0) >= 3) {
@@ -58,7 +58,7 @@ export async function sendCancelOtp(confirmationCode: string): Promise<SendResul
 
   // 送信成功確認後にDBへ保存（OTPはハッシュ化して保存）
   await db.from('cancel_otps').insert({
-    confirmation_code: code,
+    booking_reference: code,
     otp_code: hashOtp(otp, code),
   })
 
@@ -70,17 +70,17 @@ export async function sendCancelOtp(confirmationCode: string): Promise<SendResul
 
 // OTP検証 — 失敗5回でOTP自動無効化
 export async function verifyCancelOtp(
-  confirmationCode: string,
+  bookingReference: string,
   inputOtp: string,
 ): Promise<VerifyResult> {
   const db   = createAdminClient()
-  const code = confirmationCode.toUpperCase()
+  const code = bookingReference.toUpperCase()
 
   // 有効なOTPを取得（attempt_count含む）
   const { data: otpRow } = await db
     .from('cancel_otps')
     .select('id, otp_code, attempt_count')
-    .eq('confirmation_code', code)
+    .eq('booking_reference', code)
     .is('used_at', null)
     .gte('expires_at', new Date().toISOString())
     .order('created_at', { ascending: false })

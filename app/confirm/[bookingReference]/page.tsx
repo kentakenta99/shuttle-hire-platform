@@ -4,7 +4,7 @@ import QRCode from 'qrcode'
 import GuestCancelButton from './GuestCancelButton'
 import TimeUntilDepartureWarning from './TimeUntilDepartureWarning'
 
-type Props = { params: Promise<{ confirmationCode: string }> }
+type Props = { params: Promise<{ bookingReference: string }> }
 
 function formatDate(d: string) {
   const dt = new Date(d + 'T00:00:00')
@@ -26,14 +26,14 @@ function LicensePlate({ plate }: { plate: string }) {
 }
 
 export default async function GuestConfirmPage({ params }: Props) {
-  const { confirmationCode } = await params
+  const { bookingReference } = await params
   const supabase = createServiceClient()
 
   // キャンセル済みも含めて取得（.neq('status','cancelled') を外した）
   const { data: booking } = await supabase
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
-    .eq('confirmation_code', confirmationCode.toUpperCase())
+    .eq('booking_reference', bookingReference.toUpperCase())
     .single()
 
   if (!booking) notFound()
@@ -89,7 +89,7 @@ export default async function GuestConfirmPage({ params }: Props) {
           <div className="bg-red-50 border border-red-200 rounded-2xl px-6 py-8 space-y-2">
             <p className="text-4xl">❌</p>
             <p className="text-red-700 font-bold text-lg">この予約はキャンセル済みです</p>
-            <p className="font-mono text-sm text-gray-500">{booking.confirmation_code}</p>
+            <p className="font-mono text-sm text-gray-500">{booking.booking_reference}</p>
           </div>
 
           {slot && (
@@ -131,7 +131,7 @@ export default async function GuestConfirmPage({ params }: Props) {
 
   const priceDropped = isDirectGuest && unitPrice != null && originalUnitPrice != null && unitPrice < originalUnitPrice
 
-  const qrSvg = await QRCode.toString(booking.confirmation_code, {
+  const qrSvg = await QRCode.toString(booking.booking_reference, {
     type: 'svg',
     margin: 1,
     width: 220,
@@ -176,7 +176,7 @@ export default async function GuestConfirmPage({ params }: Props) {
           />
 
           <p className="font-mono text-base font-bold text-gray-700 mt-3 tracking-widest">
-            {booking.confirmation_code}
+            {booking.booking_reference}
           </p>
           <p className="text-xs text-gray-500 mt-1">ドライバーにこの画面を見せてください</p>
           <p className="text-xs text-gray-500">Please show this screen to your driver</p>
@@ -265,7 +265,7 @@ export default async function GuestConfirmPage({ params }: Props) {
               <p>• 出発{thresholdHours % 1 === 0 ? `${thresholdHours}時間` : `${thresholdHours}時間`}以内：予約額の{feePct}%</p>
             </div>
             <GuestCancelButton
-              confirmationCode={booking.confirmation_code}
+              bookingReference={booking.booking_reference}
               date={slot.date}
               departureTime={slot.departure_time}
               totalPrice={totalPrice}

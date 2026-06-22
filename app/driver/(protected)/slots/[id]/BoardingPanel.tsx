@@ -10,7 +10,7 @@ const QRCameraScanner = dynamic(() => import('./QRCameraScanner'), { ssr: false 
 
 type Booking = {
   id: string
-  confirmation_code: string
+  booking_reference: string
   guest_name: string
   party_size: number
   luggage_count: number
@@ -124,7 +124,7 @@ export function BoardingRow({
               </>
             )}
           </div>
-          <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.confirmation_code}</p>
+          <p className="text-xs text-gray-500 mt-0.5 font-mono">{booking.booking_reference}</p>
           {/* 車内決済の場合のみ料金明細を表示（TMKからお客様への説明用） */}
           {billingType === 'direct_guest' && booking.unit_price != null && (
             <div className="mt-0.5 space-y-0.5">

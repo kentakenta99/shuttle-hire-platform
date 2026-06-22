@@ -10,8 +10,8 @@ export default async function BookingsPage() {
   const since = new Date(Date.now() - 30 * 86400000).toISOString()
 
   const { data: bookings } = await supabase
-    .from('bookings')
-    .select('id, guest_name, party_size, flight_number, confirmation_code, status, slot_id, shuttle_slots(date, departure_time)')
+    .from('service_orders')
+    .select('id, guest_name, party_size, flight_number, booking_reference, status, slot_id, shuttle_slots(date, departure_time)')
     .gte('created_at', since)
     .order('created_at', { ascending: false })
 

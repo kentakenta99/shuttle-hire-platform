@@ -5,7 +5,7 @@ import Link from 'next/link'
 
 type Booking = {
   id: string
-  confirmation_code: string
+  booking_reference: string
   guest_name: string
   party_size: number
   luggage_count: number
@@ -63,7 +63,7 @@ function TableView({ bookings, slotMap, hotelMap }: {
               <tr key={b.id} className="hover:bg-gray-50 transition">
                 <td className="px-4 py-3">
                   <Link href={`/admin/bookings/${b.id}`} className="font-mono text-xs text-blue-600 hover:underline">
-                    {b.confirmation_code}
+                    {b.booking_reference}
                   </Link>
                 </td>
                 <td className="px-4 py-3 font-medium text-gray-900">
@@ -170,7 +170,7 @@ function SlotView({ bookings, slotMap, hotelMap }: {
                     <tr key={b.id} className="hover:bg-gray-50 transition">
                       <td className="pl-8 pr-4 py-2.5 w-32">
                         <Link href={`/admin/bookings/${b.id}`} className="font-mono text-xs text-blue-600 hover:underline">
-                          {b.confirmation_code}
+                          {b.booking_reference}
                         </Link>
                       </td>
                       <td className="px-4 py-2.5 font-medium text-gray-900">

@@ -53,7 +53,7 @@ export async function createBooking(formData: FormData): Promise<{ error: string
   // ゲストメールのみ保存（unit_price/total_price は create_booking RPC が recalculate_slot_pricing で設定済み）
   const guestEmail = (formData.get('guestEmail') as string)?.trim() || null
   if (guestEmail) {
-    await supabase.from('bookings').update({ guest_email: guestEmail }).eq('id', bookingId)
+    await supabase.from('service_orders').update({ guest_email: guestEmail }).eq('id', bookingId)
   }
 
   // redirect()前に完了させる（Vercelサーバーレスではawaitしないと関数終了でキャンセルされる）
@@ -70,7 +70,7 @@ async function sendBookingConfirmationEmail(
   guestEmail?: string | null
 ) {
   const { data: booking } = await supabase
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time), hotels(name, contact_email)')
     .eq('id', bookingId)
     .single()
@@ -83,8 +83,8 @@ async function sendBookingConfirmationEmail(
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'
   const emailInfo = {
     guestName: booking.guest_name,
-    confirmationCode: booking.confirmation_code,
-    confirmUrl: `${baseUrl}/confirm/${booking.confirmation_code}`,
+    bookingReference: booking.booking_reference,
+    confirmUrl: `${baseUrl}/confirm/${booking.booking_reference}`,
     date: slot.date,
     departureTime: slot.departure_time,
     partySize: booking.party_size,
@@ -125,7 +125,7 @@ export async function cancelBooking(
 
   // キャンセル前に情報を取得（メール用）
   const { data: booking } = await supabase
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time)')
     .eq('id', bookingId)
     .single()
@@ -147,7 +147,7 @@ export async function cancelBooking(
   if (booking && slot) {
     const cancelInfo = {
       guestName:        booking.guest_name,
-      confirmationCode: booking.confirmation_code,
+      bookingReference: booking.booking_reference,
       date:             slot.date,
       departureTime:    slot.departure_time,
       reason,
@@ -171,14 +171,14 @@ export async function cancelBooking(
 // ゲスト自身によるキャンセル（認証不要）
 // 出発2時間以上前: 無料 / 2時間以内: total_price の 25% を徴収
 export async function guestCancelBooking(
-  confirmationCode: string
+  bookingReference: string
 ): Promise<{ error: string } | { success: true; fee: number }> {
   const db = createAdminClient()
 
   const { data: booking } = await db
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(id, date, departure_time, remaining_seats, capacity, status)')
-    .eq('confirmation_code', confirmationCode.toUpperCase())
+    .eq('booking_reference', bookingReference.toUpperCase())
     .eq('status', 'confirmed')
     .single()
 
@@ -238,7 +238,7 @@ export async function guestCancelBooking(
 
   // 予約をキャンセル（eq('status','confirmed') で二重キャンセルを防ぐ）
   const { error: updateError } = await db
-    .from('bookings')
+    .from('service_orders')
     .update({
       status: 'cancelled',
       cancelled_reason: isFeeApplicable ? 'guest_cancel_with_fee' : 'guest_cancel_free',
@@ -261,7 +261,7 @@ export async function guestCancelBooking(
   if (guestEmail) {
     await sendGuestCancellationEmail(guestEmail, {
       guestName: booking.guest_name,
-      confirmationCode: booking.confirmation_code,
+      bookingReference: booking.booking_reference,
       date: slot.date,
       departureTime: slot.departure_time,
       cancellationFee,

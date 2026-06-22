@@ -21,7 +21,7 @@ async function send(opts: SendOpts): Promise<{ id: string } | null> {
 
 type BookingInfo = {
   guestName: string
-  confirmationCode: string
+  bookingReference: string
   confirmUrl: string
   date: string
   departureTime: string
@@ -52,7 +52,7 @@ export async function sendBookingConfirmation(to: string, info: BookingInfo) {
 
   <table style="width:100%;border-collapse:collapse;margin:16px 0">
     ${[
-      ['確認番号', `<strong style="font-family:monospace;font-size:18px;color:#2563eb">${info.confirmationCode}</strong>`],
+      ['確認番号', `<strong style="font-family:monospace;font-size:18px;color:#2563eb">${info.bookingReference}</strong>`],
       ['お客様名', `${info.guestName} 様`],
       ['出発日時', departureLabel],
       ['人数', `${info.partySize}名`],
@@ -100,7 +100,7 @@ export async function sendGuestBookingConfirmation(to: string, info: BookingInfo
 
   <table style="width:100%;border-collapse:collapse;margin:16px 0">
     ${[
-      ['確認番号', `<strong style="font-family:monospace;font-size:20px;color:#0f172a;letter-spacing:2px">${info.confirmationCode}</strong>`],
+      ['確認番号', `<strong style="font-family:monospace;font-size:20px;color:#0f172a;letter-spacing:2px">${info.bookingReference}</strong>`],
       ['出発日時', `<strong>${departureLabel}</strong>`],
       ['人数', `${info.partySize}名`],
       ['お荷物', `${info.luggageCount}個`],
@@ -132,7 +132,7 @@ export async function sendGuestBookingConfirmation(to: string, info: BookingInfo
 
 export async function sendCancellationNotice(to: string, info: {
   guestName: string
-  confirmationCode: string
+  bookingReference: string
   date: string
   departureTime: string
   reason?: string | null
@@ -155,7 +155,7 @@ export async function sendCancellationNotice(to: string, info: {
 
   <table style="width:100%;border-collapse:collapse;margin:16px 0">
     ${[
-      ['確認番号', `<span style="font-family:monospace">${info.confirmationCode}</span>`],
+      ['確認番号', `<span style="font-family:monospace">${info.bookingReference}</span>`],
       ['お客様名', `${info.guestName} 様`],
       ['出発日時', departureLabel],
       ...(info.reason ? [['キャンセル理由', info.reason]] : []),
@@ -178,7 +178,7 @@ export async function sendSuspensionNotice(to: string, info: {
   hotelName: string
   date: string
   departureTime: string
-  affectedBookings: { guestName: string; confirmationCode: string; partySize: number }[]
+  affectedBookings: { guestName: string; bookingReference: string; partySize: number }[]
 }) {
   const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
   return send({
@@ -218,7 +218,7 @@ export async function sendSuspensionNotice(to: string, info: {
     <tbody>
       ${info.affectedBookings.map(b => `
       <tr>
-        <td style="padding:8px 12px;font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9">${b.confirmationCode}</td>
+        <td style="padding:8px 12px;font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9">${b.bookingReference}</td>
         <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9">${b.guestName} 様</td>
         <td style="padding:8px 12px;text-align:center;font-size:13px;border-bottom:1px solid #f1f5f9">${b.partySize}名</td>
       </tr>`).join('')}
@@ -236,7 +236,7 @@ export async function sendSuspensionNotice(to: string, info: {
 
 export async function sendDepartureReminderGuest(to: string, info: {
   guestName: string
-  confirmationCode: string
+  bookingReference: string
   date: string
   departureTime: string
   vehicleType: string
@@ -277,7 +277,7 @@ export async function sendDepartureReminderGuest(to: string, info: {
   </div>
 
   <p style="font-size:12px;color:#94a3b8;margin-top:24px">
-    確認番号: ${info.confirmationCode}<br>
+    確認番号: ${info.bookingReference}<br>
     東京エムケイ株式会社 シャトルハイヤー予約システム
   </p>
 </body>
@@ -291,7 +291,7 @@ export async function sendDepartureReminderHotel(to: string, info: {
   departureTime: string
   vehicleType: string
   vehiclePlate: string | null
-  guests: { guestName: string; partySize: number; confirmationCode: string }[]
+  guests: { guestName: string; partySize: number; bookingReference: string }[]
 }) {
   const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
   const totalGuests = info.guests.reduce((s, g) => s + g.partySize, 0)
@@ -333,7 +333,7 @@ export async function sendDepartureReminderHotel(to: string, info: {
       <tr>
         <td style="padding:8px 12px;font-size:13px;border-bottom:1px solid #f1f5f9">${g.guestName} 様</td>
         <td style="padding:8px 12px;font-size:13px;text-align:center;border-bottom:1px solid #f1f5f9">${g.partySize}名</td>
-        <td style="padding:8px 12px;font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9">${g.confirmationCode}</td>
+        <td style="padding:8px 12px;font-family:monospace;font-size:13px;border-bottom:1px solid #f1f5f9">${g.bookingReference}</td>
       </tr>`).join('')}
     </tbody>
   </table>
@@ -403,7 +403,7 @@ export async function sendDriverAssignment(to: string, info: {
 
 export async function sendGuestCancellationEmail(to: string, info: {
   guestName: string
-  confirmationCode: string
+  bookingReference: string
   date: string
   departureTime: string
   cancellationFee: number
@@ -433,7 +433,7 @@ export async function sendGuestCancellationEmail(to: string, info: {
 
   <table style="width:100%;border-collapse:collapse;margin:16px 0">
     ${[
-      ['確認番号', `<span style="font-family:monospace">${info.confirmationCode}</span>`],
+      ['確認番号', `<span style="font-family:monospace">${info.bookingReference}</span>`],
       ['出発日時', departureLabel],
       ['キャンセル料', `<strong${isFee ? ' style="color:#dc2626"' : ' style="color:#16a34a"'}>${feeLabel}</strong>`],
     ].map(([label, value]) => `

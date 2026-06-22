@@ -188,8 +188,8 @@ async function sendSuspensionEmails(
   const [slotRes, bookingsRes] = await Promise.all([
     supabase.from('shuttle_slots').select('date, departure_time').eq('id', slotId).single(),
     supabase
-      .from('bookings')
-      .select('guest_name, confirmation_code, party_size, hotel_id')
+      .from('service_orders')
+      .select('guest_name, booking_reference, party_size, hotel_id')
       .eq('slot_id', slotId)
       .eq('status', 'confirmed'),
   ])
@@ -220,7 +220,7 @@ async function sendSuspensionEmails(
       departureTime: slot.departure_time,
       affectedBookings: (byHotel[hotel.id] ?? []).map(b => ({
         guestName: b.guest_name,
-        confirmationCode: b.confirmation_code,
+        bookingReference: b.booking_reference,
         partySize: b.party_size,
       })),
     })
@@ -248,7 +248,7 @@ export async function cancelBookingByAdmin(
 
   // キャンセル前に予約情報を取得（hotel_id特定 + メール送信用）
   const { data: booking } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .select('*, shuttle_slots(date, departure_time), hotels(name, contact_email)')
     .eq('id', bookingId)
     .single()
@@ -273,7 +273,7 @@ export async function cancelBookingByAdmin(
   if (slot) {
     const cancelInfo = {
       guestName:        booking.guest_name,
-      confirmationCode: booking.confirmation_code,
+      bookingReference: booking.booking_reference,
       date:             slot.date,
       departureTime:    slot.departure_time,
       reason,
@@ -568,7 +568,7 @@ export async function generateMonthlyInvoice(
 
   // completed / arrived 予約のみ集計（total_price は動的スロット料金が反映済み）
   const { data: bookings } = await adminDb
-    .from('bookings')
+    .from('service_orders')
     .select('id, party_size, total_price')
     .eq('hotel_id', hotelId)
     .in('slot_id', slotIds)

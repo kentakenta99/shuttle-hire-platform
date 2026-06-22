@@ -54,7 +54,7 @@ export default async function AdminDashboardPage() {
       const [y, m] = yearMonth.split('-').map(Number)
       const nm = m === 12 ? `${y + 1}-01` : `${y}-${String(m + 1).padStart(2, '0')}`
       return supabase
-        .from('bookings')
+        .from('service_orders')
         .select('party_size')
         .in('status', ['confirmed', 'completed'])
         .gte('created_at', `${yearMonth}-01T00:00:00+09:00`)
@@ -177,8 +177,8 @@ export default async function AdminDashboardPage() {
                     {payload?.guest_name && (
                       <span className="text-xs text-gray-600 ml-2">{payload.guest_name}</span>
                     )}
-                    {payload?.confirmation_code && (
-                      <span className="text-xs text-gray-500 ml-1">#{payload.confirmation_code}</span>
+                    {payload?.booking_reference && (
+                      <span className="text-xs text-gray-500 ml-1">#{payload.booking_reference}</span>
                     )}
                   </div>
                   <span className="text-xs text-gray-300 shrink-0">

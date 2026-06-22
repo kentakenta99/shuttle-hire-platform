@@ -21,8 +21,8 @@ export async function GET(request: NextRequest) {
   const status   = sp.get('status') ?? ''
 
   let query = supabase
-    .from('bookings')
-    .select('confirmation_code, guest_name, party_size, luggage_count, flight_number, status, notes, booked_by_name, created_at, hotel_id, slot_id')
+    .from('service_orders')
+    .select('booking_reference, guest_name, party_size, luggage_count, flight_number, status, notes, booked_by_name, created_at, hotel_id, slot_id')
     .order('created_at', { ascending: false })
     .limit(5000)
 
@@ -63,7 +63,7 @@ export async function GET(request: NextRequest) {
   const csvRows = filtered.map(b => {
     const slot = slotMap[b.slot_id]
     return [
-      esc(b.confirmation_code),
+      esc(b.booking_reference),
       esc(b.guest_name),
       esc(hotelMap[b.hotel_id]),
       esc(slot?.date),
