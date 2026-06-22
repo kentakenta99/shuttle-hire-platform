@@ -164,6 +164,7 @@ export async function updateCancellationPolicy(
   const thresholdHours = parseFloat(formData.get('threshold_hours') as string)
   const feePct = parseInt(formData.get('fee_pct') as string, 10)
   const note = (formData.get('note') as string)?.trim() || null
+  const hotelId = (formData.get('hotel_id') as string)?.trim() || null
 
   if (isNaN(thresholdHours) || thresholdHours <= 0) return { error: '閾値時間数は正の数を入力してください' }
   if (isNaN(feePct) || feePct < 0 || feePct > 100) return { error: 'キャンセル料率は 0〜100 の整数で入力してください' }
@@ -172,36 +173,47 @@ export async function updateCancellationPolicy(
 
   const { data: adminUser } = await adminDb
     .from('tmk_admin_users')
-    .select('name')
+    .select('display_name')
     .eq('user_id', caller.id)
     .single()
 
-  const updaterName = (adminUser as unknown as { name?: string } | null)?.name ?? caller.email ?? 'unknown'
+  const updaterName = (adminUser as unknown as { display_name?: string } | null)?.display_name ?? caller.email ?? 'unknown'
 
-  // 唯一の行を upsert（なければ INSERT、あれば UPDATE）
-  const { data: existing } = await adminDb
-    .from('cancellation_policies')
-    .select('id')
-    .limit(1)
-    .single()
+  // ホテル別またはグローバルを upsert
+  const query = adminDb.from('cancellation_policies')
+  let existing: { id: string } | null = null
+
+  if (hotelId) {
+    const { data } = await query
+      .select('id')
+      .eq('hotel_id', hotelId)
+      .single()
+    existing = data as { id: string } | null
+  } else {
+    const { data } = await query
+      .select('id')
+      .is('hotel_id', null)
+      .single()
+    existing = data as { id: string } | null
+  }
+
+  const updateData = {
+    threshold_hours: thresholdHours,
+    fee_pct: feePct,
+    note,
+    updated_at: new Date().toISOString(),
+    updated_by_name: updaterName,
+  }
 
   if (existing) {
     await adminDb
       .from('cancellation_policies')
-      .update({
-        threshold_hours: thresholdHours,
-        fee_pct: feePct,
-        note,
-        updated_at: new Date().toISOString(),
-        updated_by_name: updaterName,
-      })
+      .update(updateData)
       .eq('id', existing.id)
   } else {
     await adminDb.from('cancellation_policies').insert({
-      threshold_hours: thresholdHours,
-      fee_pct: feePct,
-      note,
-      updated_by_name: updaterName,
+      ...updateData,
+      hotel_id: hotelId || null,
     })
   }
 

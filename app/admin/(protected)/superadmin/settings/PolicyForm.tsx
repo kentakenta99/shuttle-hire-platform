@@ -11,11 +11,18 @@ type Policy = {
   updatedByName: string | null
 }
 
-export default function PolicyForm({ policy }: { policy: Policy }) {
+type Props = {
+  policy: Policy
+  isGlobal?: boolean
+  hotelId?: string | null
+}
+
+export default function PolicyForm({ policy, isGlobal = false, hotelId }: Props) {
   const [state, action, pending] = useActionState(updateCancellationPolicy, null)
 
   return (
     <form action={action} className="space-y-4">
+      {hotelId && <input type="hidden" name="hotel_id" value={hotelId} />}
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-xs font-semibold text-gray-500 mb-1.5">

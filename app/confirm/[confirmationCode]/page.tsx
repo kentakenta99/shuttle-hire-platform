@@ -29,24 +29,38 @@ export default async function GuestConfirmPage({ params }: Props) {
   const supabase = createServiceClient()
 
   // キャンセル済みも含めて取得（.neq('status','cancelled') を外した）
-  const [{ data: booking }, { data: rawPolicy }] = await Promise.all([
-    supabase
-      .from('bookings')
-      .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
-      .eq('confirmation_code', confirmationCode.toUpperCase())
-      .single(),
-    supabase
-      .from('cancellation_policies')
-      .select('threshold_hours, fee_pct')
-      .limit(1)
-      .single(),
-  ])
-
-  const policy = rawPolicy as unknown as { threshold_hours: number; fee_pct: number } | null
-  const thresholdHours = policy?.threshold_hours ?? 2
-  const feePct = policy?.fee_pct ?? 25
+  const { data: booking } = await supabase
+    .from('bookings')
+    .select('*, shuttle_slots(date, departure_time, vehicle_plate)')
+    .eq('confirmation_code', confirmationCode.toUpperCase())
+    .single()
 
   if (!booking) notFound()
+
+  // キャンセルポリシーを取得：ホテル別 → グローバルデフォルト の順で試す
+  const hotelId = (booking as unknown as Record<string, unknown>).hotel_id as string | null
+  let policy: { threshold_hours?: number; fee_pct?: number } | null = null
+
+  if (hotelId) {
+    const { data: hotelPolicy } = await supabase
+      .from('cancellation_policies')
+      .select('threshold_hours, fee_pct')
+      .eq('hotel_id', hotelId)
+      .single()
+    policy = hotelPolicy as unknown as { threshold_hours?: number; fee_pct?: number } | null
+  }
+
+  if (!policy) {
+    const { data: globalPolicy } = await supabase
+      .from('cancellation_policies')
+      .select('threshold_hours, fee_pct')
+      .is('hotel_id', null)
+      .single()
+    policy = globalPolicy as unknown as { threshold_hours?: number; fee_pct?: number } | null
+  }
+
+  const thresholdHours = policy?.threshold_hours ?? 2
+  const feePct = policy?.fee_pct ?? 25
 
   const slot = booking.shuttle_slots as unknown as {
     date: string

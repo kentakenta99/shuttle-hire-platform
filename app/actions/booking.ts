@@ -206,14 +206,30 @@ export async function guestCancelBooking(
     return { error: 'すでに出発時刻を過ぎているためキャンセルできません。' }
   }
 
-  // キャンセルポリシーを DB から取得（見つからない場合はデフォルト値）
-  const { data: rawPolicy } = await db
-    .from('cancellation_policies')
-    .select('threshold_hours, fee_pct')
-    .limit(1)
-    .single()
-  const policyThresholdMs = ((rawPolicy as unknown as { threshold_hours?: number } | null)?.threshold_hours ?? 2) * 60 * 60 * 1000
-  const policyFeePct = (rawPolicy as unknown as { fee_pct?: number } | null)?.fee_pct ?? 25
+  // キャンセルポリシーを DB から取得：ホテル別 → グローバルデフォルト の順で試す
+  const hotelId = (booking as unknown as Record<string, unknown>).hotel_id as string | null
+  let policy: { threshold_hours?: number; fee_pct?: number } | null = null
+
+  if (hotelId) {
+    const { data: hotelPolicy } = await db
+      .from('cancellation_policies')
+      .select('threshold_hours, fee_pct')
+      .eq('hotel_id', hotelId)
+      .single()
+    policy = hotelPolicy as unknown as { threshold_hours?: number; fee_pct?: number } | null
+  }
+
+  if (!policy) {
+    const { data: globalPolicy } = await db
+      .from('cancellation_policies')
+      .select('threshold_hours, fee_pct')
+      .is('hotel_id', null)
+      .single()
+    policy = globalPolicy as unknown as { threshold_hours?: number; fee_pct?: number } | null
+  }
+
+  const policyThresholdMs = (policy?.threshold_hours ?? 2) * 60 * 60 * 1000
+  const policyFeePct = policy?.fee_pct ?? 25
 
   const b = booking as unknown as Record<string, unknown>
   const totalPrice = (b.total_price as number | null) ?? 0
