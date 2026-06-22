@@ -29,241 +29,261 @@
     background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,.05) 0%, transparent 60%),
                 radial-gradient(ellipse at 70% 80%, rgba(201,162,39,.08) 0%, transparent 50%);
   }
-  .cover-logo {
-    width: 72px; height: 72px; background: rgba(255,255,255,.15); border-radius: 18px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 28px; font-weight: 900; letter-spacing: -1px; margin: 0 auto 24px; position: relative;
-    border: 2px solid rgba(255,255,255,.2);
-  }
-  .cover h1 { font-size: 2.4rem; font-weight: 800; line-height: 1.3; margin-bottom: 16px; position: relative; }
+  .cover-logo { width: 80px; height: 80px; background: rgba(255,255,255,.15); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; margin: 0 auto 28px; position: relative; border: 2px solid rgba(255,255,255,.2); }
+  .cover h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.3; margin-bottom: 16px; position: relative; }
   .cover h1 span { color: var(--mk-gold); }
-  .cover-sub { font-size: 1.1rem; opacity: .8; margin-bottom: 32px; position: relative; }
-  .cover-beta {
-    background: rgba(201,162,39,.2); border: 1px solid rgba(201,162,39,.4);
-    border-radius: 24px; padding: 12px 28px; font-size: .9rem; display: inline-block; position: relative;
-    margin-bottom: 24px;
-  }
-  .cover-beta strong { color: var(--mk-gold); }
-  .cover-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 32px; position: relative; }
-  .cover-tag {
-    background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.15);
-    border-radius: 20px; padding: 6px 16px; font-size: .8rem; opacity: .9;
-  }
+  .cover-lead { font-size: 1.15rem; opacity: .85; max-width: 600px; position: relative; margin-bottom: 40px; line-height: 1.8; }
+  .cover-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .cover-tag { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 7px 18px; font-size: .82rem; }
 
-  /* ── Section ────────────────────────────────────── */
-  .section { padding: 80px 0; }
+  /* ── Section ─────────────────────────────────────── */
+  .section { padding: 88px 0; }
   .section.dark { background: var(--bg-light); }
   .container { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
-  .section-label { font-size: .75rem; font-weight: 700; letter-spacing: .12em; color: var(--mk-blue-light); text-transform: uppercase; margin-bottom: 8px; }
-  .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
-  .section-desc { color: var(--text-sub); font-size: 1.05rem; max-width: 640px; margin-bottom: 56px; }
+  .section-label { font-size: .72rem; font-weight: 700; letter-spacing: .14em; color: var(--mk-blue-light); text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 14px; line-height: 1.3; }
+  .section-desc { color: var(--text-sub); font-size: 1.02rem; max-width: 660px; margin-bottom: 56px; line-height: 1.9; }
 
-  /* ── Showcase ────────────────────────────────────── */
+  /* ── Overview value props ─────────────────────────── */
+  .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .value-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; }
+  .value-card-icon { font-size: 2.2rem; margin-bottom: 14px; }
+  .value-card h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
+  .value-card p { font-size: .88rem; color: var(--text-sub); line-height: 1.7; }
+
+  /* ── Actor grid ───────────────────────────────────── */
+  .actor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .actor-card { border: 1px solid var(--border); border-radius: 18px; padding: 28px; }
+  .actor-badge { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border-radius: 20px; padding: 3px 12px; margin-bottom: 14px; }
+  .actor-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+  .actor-card p { font-size: .88rem; color: var(--text-sub); line-height: 1.7; margin-bottom: 14px; }
+  .actor-list { list-style: none; }
+  .actor-list li { font-size: .85rem; color: var(--text-sub); padding: 4px 0 4px 18px; position: relative; }
+  .actor-list li::before { content: '→'; position: absolute; left: 0; color: var(--mk-blue-light); font-weight: 700; }
+
+  /* ── Flow steps ───────────────────────────────────── */
+  .flow-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; position: relative; }
+  .flow-steps::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, var(--mk-blue-light), var(--mk-gold)); z-index: 0; }
+  .flow-step { text-align: center; position: relative; z-index: 1; }
+  .flow-step-num { width: 56px; height: 56px; border-radius: 50%; background: var(--mk-blue); color: #fff; font-size: 1.1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 0 0 4px #fff; }
+  .flow-step h4 { font-size: .85rem; font-weight: 700; margin-bottom: 4px; }
+  .flow-step p { font-size: .75rem; color: var(--text-sub); line-height: 1.5; }
+
+  /* ── Showcase ─────────────────────────────────────── */
   .showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; margin-bottom: 80px; }
   .showcase.reverse { direction: rtl; }
   .showcase.reverse > * { direction: ltr; }
-  .showcase-text h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 12px; line-height: 1.4; }
-  .showcase-text p { font-size: .95rem; color: var(--text-sub); line-height: 1.8; margin-bottom: 16px; }
-  .showcase-tag {
-    display: inline-block; background: rgba(42,82,152,.08); color: var(--mk-blue-light);
-    border: 1px solid rgba(42,82,152,.2); border-radius: 20px; padding: 4px 14px;
-    font-size: .78rem; font-weight: 700; margin-bottom: 16px;
-  }
+  .showcase-tag { display: inline-block; background: rgba(42,82,152,.08); color: var(--mk-blue-light); border: 1px solid rgba(42,82,152,.2); border-radius: 20px; padding: 4px 14px; font-size: .76rem; font-weight: 700; margin-bottom: 12px; }
+  .showcase-text h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 14px; line-height: 1.4; }
+  .showcase-text p { font-size: .93rem; color: var(--text-sub); line-height: 1.85; margin-bottom: 14px; }
   .showcase-points { list-style: none; }
-  .showcase-points li { font-size: .9rem; color: var(--text-sub); padding: 4px 0; padding-left: 20px; position: relative; }
+  .showcase-points li { font-size: .88rem; color: var(--text-sub); padding: 4px 0 4px 20px; position: relative; }
   .showcase-points li::before { content: '→'; position: absolute; left: 0; color: var(--mk-blue-light); font-weight: 700; }
+  .live-badge { display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 5px 14px; margin-bottom: 14px; }
+  .live-badge-dot { width: 8px; height: 8px; background: #16a34a; border-radius: 50%; }
+  .live-badge span { font-size: .78rem; font-weight: 700; color: #15803d; }
 
-  /* ── Phone mockup ────────────────────────────────── */
+  /* ── Phone mockup ─────────────────────────────────── */
   .phone-wrap { display: flex; justify-content: center; }
-  .phone {
-    width: 300px; background: #fff; border-radius: 32px; overflow: hidden;
-    box-shadow: 0 24px 80px rgba(0,0,0,.16), 0 0 0 8px #1a1a2e;
-    flex-shrink: 0;
-  }
-  .phone-bar {
-    background: #1a1a2e; height: 32px; display: flex; align-items: center;
-    justify-content: center; gap: 6px;
-  }
+  .phone { width: 300px; background: #fff; border-radius: 32px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.16), 0 0 0 8px #1a1a2e; flex-shrink: 0; }
+  .phone-bar { background: #1a1a2e; height: 32px; display: flex; align-items: center; justify-content: center; gap: 6px; }
   .phone-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.2); }
   .phone-bar-dot.cam { background: rgba(255,255,255,.4); }
 
-  /* ── Admin screen mockup ─────────────────────────── */
+  /* ── Admin mockup ─────────────────────────────────── */
   .admin-wrap { background: #f1f5f9; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.12); }
   .admin-topbar { background: #1e293b; padding: 10px 16px; display: flex; align-items: center; gap: 6px; }
   .admin-topbar-dot { width: 10px; height: 10px; border-radius: 50%; }
 
-  /* ── Impact ──────────────────────────────────────── */
+  /* ── Impact ───────────────────────────────────────── */
   .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
-  .impact-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 28px; text-align: center; }
-  .impact-num { font-size: 2.4rem; font-weight: 900; color: var(--mk-blue); }
-  .impact-label { font-size: .85rem; color: var(--text-sub); margin-top: 4px; }
+  .impact-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 32px; text-align: center; }
+  .impact-num { font-size: 2.6rem; font-weight: 900; color: var(--mk-blue); }
+  .impact-label { font-size: .88rem; color: var(--text-sub); margin-top: 6px; line-height: 1.5; }
 
-  /* ── Beta box ────────────────────────────────────── */
-  .beta-box {
-    background: linear-gradient(135deg, rgba(201,162,39,.06), rgba(42,82,152,.06));
-    border: 1px solid rgba(201,162,39,.3); border-radius: 20px; padding: 48px 40px;
-    text-align: center;
-  }
+  /* ── Beta ─────────────────────────────────────────── */
+  .beta-box { background: linear-gradient(135deg, rgba(201,162,39,.06), rgba(42,82,152,.06)); border: 1px solid rgba(201,162,39,.3); border-radius: 20px; padding: 56px 40px; text-align: center; }
 
   .divider { border: none; border-top: 1px solid var(--border); margin: 0 0 80px; }
-
-  .footer { background: var(--mk-blue); color: #fff; text-align: center; padding: 40px; }
+  .footer { background: var(--mk-blue); color: #fff; text-align: center; padding: 44px; }
 
   @media (max-width: 768px) {
     .showcase, .showcase.reverse { grid-template-columns: 1fr; direction: ltr; gap: 32px; }
-    .impact-grid { grid-template-columns: 1fr; }
-    .cover h1 { font-size: 1.8rem; }
-    .section { padding: 48px 0; }
+    .value-grid, .actor-grid, .impact-grid, .flow-steps { grid-template-columns: 1fr; }
+    .flow-steps::before { display: none; }
+    .cover h1 { font-size: 1.9rem; }
+    .section { padding: 52px 0; }
     .phone { width: 260px; }
   }
 </style>
 </head>
 <body>
 
-<!-- ══ COVER ══════════════════════════════════════════════ -->
+<!-- ══ 1. COVER ═══════════════════════════════════════════ -->
 <section class="cover">
   <div class="cover-logo">MK</div>
   <h1>シャトルハイヤー<br><span>予約プラットフォーム</span></h1>
-  <p class="cover-sub">ゲスト・ホテル・ドライバーを、一つのシステムで。</p>
-  <div class="cover-beta">
-    <strong>🚀 Beta</strong> — 東京MK内部チームだからこそ作れた、きめ細かいソリューション
-  </div>
+  <p class="cover-lead">
+    ホテル宿泊客が成田空港へのシャトルハイヤーをスマートフォンだけで予約・管理。<br>
+    東京MK内部チームが作った、現場を知っているからこそのきめ細かいソリューション。
+  </p>
   <div class="cover-tags">
+    <div class="cover-tag">🏨 ホテルオークラ東京 初期パートナー</div>
     <div class="cover-tag">✈️ OAGリアルタイム便情報</div>
-    <div class="cover-tag">🔐 QRチケット自動発行</div>
     <div class="cover-tag">🤖 AI設定アシスタント</div>
-    <div class="cover-tag">⚠️ 乗り遅れリスク検知</div>
+    <div class="cover-tag">🚀 Beta — TMK現場テストラン進行中</div>
   </div>
 </section>
 
-<!-- ══ FEATURES ════════════════════════════════════════════ -->
-<section class="section">
+<!-- ══ 2. プロダクト概要 ══════════════════════════════════ -->
+<section class="section dark">
   <div class="container">
-
-    <!-- 01: Are you lazy? -->
-    <div class="showcase">
-      <div class="showcase-text">
-        <div class="showcase-tag">ゲスト体験 01</div>
-        <h3>フライト番号がわからなくても<br>予約できる</h3>
-        <div style="display:inline-flex;align-items:center;gap:6px;background:#dcfce7;border:1px solid #86efac;border-radius:20px;padding:5px 14px;margin-bottom:14px">
-          <span style="width:8px;height:8px;background:#16a34a;border-radius:50%;display:inline-block"></span>
-          <span style="font-size:.8rem;font-weight:700;color:#15803d">本番稼働中 — OAG APIリアルタイム連携</span>
-        </div>
-        <p>
-          「Are you too lazy to check your flight number?」<br>
-          ゲストが便番号を調べる手間を省く、OAG連携の便サーチ機能。
-          エアライン名を入れて時間帯か目的地で絞り込むだけで、成田出発便がリアルタイムで表示される。
-        </p>
-        <ul class="showcase-points">
-          <li>航空会社名（NH・ANA・United いずれでも可）</li>
-          <li>午前 / 午後 / 夕方以降の時間帯フィルター</li>
-          <li>目的地（BKK / Bangkok / LHR）でも検索可能</li>
-          <li>タップするだけでフライト番号が自動入力</li>
-          <li>ターミナル・出発時刻も同時に取得</li>
-        </ul>
+    <div class="section-label">What is this</div>
+    <h2 class="section-title">何のプロダクトか</h2>
+    <p class="section-desc">
+      ホテル宿泊客が成田空港へのシャトルハイヤーをオンラインで予約できるB2Bプラットフォーム。
+      予約・配車・乗車確認・キャンセルまでをデジタル化し、フロント業務の負荷をゼロに近づける。
+    </p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-card-icon">📱</div>
+        <h3>ゲストがスマホで完結</h3>
+        <p>QRチケット自動発行。予約・確認・キャンセルすべてスマートフォンから24時間対応。フロントに電話する必要がない。</p>
       </div>
-      <div class="phone-wrap">
-        <div class="phone">
-          <div class="phone-bar">
-            <div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div>
-          </div>
-          <div style="padding:16px">
-            <!-- 時刻選択 -->
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">PREFERRED DEPARTURE</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px">
-              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">11:00</div>
-              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">12:00</div>
-              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">13:00</div>
-              <div style="background:#C9A227;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;font-weight:700">14:00</div>
-            </div>
-            <!-- フライト入力 -->
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">FLIGHT NUMBER</div>
-            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:13px;color:#374151;background:#fff;margin-bottom:8px">NH832</div>
-            <!-- lazy link -->
-            <div style="font-size:10px;color:#4b5563;text-decoration:underline;margin-bottom:10px">Are you too lazy to check your flight number? →</div>
-            <!-- lazy panel -->
-            <div style="border:1px dashed #d1d5db;border-radius:12px;padding:10px;background:#f9fafb">
-              <div style="font-size:10px;color:#6b7280;margin-bottom:8px">エアライン＋出発時間帯か目的地を教えてください。該当便を表示します。</div>
-              <div style="font-size:9px;font-weight:700;color:#6b7280;margin-bottom:3px">Airline</div>
-              <div style="border:1px solid #e5e7eb;border-radius:8px;padding:7px 10px;font-size:12px;background:#fff;margin-bottom:8px">UA</div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px">
-                <div style="background:#111;color:#fff;border-radius:8px;padding:6px;font-size:10px;font-weight:700;text-align:center">出発時間帯で探す</div>
-                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:6px;font-size:10px;color:#6b7280;text-align:center">目的地で探す</div>
-              </div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px">
-                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:600;color:#374151">午前</div><div style="font-size:9px;color:#9ca3af">6〜12時</div></div>
-                <div style="background:#C9A227;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:700">午後</div><div style="font-size:9px">12〜18時</div></div>
-                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:600;color:#374151">夕方以降</div><div style="font-size:9px;color:#9ca3af">18時〜</div></div>
-              </div>
-              <div style="background:#111;color:#fff;border-radius:10px;padding:8px;font-size:11px;font-weight:700;text-align:center;margin-bottom:8px">便を探す</div>
-              <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:4px">5件見つかりました — タップして選択</div>
-              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb;margin-bottom:3px"><span style="font-size:11px;font-weight:700">UA7317</span><span style="font-size:10px;color:#6b7280"> United 第1ターミナル 12:50発 → Seoul</span></div>
-              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb;margin-bottom:3px"><span style="font-size:11px;font-weight:700">UA142</span><span style="font-size:10px;color:#6b7280"> United 第1ターミナル 16:30発 → Denver</span></div>
-              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb"><span style="font-size:11px;font-weight:700">UA197</span><span style="font-size:10px;color:#6b7280"> United 第1Sターミナル 17:00発 → Guam</span></div>
-            </div>
-          </div>
-        </div>
+      <div class="value-card">
+        <div class="value-card-icon">🏨</div>
+        <h3>フロント業務を大幅に削減</h3>
+        <p>予約電話対応・手書き台帳・キャンセル処理がゼロに。スタッフはゲストへのおもてなしに専念できる。</p>
+      </div>
+      <div class="value-card">
+        <div class="value-card-icon">🚗</div>
+        <h3>配車・実績をリアルタイム管理</h3>
+        <p>ドライバーへのアサイン・乗車確認・日報をデジタル化。運行状況をダッシュボードで一目管理。</p>
       </div>
     </div>
+  </div>
+</section>
 
-    <hr class="divider">
+<!-- ══ 3. 3つのアクター ══════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Who uses it</div>
+    <h2 class="section-title">3つのアクター、それぞれの体験</h2>
+    <p class="section-desc">ゲスト・ホテルスタッフ・ドライバー。三者の体験がシームレスに繋がる。</p>
+    <div class="actor-grid">
+      <div class="actor-card">
+        <div class="actor-badge" style="background:rgba(42,82,152,.08);color:#1a3a6b;border:1px solid rgba(42,82,152,.2)">Guest</div>
+        <h3>👤 ゲスト</h3>
+        <p>スマートフォン1台で予約から乗車まで。言語の壁もない。</p>
+        <ul class="actor-list">
+          <li>フライト番号を入力するだけで便を確認</li>
+          <li>QRチケットが自動生成</li>
+          <li>出発3時間未満アラートで乗り遅れ防止</li>
+          <li>24時間セルフキャンセル対応</li>
+          <li>フロント問い合わせCTA（電話番号なし）</li>
+        </ul>
+      </div>
+      <div class="actor-card" style="background:var(--bg-light)">
+        <div class="actor-badge" style="background:rgba(16,185,129,.1);color:#065f46;border:1px solid rgba(16,185,129,.3)">Hotel Staff</div>
+        <h3>🏨 ホテルスタッフ</h3>
+        <p>設定変更に開発依頼不要。AIアシスタントが自然言語で対応。</p>
+        <ul class="actor-list">
+          <li>ホテル別キャンセルポリシーをUI設定</li>
+          <li>AI設定アシスタントで話しかけるだけで変更</li>
+          <li>予約ダッシュボードでリアルタイム把握</li>
+          <li>ゲスト体験向上に集中できる</li>
+        </ul>
+      </div>
+      <div class="actor-card">
+        <div class="actor-badge" style="background:rgba(245,158,11,.1);color:#92400e;border:1px solid rgba(245,158,11,.3)">Driver</div>
+        <h3>🚗 ドライバー</h3>
+        <p>どこにいても、確実な情報。迷わない、混乱しない。</p>
+        <ul class="actor-list">
+          <li>当日の仕事をスマホで一目確認</li>
+          <li>リアルタイム配車通知</li>
+          <li>ゲスト情報・フライト・ターミナルを表示</li>
+          <li>乗車確認ボタンで完了報告</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
 
-    <!-- 02: 3時間アラート -->
+<!-- ══ 4. 基本フロー ═════════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">予約から乗車まで</h2>
+    <p class="section-desc">ゲストがスマートフォンで操作するだけ。フロントが介入する手順は一切ない。</p>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <h4>フォーム入力</h4>
+        <p>日付・人数・フライト番号を入力</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <h4>便確認</h4>
+        <p>OAGがフライト情報を自動取得</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <h4>QRチケット発行</h4>
+        <p>確認コード＋QRが即座に表示</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--mk-gold);color:#000">4</div>
+        <h4>ドライバーアサイン</h4>
+        <p>TMK管理者がドライバーを配車</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <h4>乗車完了</h4>
+        <p>QR読取→乗車確認→日報自動生成</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. きめ細かい機能 ══════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Fine-grained features</div>
+    <h2 class="section-title">内部チームだからこそ<br>作れた機能</h2>
+    <p class="section-desc">現場を知っているから、ゲストが本当に困る場面を全部潰してある。</p>
+
+    <!-- 5-A: 3時間アラート -->
     <div class="showcase reverse">
       <div class="phone-wrap">
         <div class="phone">
-          <div class="phone-bar">
-            <div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div>
-          </div>
-          <!-- 出発バー -->
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div></div>
           <div style="background:#1a3a6b;padding:10px 16px">
             <div style="color:#93c5fd;font-size:9px">出発</div>
             <div style="color:#fff;font-weight:700;font-size:13px">2026年6月23日（火）　14:00 発</div>
           </div>
-          <!-- 警告バナー -->
           <div style="background:#fefce8;border-bottom:1px solid #fde68a;padding:10px 16px">
             <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">⚠️ 時間がタイトです</div>
-            <div style="font-size:10px;color:#78350f;line-height:1.5">
-              このシャトル便だと出発が早く、乗り遅れるリスクがあります。<br>
-              <strong>別の便をお選びいただくか、フロントまでお問い合わせください。</strong>
-            </div>
+            <div style="font-size:10px;color:#78350f;line-height:1.5">このシャトル便だと出発が早く、乗り遅れるリスクがあります。<br><strong>別の便をお選びいただくか、フロントまでお問い合わせください。</strong></div>
             <div style="font-size:10px;color:#a16207;margin-top:4px">出発まで残り <strong>2時間 18分</strong></div>
           </div>
-          <!-- 予約詳細 -->
           <div style="padding:14px 16px">
-            <div style="display:flex;flex-direction:column;gap:0">
-              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9">
-                <span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">お名前 / Name</span>
-                <span style="font-size:11px;font-weight:600">Tanaka Kenji</span>
-              </div>
-              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9">
-                <span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">フライト</span>
-                <span style="font-size:11px;font-weight:600">NH832</span>
-              </div>
-              <div style="display:flex;gap:8px;padding:7px 0">
-                <span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">人数</span>
-                <span style="font-size:11px;font-weight:600">2名</span>
-              </div>
+            <div style="display:flex;flex-direction:column">
+              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">お名前 / Name</span><span style="font-size:11px;font-weight:600">Tanaka Kenji</span></div>
+              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">フライト</span><span style="font-size:11px;font-weight:600">NH832</span></div>
+              <div style="display:flex;gap:8px;padding:7px 0"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">人数</span><span style="font-size:11px;font-weight:600">2名</span></div>
             </div>
             <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px;margin-top:10px">
-              <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:3px">📞 ご不明な点・変更希望</div>
+              <div style="font-size:10px;font-weight:700;color:#1e40af;margin-bottom:3px">ご不明な点・変更希望</div>
               <div style="font-size:10px;color:#1e3a8a;line-height:1.5">お待たせしてしまい申し訳ございません。<br><strong>フロント</strong>までお気軽にお問い合わせください。</div>
             </div>
           </div>
         </div>
       </div>
       <div class="showcase-text">
-        <div class="showcase-tag">ゲスト体験 02</div>
+        <div class="showcase-tag">機能 01</div>
         <h3>間に合わない便を選んだとき、<br>すぐに警告する</h3>
-        <p>
-          OAGデータで取得したフライト出発時刻と選択シャトル便を比較。
-          空港到着〜搭乗手続きの時間を加味して、<strong>3時間を切ったら黄色い警告を自動表示</strong>。
-          カウントダウンタイマーで残り時間をリアルタイム更新する。
-        </p>
-        <p>
-          「別の便を選ぶか、フロントに相談して」と明示的に誘導。
-          乗り遅れを防ぐとともに、ホテル側の責任問題も回避する設計。
-        </p>
+        <p>OAGデータで取得したフライト出発時刻と選択シャトル便を比較。空港到着〜搭乗手続きの時間を加味して、<strong>3時間を切ったら黄色い警告を自動表示</strong>。カウントダウンタイマーで残り時間をリアルタイム更新する。</p>
+        <p>「別の便を選ぶか、フロントに相談して」と明示的に誘導。乗り遅れを防ぐとともに、ホテル側の責任問題も回避する設計。</p>
         <ul class="showcase-points">
           <li>OAGデータでフライト出発時刻を自動取得</li>
           <li>3時間未満で黄色バナーを自動表示</li>
@@ -276,113 +296,34 @@
 
     <hr class="divider">
 
-    <!-- 03: 管理画面 -->
+    <!-- 5-B: ターミナル推奨 -->
     <div class="showcase">
       <div class="showcase-text">
-        <div class="showcase-tag">管理機能 03</div>
-        <h3>料金・キャンセルポリシーを<br>開発者なしで変更できる</h3>
-        <p>
-          ホテルごとに料金・キャンセル締切・違約金率を個別設定。
-          設定変更に開発依頼は不要。スーパー管理者UIから即日反映。
-        </p>
-        <p>
-          さらに<strong>AI設定アシスタント（ALPO）</strong>が搭載されており、
-          「オークラは2時間以内なら50%取ってください」と話しかけるだけで設定が自動更新される。
-        </p>
+        <div class="showcase-tag">機能 02</div>
+        <h3>グループ内でターミナルが分かれたとき、<br>最適な降車順を自動提案</h3>
+        <p>同じ予約グループ内に第1・第2ターミナル利用者が混在しているとき、OAGデータで双方のターミナルを確認し、<strong>効率的な降車順を自動計算して表示</strong>する。</p>
+        <p>ドライバーの運行指示にも同じ情報が共有されるため、現場での混乱がゼロになる。</p>
         <ul class="showcase-points">
-          <li>ホテル別キャンセルポリシー（締切・料金率）を個別設定</li>
-          <li>グローバルデフォルトとホテル個別の二層構造</li>
-          <li>AI設定アシスタント — 自然言語で設定変更</li>
-          <li>変更履歴・更新者名・日時を記録</li>
-          <li>ゲスト予約確認画面に即座に反映</li>
+          <li>OAGリアルタイムデータでターミナルを自動判定</li>
+          <li>グループ内のターミナル混在を自動検知</li>
+          <li>最適な停車順序（① T1 → ② T2 など）をゲストに提示</li>
+          <li>ドライバー画面にも同じ情報を共有</li>
+          <li>成田 T1 / T2 / T3（LCC）完全対応</li>
         </ul>
       </div>
-      <div>
-        <!-- 管理画面モックアップ -->
-        <div class="admin-wrap">
-          <div class="admin-topbar">
-            <div class="admin-topbar-dot" style="background:#ef4444"></div>
-            <div class="admin-topbar-dot" style="background:#f59e0b"></div>
-            <div class="admin-topbar-dot" style="background:#22c55e"></div>
-            <span style="color:#94a3b8;font-size:11px;margin-left:8px">Super Admin — Settings</span>
-          </div>
-          <div style="display:flex;min-height:300px">
-            <div style="background:#fff;width:170px;border-right:1px solid #e2e8f0;padding:12px 0;flex-shrink:0">
-              <div style="padding:9px 16px;font-size:12px;color:#64748b">ダッシュボード</div>
-              <div style="padding:9px 16px;font-size:12px;color:#64748b">ホテル管理</div>
-              <div style="padding:9px 16px;font-size:12px;color:#64748b">ドライバー</div>
-              <div style="padding:9px 16px;font-size:12px;color:#1a3a6b;font-weight:700;background:#eff6ff;border-left:3px solid #1a3a6b">⚙️ 設定</div>
-            </div>
-            <div style="padding:18px;flex:1">
-              <div style="display:flex;gap:8px;margin-bottom:14px">
-                <div style="background:#eff6ff;color:#1a3a6b;border:1px solid #bfdbfe;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700">フォーム入力</div>
-                <div style="background:#fff;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 11px;font-size:11px">🤖 AIアシスタント</div>
-              </div>
-              <div style="font-size:10px;font-weight:700;color:#374151;margin-bottom:4px">ホテルを選択</div>
-              <div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px 10px;font-size:11px;background:#fff;margin-bottom:12px">🏨 ホテルオークラ東京</div>
-              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:9px;margin-bottom:12px">
-                <div style="font-size:10px;font-weight:700;color:#166534;margin-bottom:3px">現在のポリシー</div>
-                <div style="font-size:11px;color:#15803d">締切: 出発3時間前 / 違約金: 25%</div>
-              </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-                <div>
-                  <div style="font-size:10px;color:#6b7280;margin-bottom:3px">締切（時間前）</div>
-                  <div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">3</div>
-                </div>
-                <div>
-                  <div style="font-size:10px;color:#6b7280;margin-bottom:3px">違約金率（%）</div>
-                  <div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">25</div>
-                </div>
-              </div>
-              <div style="background:#1a3a6b;color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-align:center">更新する</div>
-            </div>
-          </div>
-        </div>
-        <!-- AIチャット -->
-        <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px">
-          <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:10px">🤖 AI設定アシスタント</div>
-          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
-            <div style="background:#1a3a6b;color:#fff;border-radius:10px 10px 2px 10px;padding:8px 12px;font-size:11px;max-width:210px">
-              オークラは2時間以内なら50%取ってください
-            </div>
-          </div>
-          <div style="display:flex">
-            <div style="background:#f1f5f9;border-radius:2px 10px 10px 10px;padding:8px 12px;font-size:11px;color:#374151;max-width:230px;line-height:1.5">
-              ✅ ホテルオークラ東京のポリシーを更新しました。<br>締切: 2時間前、違約金: 50%
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <hr class="divider">
-
-    <!-- 04: ターミナル推奨 -->
-    <div class="showcase reverse">
       <div class="phone-wrap">
         <div class="phone">
-          <div class="phone-bar">
-            <div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div>
-          </div>
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div></div>
           <div style="padding:16px">
-            <!-- フライト確認OK -->
             <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">FLIGHT NUMBER</div>
-            <div style="border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;font-size:13px;color:#374151;background:#f0fdf4;margin-bottom:6px">UA197</div>
+            <div style="border:1px solid #bbf7d0;border-radius:12px;padding:10px 12px;font-size:13px;background:#f0fdf4;margin-bottom:6px">UA197</div>
             <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:8px 10px;display:flex;gap:6px;align-items:flex-start;margin-bottom:12px">
-              <span style="color:#16a34a;font-size:14px;margin-top:-1px">✓</span>
-              <div style="font-size:10px;color:#166534;line-height:1.5">
-                <strong>UA197</strong>（United Airlines）<br>
-                <strong style="color:#15803d">第1Sターミナル発</strong> 17:00 発 → Guam International
-              </div>
+              <span style="color:#16a34a;font-size:14px">✓</span>
+              <div style="font-size:10px;color:#166534;line-height:1.5"><strong>UA197</strong>（United Airlines）<br><strong style="color:#15803d">第1Sターミナル発</strong> 17:00 発 → Guam</div>
             </div>
-            <!-- ターミナル分離アラート -->
             <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px;margin-bottom:12px">
               <div style="font-size:11px;font-weight:700;color:#9a3412;margin-bottom:5px">🔀 グループ内でターミナルが分かれています</div>
-              <div style="font-size:10px;color:#7c2d12;line-height:1.6;margin-bottom:8px">
-                お客様のご予約グループに<br>
-                T1・T2 利用者が混在しています。<br>
-                <strong>下記の順でご降車ください。</strong>
-              </div>
+              <div style="font-size:10px;color:#7c2d12;line-height:1.6;margin-bottom:8px">同グループ内にT1・T2利用者が混在しています。<br><strong>下記の順でご降車ください。</strong></div>
               <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
                 <div style="background:#fff;border:1px solid #fed7aa;border-radius:8px;padding:8px;text-align:center">
                   <div style="font-size:9px;color:#9a3412;font-weight:700;margin-bottom:2px">① 先にお降り</div>
@@ -396,86 +337,170 @@
                 </div>
               </div>
             </div>
-            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">EMAIL ADDRESS (optional)</div>
-            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:12px;color:#9ca3af;margin-bottom:12px">you@example.com</div>
             <div style="background:#111;color:#fff;border-radius:12px;padding:12px;font-size:13px;font-weight:700;text-align:center">Request Transfer →</div>
           </div>
         </div>
       </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 5-C: 管理画面 -->
+    <div class="showcase reverse">
+      <div>
+        <div class="admin-wrap">
+          <div class="admin-topbar">
+            <div class="admin-topbar-dot" style="background:#ef4444"></div>
+            <div class="admin-topbar-dot" style="background:#f59e0b"></div>
+            <div class="admin-topbar-dot" style="background:#22c55e"></div>
+            <span style="color:#94a3b8;font-size:11px;margin-left:8px">Super Admin — Settings</span>
+          </div>
+          <div style="display:flex;min-height:290px">
+            <div style="background:#fff;width:170px;border-right:1px solid #e2e8f0;padding:12px 0;flex-shrink:0">
+              <div style="padding:9px 16px;font-size:12px;color:#64748b">ダッシュボード</div>
+              <div style="padding:9px 16px;font-size:12px;color:#64748b">ホテル管理</div>
+              <div style="padding:9px 16px;font-size:12px;color:#64748b">ドライバー</div>
+              <div style="padding:9px 16px;font-size:12px;color:#1a3a6b;font-weight:700;background:#eff6ff;border-left:3px solid #1a3a6b">⚙️ 設定</div>
+            </div>
+            <div style="padding:18px;flex:1">
+              <div style="display:flex;gap:7px;margin-bottom:14px">
+                <div style="background:#eff6ff;color:#1a3a6b;border:1px solid #bfdbfe;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700">フォーム入力</div>
+                <div style="background:#fff;color:#64748b;border:1px solid #e2e8f0;border-radius:7px;padding:5px 11px;font-size:11px">🤖 AIアシスタント</div>
+              </div>
+              <div style="font-size:10px;font-weight:700;color:#374151;margin-bottom:4px">ホテルを選択</div>
+              <div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px 10px;font-size:11px;background:#fff;margin-bottom:10px">🏨 ホテルオークラ東京</div>
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:9px;margin-bottom:10px">
+                <div style="font-size:10px;font-weight:700;color:#166534;margin-bottom:3px">現在のポリシー</div>
+                <div style="font-size:11px;color:#15803d">締切: 出発3時間前 / 違約金: 25%</div>
+              </div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+                <div><div style="font-size:10px;color:#6b7280;margin-bottom:3px">締切（時間前）</div><div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">3</div></div>
+                <div><div style="font-size:10px;color:#6b7280;margin-bottom:3px">違約金率（%）</div><div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">25</div></div>
+              </div>
+              <div style="background:#1a3a6b;color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-align:center">更新する</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:10px">🤖 AI設定アシスタント</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+            <div style="background:#1a3a6b;color:#fff;border-radius:10px 10px 2px 10px;padding:8px 12px;font-size:11px;max-width:210px">オークラは2時間以内なら50%取ってください</div>
+          </div>
+          <div style="display:flex">
+            <div style="background:#f1f5f9;border-radius:2px 10px 10px 10px;padding:8px 12px;font-size:11px;color:#374151;max-width:230px;line-height:1.5">✅ ホテルオークラ東京のポリシーを更新しました。<br>締切: 2時間前、違約金: 50%</div>
+          </div>
+        </div>
+      </div>
       <div class="showcase-text">
-        <div class="showcase-tag">ゲスト体験 04</div>
-        <h3>グループ内でターミナルが分かれたとき、<br>最適な降車順を自動提案</h3>
-        <p>
-          同じ予約グループの中に第1・第2ターミナル利用者が混在しているとき、
-          OAGデータで双方のターミナルを確認し、
-          <strong>効率的な降車順を自動計算して予約確認画面に表示</strong>する。
-        </p>
-        <p>
-          ドライバーの運行指示にも同じ情報が共有されるため、
-          現場での「どっちのターミナルを先に？」という混乱がゼロになる。
-        </p>
+        <div class="showcase-tag">機能 03</div>
+        <h3>料金・キャンセルポリシーを<br>開発者なしで変更できる</h3>
+        <p>ホテルごとに料金・キャンセル締切・違約金率を個別設定。設定変更に開発依頼は不要。スーパー管理者UIから即日反映。</p>
+        <p><strong>AI設定アシスタント（ALPO）</strong>も搭載。「オークラは2時間以内なら50%取ってください」と話しかけるだけで設定が自動更新される。</p>
         <ul class="showcase-points">
-          <li>OAGリアルタイムデータでターミナルを自動判定</li>
-          <li>グループ内のターミナル混在を自動検知</li>
-          <li>最適な停車順序（① T1 → ② T2 など）をゲストに提示</li>
-          <li>ドライバー画面にも同じ情報を共有</li>
-          <li>成田 T1 / T2 / T3（LCC）完全対応</li>
+          <li>ホテル別キャンセルポリシーを個別設定</li>
+          <li>グローバルデフォルトとホテル個別の二層構造</li>
+          <li>AI設定アシスタント — 自然言語で設定変更</li>
+          <li>変更履歴・更新者名・日時を記録</li>
+          <li>ゲスト予約確認画面に即座に反映</li>
         </ul>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <!-- 5-D: Are you lazy? -->
+    <div class="showcase">
+      <div class="showcase-text">
+        <div class="showcase-tag">機能 04</div>
+        <h3>フライト番号がわからなくても<br>予約できる</h3>
+        <div class="live-badge"><div class="live-badge-dot"></div><span>本番稼働中 — OAG APIリアルタイム連携</span></div>
+        <p>「Are you too lazy to check your flight number?」— ゲストが便番号を調べる手間を省く、OAG連携の便サーチ機能。エアライン名を入れて時間帯か目的地で絞り込むだけで、成田出発便がリアルタイムで表示される。</p>
+        <ul class="showcase-points">
+          <li>全エアライン対応（IATAコード・航空会社名どちらでも）</li>
+          <li>午前 / 午後 / 夕方以降の時間帯フィルター</li>
+          <li>目的地（BKK / Bangkok / LHR）でも検索可能</li>
+          <li>タップするだけでフライト番号が自動入力</li>
+          <li>ターミナル・出発時刻も同時に取得</li>
+        </ul>
+      </div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div></div>
+          <div style="padding:16px">
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">PREFERRED DEPARTURE</div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:14px">
+              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">11:00</div>
+              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">12:00</div>
+              <div style="border:1px solid #e5e7eb;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;color:#374151">13:00</div>
+              <div style="background:#C9A227;border-radius:10px;padding:7px 0;font-size:11px;text-align:center;font-weight:700">14:00</div>
+            </div>
+            <div style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6b7280;margin-bottom:4px">FLIGHT NUMBER</div>
+            <div style="border:1px solid #e5e7eb;border-radius:12px;padding:10px 12px;font-size:13px;color:#9ca3af;background:#fff;margin-bottom:8px">NH832</div>
+            <div style="font-size:10px;color:#4b5563;text-decoration:underline;margin-bottom:10px">Are you too lazy to check your flight number? →</div>
+            <div style="border:1px dashed #d1d5db;border-radius:12px;padding:10px;background:#f9fafb">
+              <div style="font-size:10px;color:#6b7280;margin-bottom:8px">エアライン＋出発時間帯か目的地を教えてください。</div>
+              <div style="font-size:9px;font-weight:700;color:#6b7280;margin-bottom:3px">Airline</div>
+              <div style="border:1px solid #e5e7eb;border-radius:8px;padding:7px 10px;font-size:12px;background:#fff;margin-bottom:7px">UA</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:7px">
+                <div style="background:#111;color:#fff;border-radius:8px;padding:6px;font-size:10px;font-weight:700;text-align:center">出発時間帯で探す</div>
+                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:6px;font-size:10px;color:#6b7280;text-align:center">目的地で探す</div>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:7px">
+                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:600;color:#374151">午前</div><div style="font-size:9px;color:#9ca3af">6〜12時</div></div>
+                <div style="background:#C9A227;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:700">午後</div><div style="font-size:9px">12〜18時</div></div>
+                <div style="border:1px solid #e5e7eb;border-radius:8px;padding:5px 0;text-align:center"><div style="font-size:10px;font-weight:600;color:#374151">夕方以降</div><div style="font-size:9px;color:#9ca3af">18時〜</div></div>
+              </div>
+              <div style="background:#111;color:#fff;border-radius:10px;padding:7px;font-size:11px;font-weight:700;text-align:center;margin-bottom:7px">便を探す</div>
+              <div style="font-size:10px;font-weight:600;color:#374151;margin-bottom:4px">5件見つかりました — タップして選択</div>
+              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb;margin-bottom:3px"><span style="font-size:11px;font-weight:700">UA7317</span><span style="font-size:10px;color:#6b7280"> United 第1T 12:50発 → Seoul</span></div>
+              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb;margin-bottom:3px"><span style="font-size:11px;font-weight:700">UA142</span><span style="font-size:10px;color:#6b7280"> United 第1T 16:30発 → Denver</span></div>
+              <div style="border:1px solid #fde68a;border-radius:7px;padding:7px 9px;background:#fffbeb"><span style="font-size:11px;font-weight:700">UA197</span><span style="font-size:10px;color:#6b7280"> United 第1ST 17:00発 → Guam</span></div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
 
   </div>
 </section>
 
-<!-- ══ IMPACT ═══════════════════════════════════════════════ -->
+<!-- ══ 6. IMPACT ══════════════════════════════════════════ -->
 <section class="section dark">
   <div class="container">
-    <div class="section-label">なぜ使うか</div>
+    <div class="section-label">Impact</div>
     <h2 class="section-title">フロントの負担を、根本から減らす</h2>
     <p class="section-desc">電話不要。メール返信不要。ゲストが自分で解決できる設計。</p>
     <div class="impact-grid">
       <div class="impact-card">
         <div class="impact-num">0</div>
-        <div class="impact-label">予約・変更・キャンセルに関するフロント電話対応</div>
+        <div class="impact-label">予約・変更・キャンセルに関する<br>フロント電話対応</div>
       </div>
       <div class="impact-card">
         <div class="impact-num">24/7</div>
-        <div class="impact-label">ゲストが自分でキャンセル・確認できる時間</div>
+        <div class="impact-label">ゲストが自分でキャンセル・確認<br>できる時間</div>
       </div>
       <div class="impact-card">
         <div class="impact-num">即日</div>
-        <div class="impact-label">ポリシー変更の開発不要・即日反映</div>
+        <div class="impact-label">ポリシー変更の開発不要・<br>即日反映</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ══ BETA ════════════════════════════════════════════════ -->
+<!-- ══ 7. BETA ══════════════════════════════════════════ -->
 <section class="section">
   <div class="container">
     <div class="beta-box">
       <div style="font-size:2.4rem;margin-bottom:16px">🚀</div>
-      <h2 style="font-size:1.7rem;font-weight:800;margin-bottom:16px;line-height:1.4">
-        ベータ版。<br>TMK現場でのテストランで、さらに磨かれます。
-      </h2>
+      <h2 style="font-size:1.7rem;font-weight:800;margin-bottom:16px;line-height:1.4">ベータ版。<br>TMK現場でのテストランで、さらに磨かれます。</h2>
       <p style="color:var(--text-sub);max-width:560px;margin:0 auto 32px;line-height:1.9;font-size:1rem">
-        このプラットフォームは東京MKの内部チームが開発しています。<br>
-        現場のドライバー・ホテルスタッフ・ゲストの声を直接吸い上げながら、週単位で改善を続けます。<br>
+        このプラットフォームは東京MKの内部チームが開発しています。現場のドライバー・ホテルスタッフ・ゲストの声を直接吸い上げながら、週単位で改善を続けます。<br>
         「こんな機能がほしい」という要望は、<strong>即座に開発に反映</strong>できます。
       </p>
       <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px">
-          <div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">TMK</div>
-          <div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">内部チーム開発</div>
-        </div>
-        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px">
-          <div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">週次</div>
-          <div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">改善サイクル</div>
-        </div>
-        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px">
-          <div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">即日</div>
-          <div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">要望から機能追加</div>
-        </div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">TMK</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">内部チーム開発</div></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">週次</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">改善サイクル</div></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">即日</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">要望から機能追加</div></div>
       </div>
     </div>
   </div>
