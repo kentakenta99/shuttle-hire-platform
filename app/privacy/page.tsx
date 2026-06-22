@@ -99,10 +99,28 @@ const sections: Section[] = [
   {
     title: '6. 保存期間',
     content: (
-      <p className="text-sm text-gray-600 leading-relaxed">
-        予約情報はサービス提供に必要な期間保存します。乗車完了後は、請求管理・利用統計の目的のために匿名化したうえで保持します。
-        お客様ご自身のデータの削除をご希望の場合は、下記お問い合わせ先までご連絡ください。
-      </p>
+      <table className="w-full text-sm">
+        <thead>
+          <tr className="bg-gray-50">
+            <th className="py-2 px-3 text-left text-gray-500 font-medium text-xs">データ種別</th>
+            <th className="py-2 px-3 text-left text-gray-500 font-medium text-xs">保持期間</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {([
+            ['予約情報（氏名・フライト・人数等）', '乗車日から2年'],
+            ['メールアドレス', '乗車完了から6ヶ月後に削除'],
+            ['IPアドレス', '予約申請から1年'],
+            ['キャンセル認証コード（OTP）', '有効期限（10分）から24時間後に自動削除'],
+            ['アクセスログ', '90日（プラットフォーム自動削除）'],
+          ] as [string, string][]).map(([label, period]) => (
+            <tr key={label}>
+              <td className="py-2.5 px-3 text-gray-700">{label}</td>
+              <td className="py-2.5 px-3 text-gray-500">{period}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     ),
   },
   {
@@ -113,6 +131,7 @@ const sections: Section[] = [
           '全通信を HTTPS（TLS）で暗号化',
           'データベースへのアクセスはロールベースのアクセス制御（RLS）で保護',
           'APIキー・認証情報は環境変数で管理し、コードに含めない',
+          '予約キャンセルにはメール認証（OTP）を必須とし、第三者による不正キャンセルを防止',
           '不正予約検知のためIPアドレスに基づくレートリミットを実施',
           'アクセスログを記録し、不審なアクセスを検知・ブロック',
         ].map(item => (

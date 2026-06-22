@@ -40,6 +40,7 @@ export default function GuestCancelButton({
 }: Props) {
   const [step, setStep]           = useState<Step>('idle')
   const [pending, setPending]     = useState(false)
+  const [resendPending, setResendPending] = useState(false)
   const [maskedEmail, setMasked]  = useState('')
   const [otp, setOtp]             = useState('')
   const [paidFee, setPaidFee]     = useState<number | null>(null)
@@ -211,12 +212,13 @@ export default function GuestCancelButton({
               </button>
               <button
                 type="button"
-                disabled={pending}
+                disabled={resendPending || pending}
                 onClick={async () => {
-                  setPending(true)
+                  if (resendPending) return
+                  setResendPending(true)
                   setError(null)
                   const result = await sendCancelOtp(confirmationCode)
-                  setPending(false)
+                  setResendPending(false)
                   if ('error' in result) {
                     setError(result.error)
                   } else {
@@ -226,7 +228,7 @@ export default function GuestCancelButton({
                 }}
                 className="text-xs text-blue-500 hover:text-blue-700 disabled:opacity-50"
               >
-                コードを再送信
+                {resendPending ? '送信中...' : 'コードを再送信'}
               </button>
             </div>
 
