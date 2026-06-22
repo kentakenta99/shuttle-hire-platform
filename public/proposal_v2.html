@@ -104,6 +104,25 @@
   /* ── Beta ─────────────────────────────────────────── */
   .beta-box { background: linear-gradient(135deg, rgba(201,162,39,.06), rgba(42,82,152,.06)); border: 1px solid rgba(201,162,39,.3); border-radius: 20px; padding: 56px 40px; text-align: center; }
 
+  /* ── Security ─────────────────────────────────────── */
+  .sec-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .sec-checklist { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .sec-checklist li { display: flex; align-items: flex-start; gap: 14px; }
+  .sec-check { width: 28px; height: 28px; border-radius: 50%; background: #dcfce7; border: 1.5px solid #86efac; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .sec-check svg { width: 14px; height: 14px; stroke: #16a34a; stroke-width: 2.5; fill: none; }
+  .sec-item-title { font-size: .95rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .sec-item-desc { font-size: .82rem; color: var(--text-sub); margin-top: 2px; line-height: 1.5; }
+  .otp-phone-screen { padding: 20px 16px; background: #fff; min-height: 320px; }
+  .otp-step-label { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mk-blue-light); margin-bottom: 8px; }
+  .otp-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 14px; }
+  .otp-mail-chip { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 8px 12px; font-size: .78rem; color: #1d4ed8; margin-bottom: 16px; }
+  .otp-boxes { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+  .otp-box { width: 36px; height: 46px; border: 2px solid #3b82f6; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; color: #1e40af; }
+  .otp-box.empty { border-color: #e2e8f0; background: #f8fafc; color: transparent; }
+  .otp-btn-primary { background: #dc2626; color: #fff; border-radius: 12px; padding: 12px; text-align: center; font-size: .9rem; font-weight: 700; margin-bottom: 8px; }
+  .otp-sub-actions { display: flex; justify-content: space-between; font-size: .75rem; color: #94a3b8; padding: 0 2px; }
+  .otp-expire-note { font-size: .72rem; color: #64748b; text-align: center; margin-bottom: 12px; }
+
   .divider { border: none; border-top: 1px solid var(--border); margin: 0 0 80px; }
   .footer { background: var(--mk-blue); color: #fff; text-align: center; padding: 44px; }
 
@@ -131,6 +150,7 @@
     <div class="cover-tag">🏨 ホテルオークラ東京 初期パートナー</div>
     <div class="cover-tag">✈️ OAGリアルタイム便情報</div>
     <div class="cover-tag">🤖 AI設定アシスタント</div>
+    <div class="cover-tag">🔒 OTPメール認証キャンセル</div>
     <div class="cover-tag">🚀 Beta — TMK現場テストラン進行中</div>
   </div>
 </section>
@@ -487,7 +507,122 @@
   </div>
 </section>
 
-<!-- ══ 7. BETA ══════════════════════════════════════════ -->
+<!-- ══ 7. SECURITY ════════════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">Security &amp; Compliance</div>
+    <h2 class="section-title">ホテルの調達部門が通す、<br>エンタープライズセキュリティ</h2>
+    <p class="section-desc">
+      確認番号の総当たり攻撃、第三者による不正キャンセル、個人情報の不適切な保持。
+      予約システムが抱えがちな脆弱性を、設計レベルで潰してある。
+    </p>
+
+    <div class="sec-wrap">
+
+      <!-- Left: security checklist -->
+      <ul class="sec-checklist">
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">本人確認付きキャンセル（OTPメール認証）</div>
+            <div class="sec-item-desc">確認番号を知っていてもキャンセルは不可。登録メールへの6桁OTP入力が必須。5回失敗で自動無効化。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">確認コード暗号乱数化（32¹⁰ ≈ 1兆通り）</div>
+            <div class="sec-item-desc">旧設計の連番（9,999通り）から暗号乱数へ全面刷新。総当たり攻撃が計算上不可能。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">OTP SHA-256ハッシュ保存</div>
+            <div class="sec-item-desc">OTPはDB上で平文保存せずハッシュ化。DBが侵害されても未使用コードは読み取れない。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">IPベースレートリミット + OTP送信制限</div>
+            <div class="sec-item-desc">予約申請・OTP送信ともに1時間あたりの上限を設定。スパムボット・ブルートフォースを遮断。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">RLSによるロール完全分離</div>
+            <div class="sec-item-desc">hotel_staff・tmk_admin・driverの3ロールがDB行レベルで分離。他ホテルのデータに一切アクセス不可。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">プライバシーポリシー + データ保持ポリシー制定済み</div>
+            <div class="sec-item-desc">ゲストメールは乗車完了から6ヶ月で自動削除。OTPは24時間でpg_cron自動消去。稟議書類として提出可能。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">インシデント対応手順・セキュリティ連絡先</div>
+            <div class="sec-item-desc">深刻度別SLA（Critical: 24h以内）、6段階インシデントフロー、セキュリティ窓口メール完備。</div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Right: OTP phone mockup -->
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-bar">
+            <div class="phone-bar-dot"></div>
+            <div class="phone-bar-dot cam"></div>
+            <div class="phone-bar-dot"></div>
+          </div>
+          <div class="otp-phone-screen">
+            <div class="otp-step-label">Step 2 of 2 — メール認証</div>
+            <div class="otp-title">認証コードの入力</div>
+
+            <div class="otp-mail-chip">
+              📧 g***@gmail.com に送信済み
+            </div>
+
+            <div style="font-size:.78rem;color:#64748b;margin-bottom:12px;line-height:1.5">
+              6桁のコードを入力してください。<br>
+              <span style="color:#dc2626;font-weight:700">有効期限 10分 / 5回失敗で無効化</span>
+            </div>
+
+            <div class="otp-boxes">
+              <div class="otp-box">3</div>
+              <div class="otp-box">7</div>
+              <div class="otp-box">1</div>
+              <div class="otp-box empty">_</div>
+              <div class="otp-box empty">_</div>
+              <div class="otp-box empty">_</div>
+            </div>
+
+            <div class="otp-expire-note">あと 2 回試行できます</div>
+
+            <div class="otp-btn-primary">キャンセルを確定する</div>
+
+            <div class="otp-sub-actions">
+              <span>← 戻る</span>
+              <span style="color:#3b82f6">コードを再送信</span>
+            </div>
+
+            <div style="margin-top:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font-size:.74rem;color:#15803d;line-height:1.5">
+              🔒 第三者はメールを受け取れないため<br>このキャンセルを実行できません
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ══ 8. BETA ══════════════════════════════════════════ -->
 <section class="section">
   <div class="container">
     <div class="beta-box">
