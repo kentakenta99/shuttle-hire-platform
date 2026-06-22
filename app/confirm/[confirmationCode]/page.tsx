@@ -271,6 +271,7 @@ export default async function GuestConfirmPage({ params }: Props) {
               totalPrice={totalPrice}
               thresholdHours={thresholdHours}
               feePct={feePct}
+              hasEmail={!!(booking as unknown as Record<string, unknown>).guest_email}
             />
           </div>
         )}

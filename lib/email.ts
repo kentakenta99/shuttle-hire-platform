@@ -460,3 +460,32 @@ export async function sendGuestCancellationEmail(to: string, info: {
 </html>`,
   })
 }
+
+export async function sendCancelOtpEmail(to: string, info: {
+  guestName: string
+  otp: string
+}) {
+  return send({
+    from: FROM,
+    to,
+    subject: `【確認コード】キャンセル認証 — ${info.otp}`,
+    html: `
+<!DOCTYPE html>
+<html lang="ja">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:sans-serif;color:#1e293b;max-width:480px;margin:0 auto;padding:24px">
+  <div style="background:#1d4ed8;border-radius:12px;padding:20px 24px;margin-bottom:24px">
+    <p style="color:#bfdbfe;font-size:13px;margin:0">東京エムケイ シャトルハイヤー</p>
+    <h1 style="color:#ffffff;font-size:20px;margin:4px 0 0">キャンセル認証コード</h1>
+  </div>
+  <p style="color:#475569;font-size:14px">${info.guestName} 様</p>
+  <p style="color:#475569;font-size:14px">以下の6桁コードをキャンセル画面に入力してください。有効期限は<strong>10分間</strong>です。</p>
+  <div style="background:#f8fafc;border:2px dashed #cbd5e1;border-radius:12px;padding:24px;text-align:center;margin:20px 0">
+    <p style="font-size:40px;font-family:monospace;font-weight:900;letter-spacing:0.3em;color:#1e293b;margin:0">${info.otp}</p>
+  </div>
+  <p style="font-size:12px;color:#94a3b8">このメールに心当たりのない場合は無視してください。コードは自動的に失効します。</p>
+  <p style="font-size:12px;color:#94a3b8;margin-top:16px">東京エムケイ株式会社 シャトルハイヤー予約システム</p>
+</body>
+</html>`,
+  })
+}
