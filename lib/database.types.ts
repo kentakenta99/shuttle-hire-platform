@@ -305,6 +305,7 @@ export type Database = {
       cancellation_policies: {
         Row: {
           fee_pct: number
+          hotel_id: string | null
           id: string
           note: string | null
           threshold_hours: number
@@ -313,6 +314,7 @@ export type Database = {
         }
         Insert: {
           fee_pct?: number
+          hotel_id?: string | null
           id?: string
           note?: string | null
           threshold_hours?: number
@@ -321,13 +323,22 @@ export type Database = {
         }
         Update: {
           fee_pct?: number
+          hotel_id?: string | null
           id?: string
           note?: string | null
           threshold_hours?: number
           updated_at?: string
           updated_by_name?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cancellation_policies_hotel_id_fkey"
+            columns: ["hotel_id"]
+            isOneToOne: false
+            referencedRelation: "hotels"
+            referencedColumns: ["id"]
+          }
+        ]
       }
       driver_assignment_logs: {
         Row: {
