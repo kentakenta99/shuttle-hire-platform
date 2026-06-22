@@ -1,5 +1,46 @@
 # 変更履歴
 
+## v3.1（2026-06-22）
+
+**担当: ENG / SEC**
+
+### セキュリティ強化
+
+- **OTPメール認証キャンセル**：ゲストキャンセルに6桁OTPメール認証を必須化。確認番号を知るだけではキャンセル不可。`GuestCancelButton` を4ステート（idle/confirm/otp/done）に刷新
+- **確認番号暗号乱数化**：旧実装の連番式（`TMK-YYYYMM-XXXX`、9,999通り）を廃止。`gen_random_bytes(10)` による暗号乱数（32¹⁰ ≈ 1兆通り）に全面刷新
+- **OTP SHA-256ハッシュ保存**：DBに平文OTPを保存しない。`sha256(otp + "|" + confirmationCode)` のみ保存
+- **OTP試行回数制限**：5回不一致で自動無効化（`attempt_count` カラム追加）
+- **Email-Firstパターン適用**：Resendへのメール送信成功確認後にのみDBにOTPをINSERT
+
+### DB変更
+
+```sql
+-- cancel_otps テーブル追加
+CREATE TABLE cancel_otps (
+  id                uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  confirmation_code text NOT NULL,
+  otp_code          text NOT NULL,       -- SHA-256ハッシュ
+  attempt_count     int NOT NULL DEFAULT 0,
+  expires_at        timestamptz NOT NULL DEFAULT now() + interval '10 minutes',
+  used_at           timestamptz,
+  created_at        timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_cancel_otps_lookup ON cancel_otps (confirmation_code, expires_at DESC);
+ALTER TABLE cancel_otps ENABLE ROW LEVEL SECURITY;
+CREATE POLICY service_role_only ON cancel_otps FOR ALL USING (false);
+
+-- generate_confirmation_code() 関数を暗号乱数版に置き換え
+-- 旧: nextval() 連番 / 新: gen_random_bytes() 暗号乱数
+```
+
+### ドキュメント整備
+
+- `docs/operations/data_retention.md`：データ保持ポリシー（種別別保持期間・削除SQL）
+- `docs/operations/security_contact.md`：インシデント対応手順・深刻度別SLA・セキュリティ窓口
+- `docs/operations/hotel_staff_cancel_guide.md`：ホテルスタッフ向けキャンセル対応Q&A
+
+---
+
 ## v3.0（2026-06-22）
 
 **担当: ENG**
