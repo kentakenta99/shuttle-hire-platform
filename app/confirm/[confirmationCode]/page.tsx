@@ -2,6 +2,7 @@ import { createServiceClient } from '@/lib/supabase/service'
 import { notFound } from 'next/navigation'
 import QRCode from 'qrcode'
 import GuestCancelButton from './GuestCancelButton'
+import TimeUntilDepartureWarning from './TimeUntilDepartureWarning'
 
 type Props = { params: Promise<{ confirmationCode: string }> }
 
@@ -181,11 +182,25 @@ export default async function GuestConfirmPage({ params }: Props) {
           <p className="text-xs text-gray-500">Please show this screen to your driver</p>
         </div>
 
-        {/* 車両ナンバープレート */}
+        {/* 車両ナンバープレート + MK ロゴ */}
         {slot?.vehicle_plate && (
           <div className="bg-white rounded-2xl border border-gray-200 p-5 text-center shadow-sm">
-            <p className="text-xs text-gray-500 mb-3">お乗りの車両 / Your Vehicle</p>
-            <LicensePlate plate={slot.vehicle_plate} />
+            <p className="text-xs text-gray-500 mb-4">お乗りの車両 / Your Vehicle</p>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
+              <div className="flex-shrink-0">
+                <LicensePlate plate={slot.vehicle_plate} />
+              </div>
+              <div className="flex-shrink-0 flex flex-col items-center gap-2">
+                <div className="w-24 h-24 bg-gray-50 rounded-lg border border-gray-200 overflow-hidden flex items-center justify-center">
+                  <img
+                    src="/mk-door-logo.avif"
+                    alt="MK Door Logo"
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <p className="text-xs text-gray-400">MK Mark</p>
+              </div>
+            </div>
           </div>
         )}
 
@@ -199,6 +214,11 @@ export default async function GuestConfirmPage({ params }: Props) {
               </p>
             )}
           </div>
+
+          {/* 3時間未満警告 */}
+          {slot && (
+            <TimeUntilDepartureWarning date={slot.date} departureTime={slot.departure_time} />
+          )}
           <div className="divide-y divide-gray-100">
             {[
               ['お名前 / Name', `${booking.guest_name}`],
@@ -256,10 +276,13 @@ export default async function GuestConfirmPage({ params }: Props) {
         )}
 
         {/* 問い合わせ */}
-        <div className="bg-white rounded-xl border border-gray-200 px-5 py-4 shadow-sm">
-          <p className="text-xs text-gray-500 mb-1">当日のお問い合わせ / Inquiries</p>
-          <p className="text-sm font-medium text-gray-900">東京エムケイ 配車センター</p>
-          <p className="text-blue-600 font-bold text-lg mt-0.5">03-XXXX-XXXX</p>
+        <div className="bg-blue-50 rounded-xl border border-blue-200 px-5 py-4 shadow-sm space-y-2">
+          <p className="text-xs text-blue-600 font-semibold">📞 ご不明な点・変更希望</p>
+          <p className="text-sm text-blue-900">
+            お待たせしてしまい申し訳ございません。<br />
+            <span className="font-semibold">フロント</span>までお気軽にお問い合わせください。
+          </p>
+          <p className="text-xs text-blue-600 mt-2">We're happy to help! Please ask our front desk.</p>
         </div>
 
         <p className="text-center text-xs text-gray-300">© 東京エムケイ株式会社</p>
