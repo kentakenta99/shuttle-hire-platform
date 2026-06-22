@@ -221,6 +221,17 @@ export async function updateCancellationPolicy(
   return { success: true }
 }
 
+export async function fetchHotelPolicy(hotelId: string) {
+  const adminDb = createAdminClient()
+  const { data } = await adminDb
+    .from('cancellation_policies')
+    .select('id, threshold_hours, fee_pct, note, updated_at, updated_by_name')
+    .eq('hotel_id', hotelId)
+    .single()
+
+  return data
+}
+
 export async function generatePasswordResetLink(
   _prev: ActionResult | null,
   formData: FormData

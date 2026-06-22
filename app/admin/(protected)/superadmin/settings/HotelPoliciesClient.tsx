@@ -1,8 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { createClient } from '@/lib/supabase/server'
 import PolicyForm from './PolicyForm'
+import { fetchHotelPolicy } from '@/app/actions/superadmin'
 
 type Hotel = {
   id: string
@@ -30,17 +30,11 @@ export default function HotelPoliciesClient({ hotels }: Props) {
   useEffect(() => {
     if (!selectedHotelId) return
 
-    const fetchPolicy = async () => {
+    const getPolicy = async () => {
       setLoading(true)
       try {
-        const supabase = await createClient()
-        const { data } = await supabase
-          .from('cancellation_policies')
-          .select('id, threshold_hours, fee_pct, note, updated_at, updated_by_name')
-          .eq('hotel_id', selectedHotelId)
-          .single()
-
-        setPolicy(data as CancellationPolicy | null)
+        const result = await fetchHotelPolicy(selectedHotelId)
+        setPolicy(result as CancellationPolicy | null)
       } catch (e) {
         console.error('ポリシー取得エラー:', e)
         setPolicy(null)
@@ -49,7 +43,7 @@ export default function HotelPoliciesClient({ hotels }: Props) {
       }
     }
 
-    fetchPolicy()
+    getPolicy()
   }, [selectedHotelId])
 
   return (
