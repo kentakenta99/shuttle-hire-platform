@@ -26,8 +26,9 @@ export async function fetchFlightInfo(
   if (!iata || iata.length < 3) return null
 
   try {
-    // 無料プランはHTTPのみ対応（HTTPSは有料プラン以上）
-    const url = new URL('http://api.aviationstack.com/v1/flights')
+    // 無料プランはHTTPのみ。有料プランへ移行後は AVIATIONSTACK_USE_HTTPS=true を設定する
+    const scheme = process.env.AVIATIONSTACK_USE_HTTPS === 'true' ? 'https' : 'http'
+    const url = new URL(`${scheme}://api.aviationstack.com/v1/flights`)
     url.searchParams.set('access_key', apiKey)
     url.searchParams.set('flight_iata', iata)
     url.searchParams.set('flight_date', date)

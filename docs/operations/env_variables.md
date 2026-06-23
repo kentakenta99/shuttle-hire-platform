@@ -26,11 +26,18 @@
 | `ANTHROPIC_API_KEY` | ALPO（AI設定アシスタント）| `/admin/superadmin/settings/agent` |
 | `EMAIL_FROM` | メール送信元アドレス（省略時: `東京エムケイ シャトルハイヤー <noreply@tokyomk.com>`） | `lib/email.ts:3` |
 
-## URL設定
+## URL・UI設定
 
 | 変数名 | 用途 | デフォルト |
 |---|---|---|
-| `NEXT_PUBLIC_APP_URL` | 出発リマインダーメール内の確認URL生成 | `https://shuttle.tokyomk.com` |
+| `NEXT_PUBLIC_APP_URL` | 出発リマインダーメール内の確認URL生成・QR画像URL | `https://shuttle.tokyomk.com` |
+| `NEXT_PUBLIC_DISPATCH_PHONE` | ホテルスタッフUIに表示する配車センター電話番号 | `東京エムケイ 配車センター`（番号なし） |
+
+## フライト API オプション
+
+| 変数名 | 用途 | デフォルト |
+|---|---|---|
+| `AVIATIONSTACK_USE_HTTPS` | `true` にすると HTTPS で AviationStack を呼ぶ（有料プラン必須） | `false`（HTTP） |
 
 ## Phase 4追加（Booknetics連携・未実装）
 
@@ -65,6 +72,12 @@ ANTHROPIC_API_KEY=
 # Cron / URL
 CRON_SECRET=
 NEXT_PUBLIC_APP_URL=https://shuttle.tokyomk.com
+
+# UI
+NEXT_PUBLIC_DISPATCH_PHONE=03-XXXX-XXXX   # 配車センター電話番号を設定する
+
+# フライト API（有料プラン移行後）
+# AVIATIONSTACK_USE_HTTPS=true
 ```
 
 ---
