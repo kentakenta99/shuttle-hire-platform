@@ -236,8 +236,8 @@ export async function guestCancelBooking(
   const isFeeApplicable = msUntilDeparture < policyThresholdMs
   const cancellationFee = isFeeApplicable ? Math.round(totalPrice * policyFeePct / 100) : 0
 
-  // 予約をキャンセル（eq('status','confirmed') で二重キャンセルを防ぐ）
-  const { error: updateError } = await db
+  // 予約をキャンセル（.select で影響行数を確認し、並列リクエストによる二重キャンセルを防ぐ）
+  const { data: updated, error: updateError } = await db
     .from('service_orders')
     .update({
       status: 'cancelled',
@@ -247,8 +247,12 @@ export async function guestCancelBooking(
     })
     .eq('id', booking.id)
     .eq('status', 'confirmed')
+    .select('id')
 
   if (updateError) return { error: 'キャンセル処理に失敗しました。もう一度お試しください。' }
+  if (!updated || updated.length === 0) {
+    return { error: 'この予約はすでにキャンセル済みです。' }
+  }
 
   // スロットの空席を復元
   const newRemaining = Math.min(slot.remaining_seats + booking.party_size, slot.capacity)
