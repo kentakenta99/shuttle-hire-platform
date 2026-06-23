@@ -114,6 +114,7 @@ export default function FlightNumberInput({
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current)
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- デバウンスのアーリーリターンパターン。意図的
     if (!value.trim()) { setStatus('idle'); setResult(null); return }
     timerRef.current = setTimeout(() => validate(value), 1000)
     return () => { if (timerRef.current) clearTimeout(timerRef.current) }

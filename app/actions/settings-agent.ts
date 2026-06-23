@@ -82,20 +82,20 @@ export async function processSettingsAgent(
       return { error: 'AIからのレスポンスが不正です' }
     }
 
-    let parsed: any
+    let parsed: Record<string, unknown>
     try {
-      parsed = JSON.parse(content.text)
+      parsed = JSON.parse(content.text) as Record<string, unknown>
     } catch {
       return { error: 'AIの解析結果が不正です' }
     }
 
     // 意図別の処理
     if (parsed.intent === 'clarify') {
-      return { message: parsed.question, action: 'clarify' }
+      return { message: parsed.question as string | undefined, action: 'clarify' }
     }
 
     if (parsed.intent === 'reject') {
-      return { error: parsed.reason }
+      return { error: parsed.reason as string | undefined }
     }
 
     if (parsed.intent === 'update_policy') {
@@ -134,7 +134,7 @@ export async function processSettingsAgent(
 
       const { data: existing } = await query.single()
 
-      const updateData: Record<string, any> = {
+      const updateData: Record<string, string | number | null | undefined> = {
         updated_at: new Date().toISOString(),
         updated_by_name: updaterName,
       }
@@ -153,7 +153,7 @@ export async function processSettingsAgent(
         await adminDb
           .from('cancellation_policies')
           .update(updateData)
-          .eq('id', (existing as any).id)
+          .eq('id', (existing as { id: string }).id)
       } else {
         await adminDb.from('cancellation_policies').insert({
           ...updateData,
@@ -167,7 +167,7 @@ export async function processSettingsAgent(
 
       return {
         success: true,
-        message: parsed.confirmation,
+        message: parsed.confirmation as string | undefined,
         action: 'applied',
       }
     }

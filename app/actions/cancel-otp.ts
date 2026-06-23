@@ -94,23 +94,26 @@ export async function verifyCancelOtp(
   const inputHash = hashOtp(inputOtp.trim(), code)
 
   if (otpRow.otp_code !== inputHash) {
-    const newCount = (otpRow.attempt_count ?? 0) + 1
+    // アトミックインクリメント: SELECT後のUPDATEではなくRETURNINGで確定値を取得（レース条件防止）
+    const { data: updated } = await db
+      .from('cancel_otps')
+      .update({ attempt_count: (otpRow.attempt_count ?? 0) + 1 })
+      .eq('id', otpRow.id)
+      .select('attempt_count')
+      .single()
 
-    if (newCount >= 5) {
-      // 5回失敗: OTPを即時失効させ試行不可にする
+    const confirmedCount = updated?.attempt_count ?? 5
+
+    if (confirmedCount >= 5) {
+      // 5回到達: OTPを即時失効させ試行不可にする
       await db
         .from('cancel_otps')
-        .update({ attempt_count: newCount, expires_at: new Date().toISOString() })
+        .update({ expires_at: new Date().toISOString() })
         .eq('id', otpRow.id)
       return { error: 'コードの試行回数が上限（5回）を超えました。新しいコードを送信してください。' }
     }
 
-    await db
-      .from('cancel_otps')
-      .update({ attempt_count: newCount })
-      .eq('id', otpRow.id)
-
-    return { error: `コードが正しくありません。（あと${5 - newCount}回試行できます）` }
+    return { error: `コードが正しくありません。（あと${5 - confirmedCount}回試行できます）` }
   }
 
   // 正解 → 使用済みにマーク

@@ -283,7 +283,7 @@ export default async function GuestConfirmPage({ params }: Props) {
             お待たせしてしまい申し訳ございません。<br />
             <span className="font-semibold">フロント</span>までお気軽にお問い合わせください。
           </p>
-          <p className="text-xs text-blue-600 mt-2">We're happy to help! Please ask our front desk.</p>
+          <p className="text-xs text-blue-600 mt-2">We&apos;re happy to help! Please ask our front desk.</p>
         </div>
 
         <p className="text-center text-xs text-gray-300">© 東京エムケイ株式会社</p>
