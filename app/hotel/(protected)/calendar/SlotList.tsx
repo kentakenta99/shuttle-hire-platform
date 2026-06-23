@@ -106,7 +106,7 @@ function SlotAlternatives({ slot, dateSlots }: {
   return (
     <div className="text-right">
       <span className="text-xs text-gray-500 block">通常ハイヤーへ</span>
-      <span className="text-xs text-blue-600 font-medium">03-XXXX-XXXX</span>
+      <span className="text-xs text-blue-600 font-medium">{process.env.NEXT_PUBLIC_DISPATCH_PHONE ?? '東京エムケイ 配車センター'}</span>
     </div>
   )
 }
@@ -158,7 +158,7 @@ export default function SlotList({ initialSlots }: Props) {
       <div className="text-center py-16 text-gray-500">
         <p className="text-4xl mb-3">🚗</p>
         <p className="text-sm">本日以降の出発枠はありません</p>
-        <p className="text-xs mt-1">東京エムケイ 配車センター：03-XXXX-XXXX</p>
+        <p className="text-xs mt-1">東京エムケイ 配車センター：{process.env.NEXT_PUBLIC_DISPATCH_PHONE ?? '東京エムケイ 配車センター'}</p>
       </div>
     )
   }
