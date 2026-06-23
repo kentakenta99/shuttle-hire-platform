@@ -223,6 +223,29 @@ export async function checkRequestStatus(requestId: string): Promise<RequestStat
   }
 }
 
+// ゲスト自身によるリクエスト取り消し（pending のみ。ホテル承認後は guestCancelBooking を使う）
+export async function cancelBookingRequest(requestId: string): Promise<{ error?: string }> {
+  const adminDb = createAdminClient()
+
+  const { data: req } = await adminDb
+    .from('booking_requests')
+    .select('status')
+    .eq('id', requestId)
+    .single()
+
+  if (!req) return { error: 'リクエストが見つかりません。' }
+  if (req.status !== 'pending') return { error: 'このリクエストはすでに処理済みのため取り消せません。' }
+
+  const { error } = await adminDb
+    .from('booking_requests')
+    .update({ status: 'cancelled_by_guest' })
+    .eq('id', requestId)
+    .eq('status', 'pending')
+
+  if (error) return { error: 'エラーが発生しました。もう一度お試しください。' }
+  return {}
+}
+
 export async function rejectBookingRequest(requestId: string): Promise<{ error?: string }> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

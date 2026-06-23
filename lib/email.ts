@@ -83,6 +83,8 @@ export async function sendBookingConfirmation(to: string, info: BookingInfo) {
 
 export async function sendGuestBookingConfirmation(to: string, info: BookingInfo) {
   const departureLabel = `${info.date} ${info.departureTime.slice(0, 5)} 発`
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://shuttle.tokyomk.com'
+  const qrImgUrl = `${appUrl}/api/qr?data=${encodeURIComponent(info.confirmUrl)}`
   return send({
     from: FROM,
     to,
@@ -117,7 +119,7 @@ export async function sendGuestBookingConfirmation(to: string, info: BookingInfo
 
   <div style="background:#f0fdf4;border:2px solid #86efac;border-radius:12px;padding:20px;margin:20px 0;text-align:center">
     <p style="font-size:13px;color:#166534;margin:0 0 12px;font-weight:bold">乗車時にこのQRコードをご提示ください</p>
-    <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(info.confirmUrl)}" alt="QRコード" style="width:180px;height:180px;display:block;margin:0 auto 12px" />
+    <img src="${qrImgUrl}" alt="QRコード" style="width:180px;height:180px;display:block;margin:0 auto 12px" />
     <p style="font-size:11px;color:#4ade80;margin:0 0 4px">確認URL</p>
     <a href="${info.confirmUrl}" style="font-size:12px;color:#166534;word-break:break-all">${info.confirmUrl}</a>
   </div>

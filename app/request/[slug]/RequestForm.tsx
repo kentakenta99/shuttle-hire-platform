@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useActionState, useEffect, useCallback, useRef } from 'react'
-import { submitBookingRequest, checkRequestStatus } from '@/app/actions/request'
+import { submitBookingRequest, checkRequestStatus, cancelBookingRequest } from '@/app/actions/request'
 import type { RequestStatusResult } from '@/app/actions/request'
 import FlightNumberInput from '@/app/components/FlightNumberInput'
 
@@ -32,12 +32,16 @@ const selectCls = `${inputCls} appearance-none`
 function WaitingScreen({
   requestId,
   guestName,
+  onCancelled,
 }: {
   requestId: string
   guestName: string
+  onCancelled: () => void
 }) {
   const [countdown, setCountdown] = useState(POLL_INTERVAL)
   const [isChecking, setIsChecking] = useState(false)
+  const [isCancelling, setIsCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
   const [result, setResult] = useState<RequestStatusResult>({ status: 'pending' })
   const countdownRef = useRef(POLL_INTERVAL)
 
@@ -52,6 +56,24 @@ function WaitingScreen({
       setCountdown(POLL_INTERVAL)
     }
   }, [requestId])
+
+  const handleCancel = useCallback(async () => {
+    if (!confirm('リクエストを取り消しますか？\nCancel your transfer request?')) return
+    setIsCancelling(true)
+    setCancelError(null)
+    try {
+      const res = await cancelBookingRequest(requestId)
+      if (res.error) {
+        setCancelError(res.error)
+      } else {
+        localStorage.removeItem('shuttle_request_id')
+        localStorage.removeItem('shuttle_request_name')
+        onCancelled()
+      }
+    } finally {
+      setIsCancelling(false)
+    }
+  }, [requestId, onCancelled])
 
   // 初回チェック
   useEffect(() => {
@@ -193,6 +215,21 @@ function WaitingScreen({
         確定したらQRチケットがこの画面に表示されます。<br />
         スクリーンショットして保管してください。
       </p>
+
+      {/* キャンセルボタン */}
+      <div className="pt-2 border-t border-gray-100 text-center space-y-1.5">
+        <button
+          type="button"
+          onClick={handleCancel}
+          disabled={isCancelling}
+          className="text-xs text-gray-400 hover:text-red-500 underline underline-offset-2 transition disabled:opacity-40"
+        >
+          {isCancelling ? 'キャンセル中...' : 'リクエストを取り消す / Cancel this request'}
+        </button>
+        {cancelError && (
+          <p className="text-xs text-red-500">{cancelError}</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -208,10 +245,22 @@ export default function RequestForm({
   const [guestName, setGuestName] = useState('')
   const [requestId, setRequestId] = useState<string | null>(null)
 
+  // ページ再訪問時に localStorage から requestId を復元
+  useEffect(() => {
+    const saved = localStorage.getItem('shuttle_request_id')
+    const savedName = localStorage.getItem('shuttle_request_name')
+    if (saved) {
+      setRequestId(saved)
+      if (savedName) setGuestName(savedName)
+    }
+  }, [])
+
   const [state, formAction, pending] = useActionState(
     async (_prev: { error: string } | null, formData: FormData) => {
       const r = await submitBookingRequest(formData)
       if ('success' in r) {
+        localStorage.setItem('shuttle_request_id', r.requestId)
+        localStorage.setItem('shuttle_request_name', (formData.get('guestName') as string) ?? '')
         setRequestId(r.requestId)
         return null
       }
@@ -224,7 +273,16 @@ export default function RequestForm({
 
   // 提出完了 → 待機画面
   if (requestId) {
-    return <WaitingScreen requestId={requestId} guestName={guestName} />
+    return (
+      <WaitingScreen
+        requestId={requestId}
+        guestName={guestName}
+        onCancelled={() => {
+          setRequestId(null)
+          setGuestName('')
+        }}
+      />
+    )
   }
 
   return (
