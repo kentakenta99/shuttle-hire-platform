@@ -90,13 +90,15 @@ export async function convertRequestToBooking(
   if (!req) return { error: 'リクエストが見つかりません。' }
   if (req.status !== 'pending') return { error: 'このリクエストはすでに処理済みです。' }
 
-  // ホテル権限確認（hotel_staff は自ホテルのみ）
+  // ホテル権限確認（ログインユーザーが req.hotel_id のスタッフか検証）
   const { data: hotel } = await adminDb
     .from('hotels')
     .select('id, name, contact_email')
     .eq('id', req.hotel_id)
+    .eq('auth_user_id', user.id)
+    .eq('is_active', true)
     .single()
-  if (!hotel) return { error: 'ホテルが見つかりません。' }
+  if (!hotel) return { error: '操作権限がありません。' }
 
   // 予約作成
   const { data: bookingResult, error: bookingError } = await adminDb.rpc('create_booking', {
@@ -227,6 +229,24 @@ export async function rejectBookingRequest(requestId: string): Promise<{ error?:
   if (!user) return { error: '権限がありません。' }
 
   const adminDb = createAdminClient()
+
+  // リクエストのホテルIDを取得し、ログインユーザーが所属するホテルか検証
+  const { data: req } = await adminDb
+    .from('booking_requests')
+    .select('hotel_id')
+    .eq('id', requestId)
+    .single()
+  if (!req) return { error: 'リクエストが見つかりません。' }
+
+  const { data: hotel } = await adminDb
+    .from('hotels')
+    .select('id')
+    .eq('id', req.hotel_id)
+    .eq('auth_user_id', user.id)
+    .eq('is_active', true)
+    .single()
+  if (!hotel) return { error: '操作権限がありません。' }
+
   const { error } = await adminDb
     .from('booking_requests')
     .update({ status: 'rejected' })
