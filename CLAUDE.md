@@ -8,7 +8,7 @@
 ホテルオークラ東京を初期パートナーとした B2B 予約システム。
 
 ## 仕様書
-`docs/spec/specification.md`（v3.0）を必ず参照してから実装に入ること。
+`docs/spec/specification.md`（v3.2）を必ず参照してから実装に入ること。
 変更履歴は `docs/spec/changelog.md` を参照。
 
 ## 技術スタック
@@ -26,7 +26,7 @@
 - RLSポリシーを必ず確認してからクエリを書く
 - マイグレーションは `supabase/migrations/` に連番SQLで管理
 - `shuttle_slots.status` の値：`open / full / closed / suspended`（`cancelled` は使わない）
-- `bookings.status` の値：`confirmed / cancelled / completed`
+- `service_orders.status` の値：`confirmed / cancelled / completed`
 - `cancelled` = 乗客都合のキャンセル。便の運休は `suspended`（混同禁止）
 
 ## 権限設計の鉄則（実装前に必ず実行すること）
@@ -40,7 +40,7 @@
 |---|---|---|---|
 | hotels | SELECT（自分のホテルのみ） | SELECT（全件） | × |
 | shuttle_slots | SELECT（全件） | ALL | SELECT（全件） |
-| bookings | ALL（自ホテルのみ） | ALL | SELECT（担当便のみ）/ UPDATE（completedへのみ） |
+| service_orders | ALL（自ホテルのみ） | ALL | SELECT（担当便のみ）/ UPDATE（completedへのみ） |
 | driver_assignments | × | ALL | SELECT（自分のみ） |
 | driver_users | × | SELECT（全件） | SELECT（自分のみ） |
 | tmk_admin_users | × | SELECT（自分のみ） | × |
@@ -55,7 +55,7 @@
 
 ### よくある落とし穴（過去の失敗から）
 - `driver_users` に admin の SELECT ポリシーを忘れる → JOINが空になり「未アサイン」表示になる
-- driver に bookings の UPDATE ポリシーを忘れる → 乗車確認ボタンが押せても更新されない
+- driver に service_orders の UPDATE ポリシーを忘れる → 乗車確認ボタンが押せても更新されない
 - `current_user_role()` 内でRLSが再帰的にかかることがある → EXISTS句のテーブルにも適切なポリシーが必要
 - ダッシュボード集計で月末日を `YYYY-MM-31` とハードコード → 30日月でPostgreSQLエラーになりデータが0件になる
 
@@ -70,8 +70,8 @@
 - コメントは日本語可
 
 ## 作業開始時
-1. `docs/requirements/07_shuttle_hire_platform.md` の該当セクションを確認
-2. 対応する GitHub Issue を確認・着手中にステータス更新
+1. `docs/spec/specification.md`（v3.2）の該当セクションを確認
+2. `tasks/lessons.md` を読んで過去の落とし穴を把握する
 3. 実装 → `docs/` の該当ファイルを同じコミットで更新
 
 ## やってはいけないこと

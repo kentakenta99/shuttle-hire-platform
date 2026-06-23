@@ -1,6 +1,7 @@
 import { Resend } from 'resend'
 
-const FROM = 'シャトルハイヤー予約システム <onboarding@resend.dev>'
+// EMAIL_FROM を Vercel 環境変数で上書き可能。Resend カスタムドメイン設定後に設定すること。
+const FROM = process.env.EMAIL_FROM ?? '東京エムケイ シャトルハイヤー <noreply@tokyomk.com>'
 
 type SendOpts = Parameters<Resend['emails']['send']>[0]
 
