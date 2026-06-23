@@ -578,7 +578,8 @@ hotels                ホテルマスター
 tmk_admin_users       TMK管理者アカウント（is_super_adminフラグ含む）
 driver_users          ドライバーアカウント（employee_code・is_emirates_routeフラグ）
 shuttle_slots         出発枠（在庫）vehicle_plate含む
-bookings              予約（QR確認用booking_reference含む）
+service_orders        予約受注（DOS命名規約 v3.2。booking_reference含む）
+booking_requests      電話・口頭受付からの予約リクエスト（pending→confirmed変換フロー）
 driver_assignments    ドライバーアサイン（employee_codeブリッジキー）
 auth_events           認証イベントログ（セキュリティ監視用）
 cancel_otps           ゲストキャンセル用OTP（SHA-256ハッシュ保存・有効期限10分・v3.1追加）
@@ -736,6 +737,42 @@ CREATE POLICY service_role_only ON cancel_otps FOR ALL USING (false);
 -- SELECT cron.schedule('cleanup-cancel-otps', '0 3 * * *',
 --   $$DELETE FROM cancel_otps WHERE expires_at < now() - interval '24 hours'$$);
 
+-- 電話・口頭受付からの予約リクエスト（ホテルスタッフが入力→TMK管理者が承認してservice_ordersに変換）
+-- RLS: 未認証ユーザーがINSERT可（anon_insert_booking_requests）
+CREATE TABLE booking_requests (
+  id                   uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  hotel_id             uuid NOT NULL REFERENCES hotels(id),
+  room_number          text NOT NULL,
+  guest_name           text NOT NULL,
+  party_size           int NOT NULL,
+  luggage_count        int NOT NULL DEFAULT 0,
+  preferred_date       date NOT NULL,
+  preferred_time       text NOT NULL,
+  flight_number        text NOT NULL,
+  guest_email          text,
+  notes                text,
+  status               text NOT NULL DEFAULT 'pending',  -- pending / confirmed / rejected
+  converted_booking_id uuid,                             -- 承認後に紐づくservice_orders.id
+  ip_address           text,                             -- スパム対策用
+  created_at           timestamptz NOT NULL DEFAULT now()
+);
+ALTER TABLE booking_requests ENABLE ROW LEVEL SECURITY;
+-- 未認証ユーザー（ゲスト）からのリクエスト投稿を許可
+CREATE POLICY anon_insert_booking_requests ON booking_requests FOR INSERT WITH CHECK (true);
+-- hotel_staffは自ホテルのリクエストのみ参照・更新可
+CREATE POLICY hotel_staff_select_own_requests ON booking_requests
+  FOR SELECT TO authenticated
+  USING (hotel_id IN (SELECT id FROM hotels WHERE auth_user_id = auth.uid()));
+CREATE POLICY hotel_staff_update_own_requests ON booking_requests
+  FOR UPDATE TO authenticated
+  USING (hotel_id IN (SELECT id FROM hotels WHERE auth_user_id = auth.uid()))
+  WITH CHECK (hotel_id IN (SELECT id FROM hotels WHERE auth_user_id = auth.uid()));
+-- tmk_adminは全リクエストへフルアクセス可
+CREATE POLICY admin_all_booking_requests ON booking_requests
+  FOR ALL TO authenticated
+  USING (EXISTS (SELECT 1 FROM tmk_admin_users WHERE user_id = auth.uid() AND is_active))
+  WITH CHECK (EXISTS (SELECT 1 FROM tmk_admin_users WHERE user_id = auth.uid() AND is_active));
+
 -- Booknetics同期ログ（Phase 4）
 CREATE TABLE booknetics_sync_logs (
   id              uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -828,6 +865,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 - **未認証**：全テーブルへのアクセス拒否
 - **super_admin**：adminClient（サービスロール）経由でサーバーサイドのみアクセス。is_super_adminフラグをサーバーで検証後に実行
 - **cancel_otps（v3.1追加）**：全ロール・未認証とも直接アクセス不可（`USING (false)`）。Server Action（`createAdminClient()`）経由のみ操作可
+- **booking_requests**：未認証ユーザーがINSERT可（ゲストリクエスト投稿）。hotel_staffは自ホテル分のみSELECT/UPDATE可。tmk_adminはフルアクセス
 
 ### 7-2. RLSポリシー（骨格）
 
