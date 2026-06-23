@@ -1,5 +1,6 @@
 'use client'
 
+import { useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type Hotel = { id: string; name: string }
@@ -21,9 +22,14 @@ export default function BookingFilters({ hotels }: { hotels: Hotel[] }) {
     return `${jst.getUTCFullYear()}-${pad2(jst.getUTCMonth() + 1)}-${pad2(jst.getUTCDate())}`
   }
 
-  const dates = Array.from({ length: 30 }, (_, i) =>
-    jstDateStr(new Date(Date.now() + (i - 7) * 86_400_000))
-  )
+  const dates = useMemo(() => {
+    // eslint-disable-next-line react-hooks/purity -- useMemo内。マウント時1回のみ評価
+    const now = Date.now()
+    return Array.from({ length: 30 }, (_, i) =>
+      jstDateStr(new Date(now + (i - 7) * 86_400_000))
+    )
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 日付リストはマウント時に1回だけ生成
+  }, [])
 
   return (
     <div className="bg-white rounded-xl border border-gray-200 px-4 py-3 flex flex-wrap gap-4 items-center">

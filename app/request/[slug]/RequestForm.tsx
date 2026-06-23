@@ -55,6 +55,7 @@ function WaitingScreen({
 
   // 初回チェック
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 非同期フェッチ後にsetStateする意図的パターン
     checkStatus()
   }, [checkStatus])
 

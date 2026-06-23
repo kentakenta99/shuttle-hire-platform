@@ -31,7 +31,7 @@ export async function suggestEarlierSlots(
   }
 
   // 現在の出発時刻より早い便をフィルタ
-  const earlierSlots = slots.filter((slot: any) => {
+  const earlierSlots = slots.filter((slot: SuggestedSlot) => {
     return slot.departure_time < currentDepartureTime && slot.remaining_seats > 0
   })
 
@@ -39,7 +39,7 @@ export async function suggestEarlierSlots(
   // targetFlightHourMinute がある場合、そこから逆算して安全な便を判定
   if (targetFlightHourMinute) {
     const [flightHour, flightMin] = targetFlightHourMinute.split(':').map(Number)
-    return earlierSlots.filter((slot: any) => {
+    return earlierSlots.filter((slot: SuggestedSlot) => {
       const [slotHour, slotMin] = slot.departure_time.split(':').map(Number)
       const diffMinutes = (flightHour * 60 + flightMin) - (slotHour * 60 + slotMin)
       return diffMinutes >= 180 // 3時間以上

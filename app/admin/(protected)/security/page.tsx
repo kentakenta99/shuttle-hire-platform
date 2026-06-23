@@ -23,7 +23,9 @@ const ROLE_LABEL: Record<string, string> = {
 
 export default async function AdminSecurityPage() {
   const adminDb = createAdminClient()
+  // eslint-disable-next-line react-hooks/purity -- サーバーコンポーネント。SSR時に1回のみ実行される
   const since24h = new Date(Date.now() - 24 * 3600_000).toISOString()
+  // eslint-disable-next-line react-hooks/purity -- サーバーコンポーネント。SSR時に1回のみ実行される
   const since1h  = new Date(Date.now() - 3600_000).toISOString()
 
   const [eventsRes, last1hRes] = await Promise.all([

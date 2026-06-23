@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 export default async function CalendarPage() {
   const supabase = await createClient()
   const today = new Date().toISOString().slice(0, 10)
+  // eslint-disable-next-line react-hooks/purity -- サーバーコンポーネント
   const until = new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)
 
   const { data: slots } = await supabase

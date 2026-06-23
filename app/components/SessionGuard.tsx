@@ -11,6 +11,7 @@ type Props = {
 export default function SessionGuard({ timeoutMin, loginPath }: Props) {
   const router = useRouter()
   const [showWarning, setShowWarning] = useState(false)
+  // eslint-disable-next-line react-hooks/purity -- useRefの初期値は初回マウント時のみ評価される
   const lastActivityRef = useRef(Date.now())
   const warningShownRef = useRef(false)
 

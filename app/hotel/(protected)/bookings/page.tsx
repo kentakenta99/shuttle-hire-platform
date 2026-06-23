@@ -7,6 +7,7 @@ export const dynamic = 'force-dynamic'
 
 export default async function BookingsPage() {
   const supabase = await createClient()
+  // eslint-disable-next-line react-hooks/purity -- サーバーコンポーネント
   const since = new Date(Date.now() - 30 * 86400000).toISOString()
 
   const { data: bookings } = await supabase
