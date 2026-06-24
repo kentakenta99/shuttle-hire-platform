@@ -3,6 +3,10 @@
     {
       "path": "/api/cron/notify-departure",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/health",
+      "schedule": "*/10 * * * *"
     }
   ]
 }
