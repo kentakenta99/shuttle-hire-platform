@@ -1,9 +1,41 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, request as playwrightRequest } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
 
 const EMAIL    = process.env.E2E_HOTEL_EMAIL    ?? 'kenta_yagi@wishbone.tokyo'
 const PASSWORD = process.env.E2E_HOTEL_PASSWORD ?? ''
-// デモ用スロット（NH801・残席あり・open）
-const SLOT_ID  = process.env.E2E_TEST_SLOT_ID   ?? '33b5679d-6549-4902-98de-ba3892b369f8'
+// E2Eテスト専用スロット（2099年・capacity=50・枯渇しない）
+const SLOT_ID  = process.env.E2E_TEST_SLOT_ID   ?? '74a17bc2-f0cd-493b-80eb-87b8cf4a1311'
+
+// テスト終了後にE2Eテスト予約を全てキャンセルしてスロットをリセット
+test.afterAll(async () => {
+  const url  = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key  = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) return
+  const supabase = createClient(url, key)
+  await supabase
+    .from('service_orders')
+    .update({ status: 'cancelled' })
+    .eq('slot_id', SLOT_ID)
+    .eq('status', 'confirmed')
+    .like('guest_name', 'E2E%')
+  // remaining_seats を再計算
+  const { count } = await supabase
+    .from('service_orders')
+    .select('*', { count: 'exact', head: true })
+    .eq('slot_id', SLOT_ID)
+    .eq('status', 'confirmed')
+  const { data: slot } = await supabase
+    .from('shuttle_slots')
+    .select('capacity')
+    .eq('id', SLOT_ID)
+    .single()
+  if (slot) {
+    await supabase
+      .from('shuttle_slots')
+      .update({ remaining_seats: slot.capacity - (count ?? 0), status: 'open' })
+      .eq('id', SLOT_ID)
+  }
+})
 
 // ログイン済みセッションを再利用する（各テストで毎回ログインしない）
 test.describe('ホテルスタッフ — 事前ログイン', () => {
