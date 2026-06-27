@@ -39,6 +39,6 @@ test.describe('ドライバー — ログイン後', () => {
   })
 
   test('T04 本日の担当便が表示される', async ({ page }) => {
-    await expect(page.getByText('本日の担当便')).toBeVisible()
+    await expect(page.getByRole('heading', { name: '本日の担当便' })).toBeVisible()
   })
 })

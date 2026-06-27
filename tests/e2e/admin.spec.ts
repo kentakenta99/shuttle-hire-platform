@@ -43,7 +43,7 @@ test.describe('TMK管理者 — ログイン後', () => {
   })
 
   test('T05 ダッシュボードが表示される', async ({ page }) => {
-    await expect(page.getByText('ダッシュボード')).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'ダッシュボード' })).toBeVisible()
   })
 
   test('T06 リロードしてもセッションが維持される', async ({ page }) => {
