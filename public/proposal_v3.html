@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MKシャトルハイヤー予約プラットフォーム — 提案書 v3</title>
+<style>
+  :root {
+    --mk-blue: #1a3a6b;
+    --mk-blue-light: #2a5298;
+    --mk-gold: #C9A227;
+    --text: #1a1a2e;
+    --text-sub: #555;
+    --border: #e2e8f0;
+    --bg-light: #f8fafc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Hiragino Kaku Gothic ProN', 'Noto Sans JP', sans-serif; color: var(--text); line-height: 1.7; background: #fff; }
+
+  .cover {
+    background: linear-gradient(135deg, #0f1f40 0%, #1a3a6b 50%, #2a5298 100%);
+    color: #fff; min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; text-align: center; padding: 60px 40px;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(255,255,255,.05) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 80%, rgba(201,162,39,.08) 0%, transparent 50%);
+  }
+  .cover-logo { width: 80px; height: 80px; background: rgba(255,255,255,.15); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; margin: 0 auto 28px; position: relative; border: 2px solid rgba(255,255,255,.2); }
+  .cover h1 { font-size: 2.6rem; font-weight: 800; line-height: 1.3; margin-bottom: 16px; position: relative; }
+  .cover h1 span { color: var(--mk-gold); }
+  .cover-lead { font-size: 1.15rem; opacity: .85; max-width: 600px; position: relative; margin-bottom: 40px; line-height: 1.8; }
+  .cover-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; position: relative; }
+  .cover-tag { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.18); border-radius: 20px; padding: 7px 18px; font-size: .82rem; }
+
+  .section { padding: 88px 0; }
+  .section.dark { background: var(--bg-light); }
+  .container { max-width: 1080px; margin: 0 auto; padding: 0 40px; }
+  .section-label { font-size: .72rem; font-weight: 700; letter-spacing: .14em; color: var(--mk-blue-light); text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 14px; line-height: 1.3; }
+  .section-desc { color: var(--text-sub); font-size: 1.02rem; max-width: 660px; margin-bottom: 56px; line-height: 1.9; }
+
+  .value-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .value-card { background: #fff; border: 1px solid var(--border); border-radius: 18px; padding: 32px 28px; }
+  .value-card-icon { font-size: 2.2rem; margin-bottom: 14px; }
+  .value-card h3 { font-size: 1.05rem; font-weight: 800; margin-bottom: 8px; }
+  .value-card p { font-size: .88rem; color: var(--text-sub); line-height: 1.7; }
+
+  .actor-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .actor-card { border: 1px solid var(--border); border-radius: 18px; padding: 28px; }
+  .actor-badge { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; border-radius: 20px; padding: 3px 12px; margin-bottom: 14px; }
+  .actor-card h3 { font-size: 1.1rem; font-weight: 800; margin-bottom: 8px; }
+  .actor-card p { font-size: .88rem; color: var(--text-sub); line-height: 1.7; margin-bottom: 14px; }
+  .actor-list { list-style: none; }
+  .actor-list li { font-size: .85rem; color: var(--text-sub); padding: 4px 0 4px 18px; position: relative; }
+  .actor-list li::before { content: '→'; position: absolute; left: 0; color: var(--mk-blue-light); font-weight: 700; }
+
+  .flow-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; position: relative; }
+  .flow-steps::before { content: ''; position: absolute; top: 28px; left: 10%; right: 10%; height: 2px; background: linear-gradient(90deg, var(--mk-blue-light), var(--mk-gold)); z-index: 0; }
+  .flow-step { text-align: center; position: relative; z-index: 1; }
+  .flow-step-num { width: 56px; height: 56px; border-radius: 50%; background: var(--mk-blue); color: #fff; font-size: 1.1rem; font-weight: 900; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; box-shadow: 0 0 0 4px #fff; }
+  .flow-step h4 { font-size: .85rem; font-weight: 700; margin-bottom: 4px; }
+  .flow-step p { font-size: .75rem; color: var(--text-sub); line-height: 1.5; }
+
+  .showcase { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; margin-bottom: 80px; }
+  .showcase.reverse { direction: rtl; }
+  .showcase.reverse > * { direction: ltr; }
+  .showcase-tag { display: inline-block; background: rgba(42,82,152,.08); color: var(--mk-blue-light); border: 1px solid rgba(42,82,152,.2); border-radius: 20px; padding: 4px 14px; font-size: .76rem; font-weight: 700; margin-bottom: 12px; }
+  .showcase-text h3 { font-size: 1.4rem; font-weight: 800; margin-bottom: 14px; line-height: 1.4; }
+  .showcase-text p { font-size: .93rem; color: var(--text-sub); line-height: 1.85; margin-bottom: 14px; }
+  .showcase-points { list-style: none; }
+  .showcase-points li { font-size: .88rem; color: var(--text-sub); padding: 4px 0 4px 20px; position: relative; }
+  .showcase-points li::before { content: '→'; position: absolute; left: 0; color: var(--mk-blue-light); font-weight: 700; }
+  .live-badge { display: inline-flex; align-items: center; gap: 6px; background: #dcfce7; border: 1px solid #86efac; border-radius: 20px; padding: 5px 14px; margin-bottom: 14px; }
+  .live-badge-dot { width: 8px; height: 8px; background: #16a34a; border-radius: 50%; }
+  .live-badge span { font-size: .78rem; font-weight: 700; color: #15803d; }
+
+  .phone-wrap { display: flex; justify-content: center; }
+  .phone { width: 300px; background: #fff; border-radius: 32px; overflow: hidden; box-shadow: 0 24px 80px rgba(0,0,0,.16), 0 0 0 8px #1a1a2e; flex-shrink: 0; }
+  .phone-bar { background: #1a1a2e; height: 32px; display: flex; align-items: center; justify-content: center; gap: 6px; }
+  .phone-bar-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,.2); }
+  .phone-bar-dot.cam { background: rgba(255,255,255,.4); }
+
+  .admin-wrap { background: #f1f5f9; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,.12); }
+  .admin-topbar { background: #1e293b; padding: 10px 16px; display: flex; align-items: center; gap: 6px; }
+  .admin-topbar-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .impact-card { background: #fff; border: 1px solid var(--border); border-radius: 16px; padding: 32px; text-align: center; }
+  .impact-num { font-size: 2.6rem; font-weight: 900; color: var(--mk-blue); }
+  .impact-label { font-size: .88rem; color: var(--text-sub); margin-top: 6px; line-height: 1.5; }
+
+  .beta-box { background: linear-gradient(135deg, rgba(201,162,39,.06), rgba(42,82,152,.06)); border: 1px solid rgba(201,162,39,.3); border-radius: 20px; padding: 56px 40px; text-align: center; }
+
+  .sec-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: center; }
+  .sec-checklist { list-style: none; display: flex; flex-direction: column; gap: 16px; }
+  .sec-checklist li { display: flex; align-items: flex-start; gap: 14px; }
+  .sec-check { width: 28px; height: 28px; border-radius: 50%; background: #dcfce7; border: 1.5px solid #86efac; display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px; }
+  .sec-check svg { width: 14px; height: 14px; stroke: #16a34a; stroke-width: 2.5; fill: none; }
+  .sec-item-title { font-size: .95rem; font-weight: 700; color: var(--text); line-height: 1.4; }
+  .sec-item-desc { font-size: .82rem; color: var(--text-sub); margin-top: 2px; line-height: 1.5; }
+  .otp-phone-screen { padding: 20px 16px; background: #fff; min-height: 320px; }
+  .otp-step-label { font-size: .68rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--mk-blue-light); margin-bottom: 8px; }
+  .otp-title { font-size: 1rem; font-weight: 800; color: var(--text); margin-bottom: 14px; }
+  .otp-mail-chip { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 10px; padding: 8px 12px; font-size: .78rem; color: #1d4ed8; margin-bottom: 16px; }
+  .otp-boxes { display: flex; gap: 6px; justify-content: center; margin-bottom: 16px; }
+  .otp-box { width: 36px; height: 46px; border: 2px solid #3b82f6; border-radius: 8px; background: #eff6ff; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: 900; color: #1e40af; }
+  .otp-box.empty { border-color: #e2e8f0; background: #f8fafc; color: transparent; }
+  .otp-btn-primary { background: #dc2626; color: #fff; border-radius: 12px; padding: 12px; text-align: center; font-size: .9rem; font-weight: 700; margin-bottom: 8px; }
+  .otp-sub-actions { display: flex; justify-content: space-between; font-size: .75rem; color: #94a3b8; padding: 0 2px; }
+  .otp-expire-note { font-size: .72rem; color: #64748b; text-align: center; margin-bottom: 12px; }
+
+  /* ── Guide section ──────────────────────────────────── */
+  .guide-role-block { margin-bottom: 56px; }
+  .guide-role-header { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+  .guide-role-title { font-size: 1.15rem; font-weight: 800; }
+  .guide-steps {
+    display: flex; align-items: flex-start; gap: 0;
+    overflow-x: auto; padding-bottom: 4px;
+  }
+  .guide-step { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 175px; }
+  .guide-step-badge {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--mk-blue); color: #fff;
+    font-size: .72rem; font-weight: 900;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+  }
+  .guide-step-label {
+    font-size: .78rem; font-weight: 700; color: var(--text);
+    text-align: center; margin-top: 8px; line-height: 1.4;
+  }
+  .guide-arrow {
+    color: var(--mk-gold); font-size: 1.3rem; font-weight: 900;
+    padding: 0 2px; margin-top: 68px; flex-shrink: 0;
+  }
+  .mini-phone {
+    width: 155px; background: #fff; border-radius: 18px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13), 0 0 0 4px #1a1a2e;
+    flex-shrink: 0;
+  }
+  .mini-phone-bar {
+    background: #1a1a2e; height: 18px;
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+  }
+  .mini-dot { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.25); }
+  .mini-tablet {
+    width: 220px; background: #fff; border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,.13), 0 0 0 4px #1a1a2e;
+    flex-shrink: 0;
+  }
+  .mini-tablet-bar {
+    background: #1e293b; height: 20px; padding: 0 8px;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .guide-divider { border: none; border-top: 1px solid var(--border); margin: 0 0 56px; }
+
+  .divider { border: none; border-top: 1px solid var(--border); margin: 0 0 80px; }
+  .footer { background: var(--mk-blue); color: #fff; text-align: center; padding: 44px; }
+
+  @media (max-width: 768px) {
+    .showcase, .showcase.reverse { grid-template-columns: 1fr; direction: ltr; gap: 32px; }
+    .value-grid, .actor-grid, .impact-grid, .flow-steps { grid-template-columns: 1fr; }
+    .flow-steps::before { display: none; }
+    .cover h1 { font-size: 1.9rem; }
+    .section { padding: 52px 0; }
+    .phone { width: 260px; }
+    .guide-steps { gap: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ══ 1. COVER ═══════════════════════════════════════════ -->
+<section class="cover">
+  <div class="cover-logo">MK</div>
+  <h1>シャトルハイヤー<br><span>予約プラットフォーム</span></h1>
+  <p class="cover-lead">
+    ホテル宿泊客が成田空港へのシャトルハイヤーをスマートフォンだけで予約・管理。<br>
+    東京MK内部チームが作った、現場を知っているからこそのきめ細かいソリューション。
+  </p>
+  <div class="cover-tags">
+    <div class="cover-tag">🏨 ホテルオークラ東京 初期パートナー</div>
+    <div class="cover-tag">✈️ フライト情報リアルタイム連携</div>
+    <div class="cover-tag">🤖 AI設定アシスタント</div>
+    <div class="cover-tag">🔒 OTPメール認証キャンセル</div>
+    <div class="cover-tag">🚀 Beta — TMK現場テストラン進行中</div>
+  </div>
+</section>
+
+<!-- ══ 2. プロダクト概要 ══════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">What is this</div>
+    <h2 class="section-title">何のプロダクトか</h2>
+    <p class="section-desc">
+      ホテル宿泊客が成田空港へのシャトルハイヤーをオンラインで予約できるB2Bプラットフォーム。
+      予約・配車・乗車確認・キャンセルまでをデジタル化し、フロント業務の負荷をゼロに近づける。
+    </p>
+    <div class="value-grid">
+      <div class="value-card">
+        <div class="value-card-icon">📱</div>
+        <h3>ゲストがスマホで完結</h3>
+        <p>QRチケット自動発行。予約・確認・キャンセルすべてスマートフォンから24時間対応。フロントに電話する必要がない。</p>
+      </div>
+      <div class="value-card">
+        <div class="value-card-icon">🏨</div>
+        <h3>フロント業務を大幅に削減</h3>
+        <p>予約電話対応・手書き台帳・キャンセル処理がゼロに。スタッフはゲストへのおもてなしに専念できる。</p>
+      </div>
+      <div class="value-card">
+        <div class="value-card-icon">🚗</div>
+        <h3>配車・実績をリアルタイム管理</h3>
+        <p>ドライバーへのアサイン・乗車確認・日報をデジタル化。運行状況をダッシュボードで一目管理。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 3. 3つのアクター ══════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Who uses it</div>
+    <h2 class="section-title">3つのアクター、それぞれの体験</h2>
+    <p class="section-desc">ゲスト・ホテルスタッフ・ドライバー。三者の体験がシームレスに繋がる。</p>
+    <div class="actor-grid">
+      <div class="actor-card">
+        <div class="actor-badge" style="background:rgba(42,82,152,.08);color:#1a3a6b;border:1px solid rgba(42,82,152,.2)">Guest</div>
+        <h3>👤 ゲスト</h3>
+        <p>スマートフォン1台で予約から乗車まで。言語の壁もない。</p>
+        <ul class="actor-list">
+          <li>フライト番号を入力するだけで便を確認</li>
+          <li>QRチケットが自動生成</li>
+          <li>出発3時間未満アラートで乗り遅れ防止</li>
+          <li>24時間セルフキャンセル対応</li>
+          <li>フロント問い合わせCTA（電話番号なし）</li>
+        </ul>
+      </div>
+      <div class="actor-card" style="background:var(--bg-light)">
+        <div class="actor-badge" style="background:rgba(16,185,129,.1);color:#065f46;border:1px solid rgba(16,185,129,.3)">Hotel Staff</div>
+        <h3>🏨 ホテルスタッフ</h3>
+        <p>設定変更に開発依頼不要。AIアシスタントが自然言語で対応。</p>
+        <ul class="actor-list">
+          <li>ホテル別キャンセルポリシーをUI設定</li>
+          <li>AI設定アシスタントで話しかけるだけで変更</li>
+          <li>予約ダッシュボードでリアルタイム把握</li>
+          <li>ゲスト体験向上に集中できる</li>
+        </ul>
+      </div>
+      <div class="actor-card">
+        <div class="actor-badge" style="background:rgba(245,158,11,.1);color:#92400e;border:1px solid rgba(245,158,11,.3)">Driver</div>
+        <h3>🚗 ドライバー</h3>
+        <p>どこにいても、確実な情報。迷わない、混乱しない。</p>
+        <ul class="actor-list">
+          <li>当日の仕事をスマホで一目確認</li>
+          <li>リアルタイム配車通知</li>
+          <li>ゲスト情報・フライト・ターミナルを表示</li>
+          <li>乗車確認ボタンで完了報告</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 4. 基本フロー ═════════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">予約から乗車まで</h2>
+    <p class="section-desc">ゲストがスマートフォンで操作するだけ。フロントが介入する手順は一切ない。</p>
+    <div class="flow-steps">
+      <div class="flow-step">
+        <div class="flow-step-num">1</div>
+        <h4>フォーム入力</h4>
+        <p>日付・人数・フライト番号を入力</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">2</div>
+        <h4>便確認</h4>
+        <p>OAGがフライト情報を自動取得</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">3</div>
+        <h4>QRチケット発行</h4>
+        <p>確認コード＋QRが即座に表示</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num" style="background:var(--mk-gold);color:#000">4</div>
+        <h4>ドライバーアサイン</h4>
+        <p>TMK管理者がドライバーを配車</p>
+      </div>
+      <div class="flow-step">
+        <div class="flow-step-num">5</div>
+        <h4>乗車完了</h4>
+        <p>QR読取→乗車確認→日報自動生成</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 5. きめ細かい機能 ══════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Fine-grained features</div>
+    <h2 class="section-title">内部チームだからこそ<br>作れた機能</h2>
+    <p class="section-desc">現場を知っているから、ゲストが本当に困る場面を全部潰してある。</p>
+
+    <div class="showcase reverse">
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div></div>
+          <div style="background:#1a3a6b;padding:10px 16px">
+            <div style="color:#93c5fd;font-size:9px">出発</div>
+            <div style="color:#fff;font-weight:700;font-size:13px">2026年6月23日（火）　14:00 発</div>
+          </div>
+          <div style="background:#fefce8;border-bottom:1px solid #fde68a;padding:10px 16px">
+            <div style="font-size:11px;font-weight:700;color:#92400e;margin-bottom:4px">⚠️ 時間がタイトです</div>
+            <div style="font-size:10px;color:#78350f;line-height:1.5">このシャトル便だと出発が早く、乗り遅れるリスクがあります。<br><strong>別の便をお選びいただくか、フロントまでお問い合わせください。</strong></div>
+            <div style="font-size:10px;color:#a16207;margin-top:4px">出発まで残り <strong>2時間 18分</strong></div>
+          </div>
+          <div style="padding:14px 16px">
+            <div style="display:flex;flex-direction:column">
+              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">お名前 / Name</span><span style="font-size:11px;font-weight:600">Tanaka Kenji</span></div>
+              <div style="display:flex;gap:8px;padding:7px 0;border-bottom:1px solid #f1f5f9"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">フライト</span><span style="font-size:11px;font-weight:600">NH832</span></div>
+              <div style="display:flex;gap:8px;padding:7px 0"><span style="font-size:10px;color:#9ca3af;width:76px;flex-shrink:0">人数</span><span style="font-size:11px;font-weight:600">2名</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-tag">機能 01</div>
+        <h3>間に合わない便を選んだとき、<br>すぐに警告する</h3>
+        <p>フライトAPIで取得したフライト出発時刻と選択シャトル便を比較。空港到着〜搭乗手続きの時間を加味して、<strong>3時間を切ったら黄色い警告を自動表示</strong>。</p>
+        <ul class="showcase-points">
+          <li>フライトAPIでフライト出発時刻を自動取得</li>
+          <li>3時間未満で黄色バナーを自動表示</li>
+          <li>残り時間をカウントダウン（分単位で更新）</li>
+          <li>電話番号なし → フロント問い合わせCTAに統一</li>
+        </ul>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="showcase">
+      <div class="showcase-text">
+        <div class="showcase-tag">機能 02</div>
+        <h3>グループ内でターミナルが分かれたとき、<br>最適な降車順を自動提案</h3>
+        <p>同じ予約グループ内に第1・第2ターミナル利用者が混在しているとき、<strong>効率的な降車順を自動計算して表示</strong>する。</p>
+        <ul class="showcase-points">
+          <li>フライトAPIでターミナルを自動判定</li>
+          <li>最適な停車順序をゲストに提示</li>
+          <li>ドライバー画面にも同じ情報を共有</li>
+          <li>成田 T1 / T2 / T3（LCC）完全対応</li>
+        </ul>
+      </div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-bar"><div class="phone-bar-dot"></div><div class="phone-bar-dot cam"></div><div class="phone-bar-dot"></div></div>
+          <div style="padding:16px">
+            <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:10px;padding:10px;margin-bottom:12px">
+              <div style="font-size:11px;font-weight:700;color:#9a3412;margin-bottom:5px">🔀 グループ内でターミナルが分かれています</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div style="background:#fff;border:1px solid #fed7aa;border-radius:8px;padding:8px;text-align:center">
+                  <div style="font-size:9px;color:#9a3412;font-weight:700;margin-bottom:2px">① 先にお降り</div>
+                  <div style="font-size:20px;font-weight:900;color:#c2410c;line-height:1">T1</div>
+                  <div style="font-size:9px;color:#78350f;margin-top:2px">JL / DL / AF</div>
+                </div>
+                <div style="background:#fff;border:1px solid #fed7aa;border-radius:8px;padding:8px;text-align:center">
+                  <div style="font-size:9px;color:#9a3412;font-weight:700;margin-bottom:2px">② 次にお降り</div>
+                  <div style="font-size:20px;font-weight:900;color:#c2410c;line-height:1">T2</div>
+                  <div style="font-size:9px;color:#78350f;margin-top:2px">NH / UA / SQ</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="showcase reverse">
+      <div>
+        <div class="admin-wrap">
+          <div class="admin-topbar">
+            <div class="admin-topbar-dot" style="background:#ef4444"></div>
+            <div class="admin-topbar-dot" style="background:#f59e0b"></div>
+            <div class="admin-topbar-dot" style="background:#22c55e"></div>
+            <span style="color:#94a3b8;font-size:11px;margin-left:8px">Super Admin — Settings</span>
+          </div>
+          <div style="display:flex;min-height:220px">
+            <div style="background:#fff;width:140px;border-right:1px solid #e2e8f0;padding:10px 0;flex-shrink:0">
+              <div style="padding:8px 14px;font-size:11px;color:#64748b">ダッシュボード</div>
+              <div style="padding:8px 14px;font-size:11px;color:#64748b">ホテル管理</div>
+              <div style="padding:8px 14px;font-size:11px;color:#1a3a6b;font-weight:700;background:#eff6ff;border-left:3px solid #1a3a6b">⚙️ 設定</div>
+            </div>
+            <div style="padding:16px;flex:1">
+              <div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px 10px;font-size:11px;background:#fff;margin-bottom:10px">🏨 ホテルオークラ東京</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+                <div><div style="font-size:10px;color:#6b7280;margin-bottom:3px">締切（時間前）</div><div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">3</div></div>
+                <div><div style="font-size:10px;color:#6b7280;margin-bottom:3px">違約金率（%）</div><div style="border:1px solid #e5e7eb;border-radius:7px;padding:7px;font-size:13px;background:#fff;font-weight:700">25</div></div>
+              </div>
+              <div style="background:#1a3a6b;color:#fff;border-radius:8px;padding:8px;font-size:12px;font-weight:700;text-align:center">更新する</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:12px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px">
+          <div style="font-size:11px;font-weight:700;color:#374151;margin-bottom:10px">🤖 AI設定アシスタント</div>
+          <div style="display:flex;justify-content:flex-end;margin-bottom:8px">
+            <div style="background:#1a3a6b;color:#fff;border-radius:10px 10px 2px 10px;padding:8px 12px;font-size:11px;max-width:210px">オークラは2時間以内なら50%取ってください</div>
+          </div>
+          <div style="display:flex">
+            <div style="background:#f1f5f9;border-radius:2px 10px 10px 10px;padding:8px 12px;font-size:11px;color:#374151;max-width:230px;line-height:1.5">✅ ポリシーを更新しました。締切: 2時間前、違約金: 50%</div>
+          </div>
+        </div>
+      </div>
+      <div class="showcase-text">
+        <div class="showcase-tag">機能 03</div>
+        <h3>料金・キャンセルポリシーを<br>開発者なしで変更できる</h3>
+        <p><strong>AI設定アシスタント（ALPO）</strong>搭載。「オークラは2時間以内なら50%取ってください」と話しかけるだけで設定が自動更新される。</p>
+        <ul class="showcase-points">
+          <li>ホテル別キャンセルポリシーを個別設定</li>
+          <li>AI設定アシスタント — 自然言語で設定変更</li>
+          <li>変更履歴・更新者名・日時を記録</li>
+          <li>ゲスト予約確認画面に即座に反映</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 6. IMPACT ══════════════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">Impact</div>
+    <h2 class="section-title">フロントの負担を、根本から減らす</h2>
+    <p class="section-desc">電話不要。メール返信不要。ゲストが自分で解決できる設計。</p>
+    <div class="impact-grid">
+      <div class="impact-card">
+        <div class="impact-num">0</div>
+        <div class="impact-label">予約・変更・キャンセルに関する<br>フロント電話対応</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-num">24/7</div>
+        <div class="impact-label">ゲストが自分でキャンセル・確認<br>できる時間</div>
+      </div>
+      <div class="impact-card">
+        <div class="impact-num">即日</div>
+        <div class="impact-label">ポリシー変更の開発不要・<br>即日反映</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 7. ロール別クイックガイド（NEW）════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Quick Start Guide</div>
+    <h2 class="section-title">実際の画面で見る<br>ロール別使い方</h2>
+    <p class="section-desc">各ロールの操作は最小限。実際のUIでひと目でわかります。</p>
+
+    <!-- ─── ホテルスタッフ ─────────────────────────────── -->
+    <div class="guide-role-block">
+      <div class="guide-role-header">
+        <span class="actor-badge" style="background:rgba(16,185,129,.1);color:#065f46;border:1px solid rgba(16,185,129,.3)">Hotel Staff</span>
+        <span class="guide-role-title">🏨 ホテルスタッフ — 予約まで4ステップ</span>
+      </div>
+      <div class="guide-steps">
+
+        <!-- STEP 1: ログイン -->
+        <div class="guide-step">
+          <div class="guide-step-badge">1</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="padding:12px 10px">
+              <div style="font-size:7px;font-weight:800;color:#1a3a6b;text-align:center;margin-bottom:10px">ホテルスタッフ ログイン</div>
+              <div style="font-size:7px;color:#9ca3af;margin-bottom:2px">メールアドレス</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 6px;font-size:7px;margin-bottom:6px;color:#374151;background:#fff">hotel@okura.co.jp</div>
+              <div style="font-size:7px;color:#9ca3af;margin-bottom:2px">パスワード</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 6px;font-size:7px;margin-bottom:10px;color:#374151;background:#fff">••••••••</div>
+              <div style="background:#1a3a6b;color:#fff;border-radius:6px;padding:6px;font-size:7px;font-weight:700;text-align:center">ログイン</div>
+            </div>
+          </div>
+          <div class="guide-step-label">ログイン</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 2: カレンダー -->
+        <div class="guide-step">
+          <div class="guide-step-badge">2</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="padding:10px">
+              <div style="font-size:7px;font-weight:700;color:#374151;margin-bottom:6px">2026年6月20日（土）</div>
+              <div style="border:1px solid #bbf7d0;border-radius:7px;overflow:hidden;margin-bottom:4px;background:#f0fdf4">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px">
+                  <div>
+                    <div style="font-size:7px;font-weight:700;color:#111">09:00発</div>
+                    <div style="font-size:6px;color:#16a34a;font-weight:700">残 2 席</div>
+                  </div>
+                  <div style="background:#1a3a6b;color:#fff;border-radius:4px;padding:3px 6px;font-size:6px;font-weight:700">予約する</div>
+                </div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:7px;overflow:hidden;background:#fafafa">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px">
+                  <div>
+                    <div style="font-size:7px;font-weight:700;color:#111">13:00発</div>
+                    <div style="font-size:6px;color:#dc2626;font-weight:700">満席</div>
+                  </div>
+                  <div style="background:#e5e7eb;color:#9ca3af;border-radius:4px;padding:3px 6px;font-size:6px">満席</div>
+                </div>
+              </div>
+              <div style="border:1px solid #e5e7eb;border-radius:7px;overflow:hidden;margin-top:4px;background:#fafafa">
+                <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 8px">
+                  <div>
+                    <div style="font-size:7px;font-weight:700;color:#111">17:00発</div>
+                    <div style="font-size:6px;color:#6b7280">受付終了</div>
+                  </div>
+                  <div style="background:#f3f4f6;color:#9ca3af;border-radius:4px;padding:3px 6px;font-size:6px">締切済</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="guide-step-label">空き枠を<br>ワンタップで選択</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 3: 予約フォーム -->
+        <div class="guide-step">
+          <div class="guide-step-badge">3</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="padding:10px">
+              <div style="font-size:7px;font-weight:800;color:#1a3a6b;margin-bottom:8px">09:00発 — 残2席</div>
+              <div style="font-size:6px;color:#9ca3af;margin-bottom:2px">お客様のお名前</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 5px;font-size:7px;margin-bottom:5px;color:#111;background:#fff">山田 太郎 / YAMADA Taro</div>
+              <div style="font-size:6px;color:#9ca3af;margin-bottom:2px">フライト番号</div>
+              <div style="border:1px solid #bbf7d0;border-radius:5px;padding:4px 5px;font-size:7px;margin-bottom:5px;color:#111;background:#f0fdf4">NH832 ✓</div>
+              <div style="font-size:6px;color:#9ca3af;margin-bottom:2px">お荷物の数</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 5px;font-size:7px;margin-bottom:8px;color:#111;background:#fff">2個</div>
+              <div style="background:#C9A227;color:#fff;border-radius:6px;padding:6px;font-size:7px;font-weight:700;text-align:center">予約を確定する</div>
+            </div>
+          </div>
+          <div class="guide-step-label">30秒で<br>情報を入力</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 4: QRチケット -->
+        <div class="guide-step">
+          <div class="guide-step-badge">4</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="padding:10px;background:#fff">
+              <div style="background:#1a3a6b;border-radius:7px;padding:8px;margin-bottom:8px">
+                <div style="font-size:6px;color:#93c5fd;margin-bottom:2px">乗車チケット — Boarding Pass</div>
+                <div style="font-size:8px;color:#fff;font-weight:800">TMK-BK3Q7XMPH2</div>
+              </div>
+              <!-- QR code representation -->
+              <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;margin:0 auto 6px;width:70px">
+                <div style="background:#111;height:8px;grid-column:span 3"></div><div style="background:#fff;height:8px"></div><div style="background:#111;height:8px;grid-column:span 3"></div>
+                <div style="background:#111;height:8px"></div><div style="background:#fff;height:8px"></div><div style="background:#111;height:8px"></div><div style="background:#fff;height:8px"></div><div style="background:#111;height:8px"></div><div style="background:#fff;height:8px"></div><div style="background:#111;height:8px"></div>
+                <div style="background:#111;height:8px;grid-column:span 3"></div><div style="background:#fff;height:8px"></div><div style="background:#111;height:8px;grid-column:span 3"></div>
+                <div style="background:#fff;height:8px;grid-column:span 2"></div><div style="background:#111;height:8px;grid-column:span 3"></div><div style="background:#fff;height:8px;grid-column:span 2"></div>
+                <div style="background:#111;height:8px;grid-column:span 7"></div>
+              </div>
+              <div style="background:#f8fafc;border-radius:5px;padding:5px 6px">
+                <div style="display:flex;gap:4px;margin-bottom:2px"><span style="font-size:5px;color:#9ca3af;width:44px">出発</span><span style="font-size:6px;font-weight:700;color:#111">6/20 09:00</span></div>
+                <div style="display:flex;gap:4px;margin-bottom:2px"><span style="font-size:5px;color:#9ca3af;width:44px">車両</span><span style="font-size:6px;color:#f59e0b;font-style:italic">配車確定後に更新</span></div>
+                <div style="display:flex;gap:4px"><span style="font-size:5px;color:#9ca3af;width:44px">人数</span><span style="font-size:6px;font-weight:700;color:#111">2名</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="guide-step-label">QRチケットを<br>その場で発行</div>
+        </div>
+
+      </div><!-- /guide-steps -->
+    </div><!-- /hotel staff -->
+
+    <hr class="guide-divider">
+
+    <!-- ─── TMK管理者 ──────────────────────────────────── -->
+    <div class="guide-role-block">
+      <div class="guide-role-header">
+        <span class="actor-badge" style="background:rgba(42,82,152,.08);color:#1a3a6b;border:1px solid rgba(42,82,152,.2)">TMK Admin</span>
+        <span class="guide-role-title">🖥 TMK管理者 — 運行管理3ステップ</span>
+      </div>
+      <div class="guide-steps">
+
+        <!-- STEP 1: ダッシュボード -->
+        <div class="guide-step" style="width:240px">
+          <div class="guide-step-badge">1</div>
+          <div class="mini-tablet">
+            <div class="mini-tablet-bar">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+              <span style="color:#94a3b8;font-size:8px;margin-left:6px">ダッシュボード</span>
+            </div>
+            <div style="padding:12px">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px">
+                <div style="background:#eff6ff;border-radius:7px;padding:7px;text-align:center">
+                  <div style="font-size:12px;font-weight:900;color:#1a3a6b">8</div>
+                  <div style="font-size:6px;color:#6b7280;margin-top:1px">今日の予約</div>
+                </div>
+                <div style="background:#f0fdf4;border-radius:7px;padding:7px;text-align:center">
+                  <div style="font-size:12px;font-weight:900;color:#16a34a">124</div>
+                  <div style="font-size:6px;color:#6b7280;margin-top:1px">今月の予約</div>
+                </div>
+                <div style="background:#fefce8;border-radius:7px;padding:7px;text-align:center">
+                  <div style="font-size:12px;font-weight:900;color:#d97706">82%</div>
+                  <div style="font-size:6px;color:#6b7280;margin-top:1px">稼働率</div>
+                </div>
+              </div>
+              <div style="font-size:7px;font-weight:700;color:#374151;margin-bottom:5px">本日の運行</div>
+              <div style="background:#f1f5f9;border-radius:6px;padding:5px 7px;margin-bottom:3px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:7px;font-weight:600">09:00発　2名</span>
+                <span style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:1px 5px;font-size:6px;font-weight:700">受付中</span>
+              </div>
+              <div style="background:#f1f5f9;border-radius:6px;padding:5px 7px;display:flex;justify-content:space-between;align-items:center">
+                <span style="font-size:7px;font-weight:600">13:00発　4名</span>
+                <span style="background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;font-size:6px;font-weight:700">満席</span>
+              </div>
+            </div>
+          </div>
+          <div class="guide-step-label">運行状況を確認</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 2: スロット + DRアサイン -->
+        <div class="guide-step" style="width:240px">
+          <div class="guide-step-badge">2</div>
+          <div class="mini-tablet">
+            <div class="mini-tablet-bar">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+              <span style="color:#94a3b8;font-size:8px;margin-left:6px">出発枠 — 詳細</span>
+            </div>
+            <div style="padding:12px">
+              <div style="background:#1a3a6b;border-radius:7px;padding:8px;margin-bottom:8px">
+                <div style="font-size:6px;color:#93c5fd">2026年6月20日（土）</div>
+                <div style="font-size:10px;color:#fff;font-weight:800">09:00 発　スタンダード</div>
+                <div style="font-size:6px;color:#bfdbfe;margin-top:2px">定員 4 / 残席 2 / 品川500あ1234</div>
+              </div>
+              <div style="font-size:7px;font-weight:700;color:#374151;margin-bottom:4px">DR アサイン</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 6px;font-size:7px;background:#fff;margin-bottom:5px;color:#374151">山田 一郎（E0042）</div>
+              <div style="font-size:6px;color:#9ca3af;margin-bottom:2px">車両ナンバー</div>
+              <div style="border:1px solid #e5e7eb;border-radius:5px;padding:4px 6px;font-size:7px;background:#fff;margin-bottom:7px;color:#374151">品川 500 あ 1234</div>
+              <div style="background:#1a3a6b;color:#fff;border-radius:6px;padding:5px;font-size:7px;font-weight:700;text-align:center">保存する</div>
+            </div>
+          </div>
+          <div class="guide-step-label">DRアサイン</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 3: 予約一覧 -->
+        <div class="guide-step" style="width:240px">
+          <div class="guide-step-badge">3</div>
+          <div class="mini-tablet">
+            <div class="mini-tablet-bar">
+              <div style="width:8px;height:8px;border-radius:50%;background:#ef4444"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#f59e0b"></div>
+              <div style="width:8px;height:8px;border-radius:50%;background:#22c55e"></div>
+              <span style="color:#94a3b8;font-size:8px;margin-left:6px">予約一覧</span>
+            </div>
+            <div style="padding:10px">
+              <div style="display:flex;gap:5px;margin-bottom:8px">
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:3px 7px;font-size:7px;color:#374151;background:#fff">6/20</div>
+                <div style="background:#1a3a6b;border-radius:5px;padding:3px 7px;font-size:7px;color:#fff;font-weight:700">confirmed</div>
+                <div style="border:1px solid #e5e7eb;border-radius:5px;padding:3px 7px;font-size:7px;color:#374151;background:#fff">全ホテル</div>
+              </div>
+              <div style="border-bottom:1px solid #f1f5f9;padding:5px 0;display:flex;justify-content:space-between">
+                <div><div style="font-size:7px;font-weight:700">山田 太郎</div><div style="font-size:6px;color:#6b7280">NH832 / 2名</div></div>
+                <div style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:1px 5px;font-size:6px;font-weight:700;align-self:center">確定</div>
+              </div>
+              <div style="border-bottom:1px solid #f1f5f9;padding:5px 0;display:flex;justify-content:space-between">
+                <div><div style="font-size:7px;font-weight:700">Smith, John</div><div style="font-size:6px;color:#6b7280">UA197 / 1名</div></div>
+                <div style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:1px 5px;font-size:6px;font-weight:700;align-self:center">確定</div>
+              </div>
+              <div style="padding:5px 0;display:flex;justify-content:space-between">
+                <div><div style="font-size:7px;font-weight:700">佐藤 花子</div><div style="font-size:6px;color:#6b7280">NH101 / 1名</div></div>
+                <div style="background:#fee2e2;color:#dc2626;border-radius:4px;padding:1px 5px;font-size:6px;font-weight:700;align-self:center">取消</div>
+              </div>
+            </div>
+          </div>
+          <div class="guide-step-label">予約状況を確認</div>
+        </div>
+
+      </div><!-- /guide-steps -->
+    </div><!-- /admin -->
+
+    <hr class="guide-divider">
+
+    <!-- ─── 乗務員 ──────────────────────────────────────── -->
+    <div class="guide-role-block">
+      <div class="guide-role-header">
+        <span class="actor-badge" style="background:rgba(245,158,11,.1);color:#92400e;border:1px solid rgba(245,158,11,.3)">Driver</span>
+        <span class="guide-role-title">🚗 乗務員 — 乗車確認まで3ステップ</span>
+      </div>
+      <div class="guide-steps">
+
+        <!-- STEP 1: 担当便 -->
+        <div class="guide-step">
+          <div class="guide-step-badge">1</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="background:#1a1a2e;padding:10px">
+              <div style="font-size:7px;color:#94a3b8;margin-bottom:2px">2026年6月20日（土）</div>
+              <div style="font-size:8px;color:#fff;font-weight:800">本日の担当便</div>
+            </div>
+            <div style="padding:10px">
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:8px">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+                  <div style="font-size:9px;font-weight:800;color:#1a1a2e">09:00 発</div>
+                  <div style="background:#dcfce7;color:#16a34a;border-radius:4px;padding:2px 5px;font-size:6px;font-weight:700">受付中</div>
+                </div>
+                <div style="font-size:6px;color:#6b7280;margin-bottom:3px">スタンダードハイヤー</div>
+                <div style="display:flex;gap:6px">
+                  <span style="font-size:7px;font-weight:600;color:#374151">2件</span>
+                  <span style="font-size:7px;color:#6b7280">/</span>
+                  <span style="font-size:7px;font-weight:600;color:#374151">3名</span>
+                  <span style="font-size:7px;color:#6b7280">/</span>
+                  <span style="font-size:7px;color:#f59e0b;font-weight:700">荷物4個</span>
+                </div>
+              </div>
+              <div style="background:#1a3a6b;color:#fff;border-radius:6px;padding:6px;font-size:7px;font-weight:700;text-align:center;margin-top:6px">詳細を見る →</div>
+            </div>
+          </div>
+          <div class="guide-step-label">担当便を確認</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 2: 乗客名簿 -->
+        <div class="guide-step">
+          <div class="guide-step-badge">2</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="background:#1a3a6b;padding:8px 10px">
+              <div style="font-size:6px;color:#93c5fd">09:00発 乗客名簿</div>
+              <div style="display:flex;gap:8px;margin-top:3px">
+                <div style="text-align:center"><div style="font-size:14px;font-weight:900;color:#fff">3</div><div style="font-size:5px;color:#93c5fd">人</div></div>
+                <div style="text-align:center"><div style="font-size:14px;font-weight:900;color:#C9A227">4</div><div style="font-size:5px;color:#93c5fd">荷物</div></div>
+              </div>
+            </div>
+            <div style="background:#fef3c7;border-bottom:1px solid #fde68a;padding:5px 8px">
+              <div style="font-size:6px;font-weight:700;color:#92400e">🛫 停車順：① T2 → ② T1</div>
+            </div>
+            <div style="padding:8px">
+              <div style="border-bottom:1px solid #f1f5f9;padding-bottom:5px;margin-bottom:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><div style="font-size:7px;font-weight:700">山田 太郎</div><div style="font-size:5px;color:#6b7280">NH832 ✓定刻</div></div>
+                  <div style="background:#1e3a8a;color:#fff;border-radius:3px;padding:1px 4px;font-size:5px;font-weight:700">T2</div>
+                </div>
+              </div>
+              <div style="border-bottom:1px solid #f1f5f9;padding-bottom:5px;margin-bottom:5px">
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><div style="font-size:7px;font-weight:700">Smith, John</div><div style="font-size:5px;color:#6b7280">UA197 ⚠+15分</div></div>
+                  <div style="background:#1e3a8a;color:#fff;border-radius:3px;padding:1px 4px;font-size:5px;font-weight:700">T1</div>
+                </div>
+              </div>
+              <div>
+                <div style="display:flex;justify-content:space-between;align-items:center">
+                  <div><div style="font-size:7px;font-weight:700">田中 次郎</div><div style="font-size:5px;color:#6b7280">NH101 ✓定刻</div></div>
+                  <div style="background:#1e3a8a;color:#fff;border-radius:3px;padding:1px 4px;font-size:5px;font-weight:700">T2</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="guide-step-label">乗客・ターミナルを確認</div>
+        </div>
+
+        <div class="guide-arrow">→</div>
+
+        <!-- STEP 3: 乗車確認 -->
+        <div class="guide-step">
+          <div class="guide-step-badge">3</div>
+          <div class="mini-phone">
+            <div class="mini-phone-bar"><div class="mini-dot"></div><div class="mini-dot" style="background:rgba(255,255,255,.5)"></div><div class="mini-dot"></div></div>
+            <div style="padding:10px">
+              <div style="font-size:7px;font-weight:800;color:#374151;margin-bottom:8px">乗車確認</div>
+              <!-- 確認済み -->
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px 8px;margin-bottom:4px;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:7px;font-weight:700;color:#111">山田 太郎</div>
+                  <div style="font-size:6px;color:#16a34a;font-weight:700">✓ 乗車確認済み</div>
+                </div>
+              </div>
+              <!-- スキャン中 -->
+              <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:6px 8px;margin-bottom:4px">
+                <div style="font-size:7px;font-weight:700;color:#111;margin-bottom:4px">Smith, John</div>
+                <div style="background:#1a3a6b;color:#fff;border-radius:5px;padding:4px;font-size:6px;font-weight:700;text-align:center">📷 QRをスキャン</div>
+              </div>
+              <!-- 未確認 -->
+              <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:7px;padding:6px 8px;display:flex;justify-content:space-between;align-items:center">
+                <div>
+                  <div style="font-size:7px;font-weight:700;color:#111">田中 次郎</div>
+                  <div style="font-size:6px;color:#9ca3af">待機中</div>
+                </div>
+              </div>
+              <div style="margin-top:8px;background:#f1f5f9;border-radius:6px;padding:5px;font-size:6px;color:#6b7280;text-align:center">1/3 確認済</div>
+            </div>
+          </div>
+          <div class="guide-step-label">乗車確認</div>
+          <div style="background:#fef3c7;border:1px solid #fde68a;border-radius:12px;padding:3px 10px;font-size:.68rem;font-weight:700;color:#92400e;margin-top:4px">準備中</div>
+        </div>
+
+      </div><!-- /guide-steps -->
+    </div><!-- /driver -->
+
+  </div>
+</section>
+
+<!-- ══ 8. SECURITY ════════════════════════════════════════ -->
+<section class="section dark">
+  <div class="container">
+    <div class="section-label">Security &amp; Compliance</div>
+    <h2 class="section-title">ホテルの調達部門が通す、<br>エンタープライズセキュリティ</h2>
+    <p class="section-desc">
+      確認番号の総当たり攻撃、第三者による不正キャンセル、個人情報の不適切な保持。
+      予約システムが抱えがちな脆弱性を、設計レベルで潰してある。
+    </p>
+
+    <div class="sec-wrap">
+      <ul class="sec-checklist">
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">本人確認付きキャンセル（OTPメール認証）</div>
+            <div class="sec-item-desc">確認番号を知っていてもキャンセルは不可。登録メールへの6桁OTP入力が必須。5回失敗で自動無効化。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">確認コード暗号乱数化（32¹⁰ ≈ 1兆通り）</div>
+            <div class="sec-item-desc">旧設計の連番（9,999通り）から暗号乱数へ全面刷新。総当たり攻撃が計算上不可能。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">OTP SHA-256ハッシュ保存</div>
+            <div class="sec-item-desc">OTPはDB上で平文保存せずハッシュ化。DBが侵害されても未使用コードは読み取れない。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">RLSによるロール完全分離</div>
+            <div class="sec-item-desc">hotel_staff・tmk_admin・driverの3ロールがDB行レベルで分離。他ホテルのデータに一切アクセス不可。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">プライバシーポリシー + データ保持ポリシー制定済み</div>
+            <div class="sec-item-desc">ゲストメールは乗車完了から6ヶ月で自動削除。稟議書類として提出可能。</div>
+          </div>
+        </li>
+        <li>
+          <div class="sec-check"><svg viewBox="0 0 16 16"><polyline points="2,8 6,12 14,4"/></svg></div>
+          <div>
+            <div class="sec-item-title">インシデント対応手順・セキュリティ連絡先</div>
+            <div class="sec-item-desc">深刻度別SLA（Critical: 24h以内）、6段階インシデントフロー完備。</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="phone-bar">
+            <div class="phone-bar-dot"></div>
+            <div class="phone-bar-dot cam"></div>
+            <div class="phone-bar-dot"></div>
+          </div>
+          <div class="otp-phone-screen">
+            <div class="otp-step-label">Step 2 of 2 — メール認証</div>
+            <div class="otp-title">認証コードの入力</div>
+            <div class="otp-mail-chip">📧 g***@gmail.com に送信済み</div>
+            <div style="font-size:.78rem;color:#64748b;margin-bottom:12px;line-height:1.5">
+              6桁のコードを入力してください。<br>
+              <span style="color:#dc2626;font-weight:700">有効期限 10分 / 5回失敗で無効化</span>
+            </div>
+            <div class="otp-boxes">
+              <div class="otp-box">3</div>
+              <div class="otp-box">7</div>
+              <div class="otp-box">1</div>
+              <div class="otp-box empty">_</div>
+              <div class="otp-box empty">_</div>
+              <div class="otp-box empty">_</div>
+            </div>
+            <div class="otp-expire-note">あと 2 回試行できます</div>
+            <div class="otp-btn-primary">キャンセルを確定する</div>
+            <div class="otp-sub-actions">
+              <span>← 戻る</span>
+              <span style="color:#3b82f6">コードを再送信</span>
+            </div>
+            <div style="margin-top:16px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:10px 12px;font-size:.74rem;color:#15803d;line-height:1.5">
+              🔒 第三者はメールを受け取れないため<br>このキャンセルを実行できません
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ 9. BETA ══════════════════════════════════════════ -->
+<section class="section">
+  <div class="container">
+    <div class="beta-box">
+      <div style="font-size:2.4rem;margin-bottom:16px">🚀</div>
+      <h2 style="font-size:1.7rem;font-weight:800;margin-bottom:16px;line-height:1.4">ベータ版。<br>TMK現場でのテストランで、さらに磨かれます。</h2>
+      <p style="color:var(--text-sub);max-width:560px;margin:0 auto 32px;line-height:1.9;font-size:1rem">
+        このプラットフォームは東京MKの内部チームが開発しています。現場のドライバー・ホテルスタッフ・ゲストの声を直接吸い上げながら、週単位で改善を続けます。<br>
+        「こんな機能がほしい」という要望は、<strong>即座に開発に反映</strong>できます。
+      </p>
+      <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">TMK</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">内部チーム開発</div></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">週次</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">改善サイクル</div></div>
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px 28px;text-align:center;min-width:150px"><div style="font-size:1.6rem;font-weight:900;color:var(--mk-blue)">即日</div><div style="font-size:.82rem;color:var(--text-sub);margin-top:2px">要望から機能追加</div></div>
+      </div>
+
+      <!-- Timeline + CTA -->
+      <div style="margin-top:40px;border-top:1px solid rgba(201,162,39,.3);padding-top:36px">
+        <div style="font-size:.82rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--mk-blue-light);margin-bottom:20px">Getting Started</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:640px;margin:0 auto 32px;text-align:left">
+          <div style="background:#fff;border-radius:14px;padding:18px;border-left:4px solid var(--mk-blue)">
+            <div style="font-size:1.2rem;font-weight:900;color:var(--mk-blue);margin-bottom:2px">Day 1</div>
+            <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">アカウント発行</div>
+            <div style="font-size:.75rem;color:var(--text-sub)">ホテル設定・ポリシー設定</div>
+          </div>
+          <div style="background:#fff;border-radius:14px;padding:18px;border-left:4px solid var(--mk-gold)">
+            <div style="font-size:1.2rem;font-weight:900;color:var(--mk-blue);margin-bottom:2px">Day 2</div>
+            <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">スタッフ研修</div>
+            <div style="font-size:.75rem;color:var(--text-sub)">このガイドで30分完結</div>
+          </div>
+          <div style="background:#fff;border-radius:14px;padding:18px;border-left:4px solid #16a34a">
+            <div style="font-size:1.2rem;font-weight:900;color:#16a34a;margin-bottom:2px">Day 3</div>
+            <div style="font-size:.8rem;font-weight:700;margin-bottom:4px">本番稼働</div>
+            <div style="font-size:.75rem;color:var(--text-sub)">初回はTMKが完全サポート</div>
+          </div>
+        </div>
+        <div style="font-size:1rem;font-weight:700;color:var(--text);margin-bottom:16px">デモのご依頼・導入のご相談</div>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="tel:03-5547-5551" style="display:inline-flex;align-items:center;gap:8px;background:var(--mk-blue);color:#fff;border-radius:12px;padding:14px 28px;text-decoration:none;font-weight:700;font-size:.95rem">
+            📞 03-5547-5551
+          </a>
+          <div style="display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);color:var(--text);border-radius:12px;padding:14px 28px;font-weight:700;font-size:.95rem">
+            🌐 shuttle.tokyomk.com
+          </div>
+        </div>
+        <div style="font-size:.78rem;color:var(--text-sub);margin-top:12px">東京エムケイ 配車センター（平日 9:00〜18:00）</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ FOOTER ══════════════════════════════════════════════ -->
+<div class="footer">
+  <p><strong>MK Shuttle Hire Platform</strong></p>
+  <p style="opacity:.8;margin-top:4px">内部チームだからこそ作れた、ゲストとホテルに喜ばれるプロダクト。</p>
+  <p style="margin-top:16px;opacity:.5;font-size:.85rem">© Tokyo MK Co., Ltd. 2026</p>
+</div>
+
+</body>
+</html>
