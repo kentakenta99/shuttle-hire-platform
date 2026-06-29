@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>シャトルハイヤー予約プラットフォーム — デモ動画用スライドショー</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+:root{
+  --mk-blue:#1a3a6b;--mk-deep:#0f1f40;--mk-light:#2a5298;
+  --gold:#C9A227;--green:#16a34a;--red:#dc2626;--orange:#f59e0b;
+  --gray:#64748b;--border:#e2e8f0;--bg:#f8fafc;
+}
+/* STAGE — 1920×1080, scales to viewport */
+#stage{
+  width:1920px;height:1080px;
+  position:absolute;top:0;left:0;
+  transform-origin:0 0;
+  overflow:hidden;
+  font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP',sans-serif;
+}
+/* SCENES */
+.scene{position:absolute;inset:0;opacity:0;pointer-events:none}
+/* PROGRESS */
+#prog{position:absolute;bottom:0;left:0;height:6px;background:var(--gold);z-index:9999;width:0}
+/* CUSTOM CURSOR */
+#cur{position:absolute;z-index:9998;top:0;left:0;pointer-events:none;filter:drop-shadow(1px 2px 4px rgba(0,0,0,.5))}
+/* ─── BROWSER FRAME ─── */
+.browser{background:#fff;border-radius:14px;overflow:hidden;box-shadow:0 24px 80px rgba(0,0,0,.35)}
+.bbar{height:52px;background:#f1f3f5;border-bottom:1px solid #dde;display:flex;align-items:center;padding:0 20px;gap:12px}
+.bdot{width:14px;height:14px;border-radius:50%;display:inline-block}
+.burl{flex:1;max-width:700px;height:34px;background:#fff;border:1px solid #d0d5dd;border-radius:8px;display:flex;align-items:center;padding:0 14px;font-size:15px;color:#555;margin-left:8px}
+/* ─── PHONE ─── */
+.phone{width:320px;background:#111;border-radius:50px;padding:14px;box-shadow:0 30px 80px rgba(0,0,0,.5);position:relative}
+.phone::before{content:'';position:absolute;top:20px;left:50%;transform:translateX(-50%);width:90px;height:26px;background:#111;border-radius:0 0 16px 16px;z-index:5}
+.pscreen{background:#fff;border-radius:38px;overflow:hidden;min-height:540px;position:relative}
+/* ─── MK NAV ─── */
+.mknav{background:var(--mk-blue);color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px}
+.mklogo{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;color:#fff;flex-shrink:0}
+/* ─── ADMIN SIDEBAR ─── */
+.aside{width:220px;background:var(--mk-blue);color:#fff;flex-shrink:0}
+.aside-hd{padding:20px;border-bottom:1px solid rgba(255,255,255,.1)}
+.nav-i{padding:12px 20px;font-size:13px;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:8px;cursor:pointer;border-left:3px solid transparent}
+.nav-i.on{color:#fff;background:rgba(255,255,255,.1);border-left-color:var(--gold)}
+/* ─── FORM ELEMENTS ─── */
+.inp{width:100%;height:46px;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;font-size:15px;color:#1a1a2e;font-family:inherit;background:#fff}
+.inp.hi{border-color:var(--mk-light);box-shadow:0 0 0 3px rgba(42,82,152,.12)}
+.inp.ok{border-color:var(--green);color:var(--green);font-weight:700;background:#f0fdf4}
+.lbl{font-size:13px;font-weight:600;color:#374151;margin-bottom:6px;display:block}
+.fg{margin-bottom:16px}
+.btnp{height:50px;background:var(--mk-blue);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;width:100%;display:flex;align-items:center;justify-content:center;gap:8px}
+/* ─── BADGES ─── */
+.bge{display:inline-flex;align-items:center;border-radius:20px;padding:3px 10px;font-size:12px;font-weight:700}
+.bge.r{background:#fef2f2;color:var(--red);border:1px solid #fecaca}
+.bge.g{background:#f0fdf4;color:var(--green);border:1px solid #bbf7d0}
+.bge.o{background:#fff7ed;color:var(--orange);border:1px solid #fed7aa}
+.bge.b{background:#eff6ff;color:var(--mk-blue);border:1px solid #bfdbfe}
+/* ─── SLOT CARD ─── */
+.slot{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:18px;cursor:pointer}
+.slot.hi{border-color:var(--gold);box-shadow:0 0 0 3px rgba(201,162,39,.2),0 4px 20px rgba(0,0,0,.08)}
+.slot.full{border-color:#fecaca;background:#fff5f5}
+/* ─── STAT CARD ─── */
+.stat{background:#fff;border:1px solid var(--border);border-radius:14px;padding:22px;position:relative}
+.stat.al{border-color:#fecaca;background:#fff5f5}
+/* ─── DROPDOWN ─── */
+.dd-wrap{position:relative}
+.dd-trg{height:46px;border:1.5px solid var(--border);border-radius:10px;padding:0 14px;background:#fff;display:flex;align-items:center;justify-content:space-between;cursor:pointer;font-size:14px}
+.dd-trg.op{border-color:var(--mk-light);box-shadow:0 0 0 3px rgba(42,82,152,.12)}
+.dd-menu{position:absolute;top:calc(100% + 4px);left:0;right:0;background:#fff;border:1.5px solid var(--border);border-radius:12px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.12);opacity:0;transform:translateY(-6px);pointer-events:none;z-index:100;transition:opacity .2s,transform .2s}
+.dd-menu.op{opacity:1;transform:translateY(0);pointer-events:auto}
+.dd-item{padding:12px 14px;display:flex;align-items:center;gap:10px;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px}
+.dd-item:last-child{border-bottom:none}
+.dd-item.hi,.dd-item:hover{background:#f0f5ff}
+.av{width:34px;height:34px;border-radius:50%;background:var(--mk-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- ═══════════════════════════════════════
+     SCENE 0 — TITLE
+═══════════════════════════════════════ -->
+<div class="scene" id="s0" style="background:linear-gradient(135deg,#0f1f40 0%,#1a3a6b 55%,#2a5298 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff">
+  <div id="s0-logo" style="width:100px;height:100px;background:rgba(255,255,255,.15);border-radius:24px;border:2px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;margin-bottom:32px">MK</div>
+  <h1 id="s0-h1" style="font-size:76px;font-weight:800;line-height:1.25;margin-bottom:18px">シャトルハイヤー<br><span style="color:var(--gold)">予約プラットフォーム</span></h1>
+  <p id="s0-sub" style="font-size:26px;opacity:.85;margin-bottom:44px">ホテル宿泊客が成田空港へ、スマホ一つで。</p>
+  <div id="s0-tags" style="display:flex;gap:14px;flex-wrap:wrap;justify-content:center">
+    <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:9px 22px;font-size:17px">🏨 ホテルオークラ東京 初期パートナー</span>
+    <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:9px 22px;font-size:17px">✈️ フライト情報リアルタイム連携</span>
+    <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:9px 22px;font-size:17px">🔒 OTPメール認証</span>
+    <span style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);border-radius:24px;padding:9px 22px;font-size:17px">🚀 TMK現場テストラン進行中</span>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 1 — GUEST QR
+═══════════════════════════════════════ -->
+<div class="scene" id="s1" style="display:flex;height:100%">
+  <!-- Left -->
+  <div id="s1-left" style="flex:1;background:linear-gradient(150deg,#0f1f40,#1a3a6b);color:#fff;display:flex;flex-direction:column;justify-content:center;padding:80px 90px">
+    <div style="font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--gold);text-transform:uppercase;margin-bottom:14px">SCENARIO C — ゲスト体験</div>
+    <h2 style="font-size:56px;font-weight:800;line-height:1.2;margin-bottom:28px">ゲストが受け取る<br>たった1画面</h2>
+    <div style="display:flex;flex-direction:column;gap:18px">
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <span style="width:28px;height:28px;background:var(--gold);color:#0f1f40;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0">1</span>
+        <span style="font-size:20px;line-height:1.5">予約番号・QRコード・出発時刻が1画面に</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <span style="width:28px;height:28px;background:var(--gold);color:#0f1f40;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0">2</span>
+        <span style="font-size:20px;line-height:1.5">キャンセルはOTP認証でスマホ完結</span>
+      </div>
+      <div style="display:flex;align-items:flex-start;gap:14px">
+        <span style="width:28px;height:28px;background:var(--gold);color:#0f1f40;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:13px;flex-shrink:0">3</span>
+        <span style="font-size:20px;line-height:1.5">フロント電話・深夜問い合わせ ゼロ</span>
+      </div>
+    </div>
+  </div>
+  <!-- Right: Phone -->
+  <div id="s1-right" style="width:560px;background:var(--bg);display:flex;align-items:center;justify-content:center">
+    <div class="phone">
+      <div class="pscreen">
+        <div style="height:38px;background:var(--mk-blue);display:flex;align-items:flex-end;justify-content:space-between;padding:0 22px 6px;color:#fff;font-size:12px;font-weight:600">
+          <span>9:41</span><span style="letter-spacing:2px">●●●</span>
+        </div>
+        <div class="mknav">
+          <div class="mklogo">MK</div>
+          <span style="font-weight:700;font-size:13px">乗車チケット</span>
+        </div>
+        <div style="padding:16px">
+          <div style="text-align:center;margin-bottom:12px">
+            <div style="font-size:10px;color:var(--gray);margin-bottom:3px">予約番号</div>
+            <div style="font-size:13px;font-weight:800;color:var(--mk-blue);letter-spacing:.06em">OKU-DEMO000005</div>
+          </div>
+          <!-- QR code SVG -->
+          <div style="display:flex;justify-content:center;margin:10px 0">
+            <svg width="96" height="96" viewBox="0 0 10 10">
+              <rect width="10" height="10" fill="white"/>
+              <rect x="0" y="0" width="3.5" height="3.5" rx=".3" fill="#111"/>
+              <rect x=".5" y=".5" width="2.5" height="2.5" rx=".2" fill="white"/>
+              <rect x="1" y="1" width="1.5" height="1.5" fill="#111"/>
+              <rect x="6.5" y="0" width="3.5" height="3.5" rx=".3" fill="#111"/>
+              <rect x="7" y=".5" width="2.5" height="2.5" rx=".2" fill="white"/>
+              <rect x="7.5" y="1" width="1.5" height="1.5" fill="#111"/>
+              <rect x="0" y="6.5" width="3.5" height="3.5" rx=".3" fill="#111"/>
+              <rect x=".5" y="7" width="2.5" height="2.5" rx=".2" fill="white"/>
+              <rect x="1" y="7.5" width="1.5" height="1.5" fill="#111"/>
+              <rect x="4.5" y="0" width=".8" height=".8" fill="#111"/>
+              <rect x="5.5" y=".5" width=".6" height="1.2" fill="#111"/>
+              <rect x="4.5" y="1.5" width="1.6" height=".6" fill="#111"/>
+              <rect x="4" y="4" width=".8" height="2" fill="#111"/>
+              <rect x="5" y="4.5" width="1.5" height=".8" fill="#111"/>
+              <rect x="4.5" y="5.5" width="2" height=".8" fill="#111"/>
+              <rect x="7" y="4.5" width="3" height=".8" fill="#111"/>
+              <rect x="6.5" y="5.5" width=".8" height="1.2" fill="#111"/>
+              <rect x="8" y="6" width="1.5" height=".8" fill="#111"/>
+              <rect x="7.5" y="7" width="2.5" height=".8" fill="#111"/>
+              <rect x="9" y="8" width="1" height="2" fill="#111"/>
+              <rect x="6.5" y="8" width="2" height=".8" fill="#111"/>
+              <rect x="4.5" y="7" width=".8" height="2" fill="#111"/>
+              <rect x="5.5" y="8.5" width="1.5" height=".8" fill="#111"/>
+            </svg>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;font-size:11px;margin-bottom:12px">
+            <div style="background:var(--bg);border-radius:8px;padding:7px 10px"><div style="color:var(--gray);margin-bottom:2px;font-size:10px">ゲスト名</div><div style="font-weight:700">TANAKA KENJI</div></div>
+            <div style="background:var(--bg);border-radius:8px;padding:7px 10px"><div style="color:var(--gray);margin-bottom:2px;font-size:10px">人数</div><div style="font-weight:700">2名</div></div>
+            <div style="background:var(--bg);border-radius:8px;padding:7px 10px"><div style="color:var(--gray);margin-bottom:2px;font-size:10px">フライト</div><div style="font-weight:700">NH005 T1</div></div>
+            <div style="background:var(--bg);border-radius:8px;padding:7px 10px"><div style="color:var(--gray);margin-bottom:2px;font-size:10px">出発</div><div style="font-weight:700">11:30</div></div>
+          </div>
+          <div id="s1-cancel" style="text-align:center;border-top:1px solid var(--border);padding-top:10px;opacity:0;transition:opacity .4s">
+            <span style="font-size:11px;color:var(--mk-light);text-decoration:underline">このご予約をキャンセルする →</span>
+          </div>
+          <div id="s1-otp" style="display:none;margin-top:10px">
+            <div style="font-size:10px;color:var(--gray);text-align:center;margin-bottom:8px">登録メールにコードを送信しました</div>
+            <div style="display:flex;gap:6px;justify-content:center;margin-bottom:10px">
+              <div style="width:34px;height:38px;border:1.5px solid var(--mk-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">4</div>
+              <div style="width:34px;height:38px;border:1.5px solid var(--mk-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">8</div>
+              <div style="width:34px;height:38px;border:1.5px solid var(--mk-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">3</div>
+              <div style="width:34px;height:38px;border:1.5px solid var(--mk-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700">7</div>
+            </div>
+            <div style="background:#fef9e7;border:1px solid #fde68a;border-radius:8px;padding:8px;font-size:10px;color:#92400e;text-align:center">✓ キャンセルが完了しました</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 2 — HOTEL LOGIN
+═══════════════════════════════════════ -->
+<div class="scene" id="s2" style="background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px">
+  <div style="font-size:12px;font-weight:700;letter-spacing:.15em;color:var(--mk-light);text-transform:uppercase">SCENARIO A — ホテルスタッフ視点</div>
+  <div class="browser" style="width:960px" id="s2-browser">
+    <div class="bbar">
+      <span class="bdot" style="background:#ff5f57"></span>
+      <span class="bdot" style="background:#febc2e"></span>
+      <span class="bdot" style="background:#28c840"></span>
+      <div class="burl"><span style="color:var(--green);margin-right:6px">🔒</span>shuttle.tokyomk.com/hotel/login</div>
+    </div>
+    <div style="background:var(--bg);padding:48px;display:flex;justify-content:center">
+      <div style="background:#fff;border-radius:20px;padding:48px;width:460px;box-shadow:0 8px 40px rgba(0,0,0,.1)">
+        <div style="text-align:center;margin-bottom:32px">
+          <div style="width:56px;height:56px;background:var(--mk-blue);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;margin:0 auto 14px">MK</div>
+          <div style="font-size:22px;font-weight:800;color:var(--mk-blue)">ホテルスタッフ ログイン</div>
+          <div style="font-size:13px;color:var(--gray);margin-top:4px">ホテルオークラ東京</div>
+        </div>
+        <div class="fg">
+          <label class="lbl">メールアドレス</label>
+          <input id="s2-email" class="inp" type="email" placeholder="hotel@example.com" readonly>
+        </div>
+        <div class="fg">
+          <label class="lbl">パスワード</label>
+          <input id="s2-pass" class="inp" type="password" placeholder="" readonly>
+        </div>
+        <button class="btnp" id="s2-btn">ログイン</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 3 — CALENDAR
+═══════════════════════════════════════ -->
+<div class="scene" id="s3">
+  <div class="browser" style="position:absolute;top:18px;left:40px;width:1840px" id="s3-browser">
+    <div class="bbar">
+      <span class="bdot" style="background:#ff5f57"></span>
+      <span class="bdot" style="background:#febc2e"></span>
+      <span class="bdot" style="background:#28c840"></span>
+      <div class="burl"><span style="color:var(--green);margin-right:6px">🔒</span>shuttle.tokyomk.com/hotel/calendar</div>
+    </div>
+    <div class="mknav" style="justify-content:space-between">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="mklogo">MK</div>
+        <div><div style="font-weight:700;font-size:16px">予約カレンダー</div><div style="font-size:11px;opacity:.75">ホテルオークラ東京</div></div>
+      </div>
+      <button style="background:var(--gold);color:#0f1f40;border:none;border-radius:8px;padding:10px 24px;font-weight:700;font-size:14px;cursor:pointer">＋ 新規予約</button>
+    </div>
+    <div style="background:#fff;padding:28px">
+      <!-- Date headers -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:12px">
+        <div style="text-align:center"><div style="font-size:12px;color:var(--gray);font-weight:600">今日</div><div style="font-size:22px;font-weight:800;color:var(--mk-blue)">6/30 (月)</div></div>
+        <div style="text-align:center"><div style="font-size:12px;color:var(--gray);font-weight:600">明日</div><div style="font-size:22px;font-weight:700">7/1 (火)</div></div>
+        <div style="text-align:center"><div style="font-size:12px;color:var(--gray);font-weight:600">&nbsp;</div><div style="font-size:22px;font-weight:700">7/2 (水)</div></div>
+        <div style="text-align:center"><div style="font-size:12px;color:var(--gray);font-weight:600">&nbsp;</div><div style="font-size:22px;font-weight:700">7/3 (木)</div></div>
+      </div>
+      <!-- Slots -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px">
+        <div class="slot full"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">09:00</div><div style="margin-bottom:6px"><span class="bge r">満席</span></div><div style="font-size:12px;color:var(--gray)">6/6名 · 4件<br><span style="color:var(--green)">✓ 山田一郎</span></div></div>
+        <div class="slot hi" id="s3-slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">11:30</div><div style="margin-bottom:6px"><span class="bge o">残2席</span></div><div style="font-size:12px;color:var(--gray)">4/6名 · 2件<br><span style="color:var(--red)">⚠ 未アサイン</span></div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">14:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">1/6名 · 1件</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">09:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">2/6名 · 1件</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">11:30</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">14:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">1/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">09:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">11:30</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">14:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">09:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">11:30</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+        <div class="slot"><div style="font-size:24px;font-weight:800;color:var(--mk-blue);margin-bottom:8px">14:00</div><div style="margin-bottom:6px"><span class="bge g">空きあり</span></div><div style="font-size:12px;color:var(--gray)">0/6名</div></div>
+      </div>
+    </div>
+  </div>
+  <!-- MODAL OVERLAY -->
+  <div id="s3-modal" style="position:absolute;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none">
+    <div id="s3-sheet" style="background:#fff;border-radius:24px 24px 0 0;width:860px;padding:36px;transform:translateY(100%)">
+      <div style="font-size:20px;font-weight:800;color:var(--mk-blue);margin-bottom:24px;display:flex;align-items:center;gap:12px">
+        <span style="background:var(--mk-blue);color:#fff;border-radius:8px;padding:4px 14px;font-size:14px">11:30</span>
+        6/30 (月) 成田空港行き · 残2席
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+        <div class="fg"><label class="lbl">ゲスト名 <span style="color:red">*</span></label><input id="s3-name" class="inp" placeholder="例: YAMAMOTO YUKI" readonly></div>
+        <div class="fg"><label class="lbl">人数 <span style="color:red">*</span></label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <input id="s3-party" class="inp" value="1" style="width:80px;text-align:center" readonly>
+            <button id="s3-pup" style="width:46px;height:46px;border:1.5px solid var(--border);border-radius:10px;background:#fff;font-size:22px;cursor:pointer">＋</button>
+          </div>
+        </div>
+        <div class="fg"><label class="lbl">フライト番号 <span style="color:red">*</span></label>
+          <div style="position:relative">
+            <input id="s3-flight" class="inp" placeholder="例: NH005" readonly>
+            <div id="s3-fdrop" style="position:absolute;top:50px;left:0;right:0;background:#fff;border:1.5px solid var(--mk-light);border-radius:12px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,.12);opacity:0;transform:translateY(-6px);pointer-events:none;z-index:200;transition:all .2s">
+              <div style="padding:12px 14px;display:flex;align-items:center;gap:12px;background:#f0f5ff;cursor:pointer">
+                <div style="width:38px;height:38px;background:var(--mk-blue);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:13px">NH</div>
+                <div><div style="font-weight:700;color:var(--mk-blue);font-size:14px">NH005</div><div style="font-size:12px;color:var(--gray)">全日本空輸 · 第1ターミナル</div></div>
+                <div style="margin-left:auto;background:var(--bg);border-radius:6px;padding:4px 10px;font-size:12px;color:var(--gray);font-weight:700">T1</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fg"><label class="lbl">ターミナル</label><input id="s3-term" class="inp" value="" placeholder="フライト番号入力後に自動入力" style="background:var(--bg);color:var(--gray)" readonly></div>
+        <div class="fg"><label class="lbl">荷物数</label><input class="inp" value="2" readonly></div>
+        <div class="fg"><label class="lbl">連絡先メール</label><input class="inp" placeholder="guest@example.com" readonly></div>
+      </div>
+      <div style="display:flex;gap:12px;margin-top:8px">
+        <button style="flex:1;height:50px;background:var(--bg);border:1.5px solid var(--border);border-radius:12px;font-size:15px;cursor:pointer">キャンセル</button>
+        <button id="s3-confirm" class="btnp" style="flex:2">予約を確定する</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 4 — SUCCESS
+═══════════════════════════════════════ -->
+<div class="scene" id="s4" style="background:#fff;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:28px">
+  <div id="s4-check" style="width:120px;height:120px;border-radius:50%;background:#f0fdf4;border:4px solid var(--green);display:flex;align-items:center;justify-content:center;font-size:56px">✓</div>
+  <div id="s4-title" style="font-size:44px;font-weight:800;color:var(--mk-blue)">予約が完了しました</div>
+  <div id="s4-ref" style="font-size:18px;color:var(--gray)">予約番号: <strong style="color:var(--mk-blue)">OKU-DEMO000007</strong></div>
+  <div id="s4-mail" style="background:var(--bg);border:1px solid var(--border);border-radius:16px;padding:20px 48px;display:flex;align-items:center;gap:16px">
+    <span style="font-size:40px">📧</span>
+    <div><div style="font-weight:700;color:var(--mk-blue);font-size:18px">QRチケットをゲストへ送信しました</div><div style="font-size:14px;color:var(--gray);margin-top:4px">YAMAMOTO YUKI 様のメールアドレスに送信済み</div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 5 — ADMIN DASHBOARD
+═══════════════════════════════════════ -->
+<div class="scene" id="s5">
+  <div class="browser" style="position:absolute;top:18px;left:40px;width:1840px" id="s5-browser">
+    <div class="bbar">
+      <span class="bdot" style="background:#ff5f57"></span>
+      <span class="bdot" style="background:#febc2e"></span>
+      <span class="bdot" style="background:#28c840"></span>
+      <div class="burl"><span style="color:var(--green);margin-right:6px">🔒</span>shuttle.tokyomk.com/admin</div>
+    </div>
+    <div style="display:flex;height:820px">
+      <div class="aside">
+        <div class="aside-hd"><div style="font-size:10px;opacity:.6;margin-bottom:4px">東京エムケイ</div><div style="font-weight:800;font-size:15px">管理者ダッシュボード</div></div>
+        <div class="nav-i on">📊 ダッシュボード</div>
+        <div class="nav-i">🚌 スロット管理</div>
+        <div class="nav-i">📋 予約一覧</div>
+        <div class="nav-i">🚗 ドライバー</div>
+        <div class="nav-i">🏨 ホテル管理</div>
+        <div class="nav-i">💰 請求管理</div>
+      </div>
+      <div style="flex:1;background:var(--bg);padding:32px;overflow:hidden">
+        <div style="font-size:26px;font-weight:800;color:var(--mk-blue);margin-bottom:24px">📊 ダッシュボード</div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:18px">
+          <div class="stat"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">今日の予約</div><div style="font-size:40px;font-weight:900;color:var(--mk-blue)">12</div><div style="font-size:13px;color:var(--gray)">3便 · オークラ8件</div></div>
+          <div class="stat"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">明日の予約</div><div style="font-size:40px;font-weight:900;color:var(--mk-blue)">7</div><div style="font-size:13px;color:var(--gray)">2便</div></div>
+          <div class="stat al"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">未アサイン便</div><div style="font-size:40px;font-weight:900;color:var(--red)">2</div><div style="font-size:13px;color:var(--red)">本日中に対応が必要</div><div style="position:absolute;top:14px;right:14px;background:var(--red);color:#fff;border-radius:10px;padding:2px 10px;font-size:11px;font-weight:700">要対応</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-bottom:24px">
+          <div class="stat"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">今月の予約</div><div style="font-size:40px;font-weight:900;color:var(--mk-blue)">47</div><div style="font-size:13px;color:var(--gray)">前月比 +23%</div></div>
+          <div class="stat"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">今月の売上</div><div style="font-size:32px;font-weight:900;color:var(--mk-blue)">¥705,000</div><div style="font-size:13px;color:var(--gray)">47件 × ¥15,000</div></div>
+          <div class="stat"><div style="font-size:12px;color:var(--gray);margin-bottom:8px">稼働ホテル</div><div style="font-size:40px;font-weight:900;color:var(--mk-blue)">1</div><div style="font-size:13px;color:var(--gray)">ホテルオークラ東京</div></div>
+        </div>
+        <!-- Today table -->
+        <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px">
+          <div style="font-size:15px;font-weight:700;color:var(--mk-blue);margin-bottom:14px">本日の便一覧</div>
+          <table style="width:100%;border-collapse:collapse;font-size:14px">
+            <tr style="background:var(--bg)">
+              <th style="padding:9px 14px;text-align:left;font-size:12px;color:var(--gray);font-weight:600">出発</th>
+              <th style="padding:9px 14px;text-align:left;font-size:12px;color:var(--gray);font-weight:600">予約</th>
+              <th style="padding:9px 14px;text-align:left;font-size:12px;color:var(--gray);font-weight:600">ドライバー</th>
+              <th style="padding:9px 14px;text-align:left;font-size:12px;color:var(--gray);font-weight:600">状況</th>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:11px 14px;font-weight:700">09:00</td>
+              <td style="padding:11px 14px">6/6名 (満席)</td>
+              <td style="padding:11px 14px;color:var(--green)">✓ 山田 一郎</td>
+              <td style="padding:11px 14px"><span class="bge r">満席</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--border);background:#fff9f0" id="s5-row">
+              <td style="padding:11px 14px;font-weight:700">11:30</td>
+              <td style="padding:11px 14px">4/6名</td>
+              <td style="padding:11px 14px;color:var(--red)">⚠ 未アサイン</td>
+              <td style="padding:11px 14px"><span class="bge o">要対応</span></td>
+            </tr>
+            <tr style="border-top:1px solid var(--border)">
+              <td style="padding:11px 14px;font-weight:700">14:00</td>
+              <td style="padding:11px 14px">1/6名</td>
+              <td style="padding:11px 14px;color:var(--gray)">未アサイン</td>
+              <td style="padding:11px 14px"><span class="bge g">空きあり</span></td>
+            </tr>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 6 — DRIVER ASSIGNMENT
+═══════════════════════════════════════ -->
+<div class="scene" id="s6">
+  <div class="browser" style="position:absolute;top:18px;left:40px;width:1840px" id="s6-browser">
+    <div class="bbar">
+      <span class="bdot" style="background:#ff5f57"></span>
+      <span class="bdot" style="background:#febc2e"></span>
+      <span class="bdot" style="background:#28c840"></span>
+      <div class="burl"><span style="color:var(--green);margin-right:6px">🔒</span>shuttle.tokyomk.com/admin/slots/6-30-1130</div>
+    </div>
+    <div style="display:flex;height:820px">
+      <div class="aside">
+        <div class="aside-hd"><div style="font-size:10px;opacity:.6;margin-bottom:4px">東京エムケイ</div><div style="font-weight:800;font-size:15px">管理者ダッシュボード</div></div>
+        <div class="nav-i">📊 ダッシュボード</div>
+        <div class="nav-i on">🚌 スロット管理</div>
+        <div class="nav-i">📋 予約一覧</div>
+        <div class="nav-i">🚗 ドライバー</div>
+      </div>
+      <div style="flex:1;background:var(--bg);padding:32px">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:24px">
+          <div style="font-size:22px;font-weight:800;color:var(--mk-blue)">🚌 6/30 (月) 11:30 成田空港行き</div>
+          <span class="bge o">残2席</span>
+          <span class="bge r" style="margin-left:4px">⚠ 未アサイン</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 400px;gap:22px">
+          <!-- Booking list -->
+          <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:15px;font-weight:700;color:var(--mk-blue);margin-bottom:14px">乗客一覧 (4名)</div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="background:var(--bg);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:14px">TANAKA KENJI</div><div style="font-size:12px;color:var(--gray)">NH005 · 2名 · T1</div></div><span class="bge g">確定</span></div>
+              <div style="background:var(--bg);border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:14px">BROWN MICHAEL</div><div style="font-size:12px;color:var(--gray)">BA009 · 2名 · T2</div></div><span class="bge g">確定</span></div>
+              <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center"><div><div style="font-weight:700;font-size:14px">YAMAMOTO YUKI <span style="font-size:11px;background:var(--green);color:#fff;border-radius:6px;padding:1px 6px;margin-left:4px">NEW</span></div><div style="font-size:12px;color:var(--gray)">NH005 · 2名 · T1</div></div><span class="bge g">確定</span></div>
+            </div>
+          </div>
+          <!-- Driver section -->
+          <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:20px">
+            <div style="font-size:15px;font-weight:700;color:var(--mk-blue);margin-bottom:16px">ドライバーアサイン</div>
+            <div style="background:var(--bg);border-radius:10px;padding:12px;margin-bottom:14px;font-size:13px">
+              <div style="color:var(--gray);margin-bottom:3px;font-size:12px">担当車両</div>
+              <div style="font-weight:700">品川 500 い 7777</div>
+            </div>
+            <div id="s6-status" style="background:#fff9f0;border:1px solid #fed7aa;border-radius:10px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+              <span style="font-size:18px">⚠️</span>
+              <div><div style="font-weight:700;color:#92400e;font-size:13px">ドライバー未アサイン</div><div style="font-size:12px;color:var(--gray)">出発まで あと 2h 30min</div></div>
+            </div>
+            <div style="font-size:12px;font-weight:600;color:#374151;margin-bottom:8px">ドライバーを選択</div>
+            <div class="dd-wrap">
+              <div id="s6-ddtrg" class="dd-trg">
+                <span id="s6-ddt-txt" style="color:#9ca3af">ドライバーを選択してください...</span>
+                <span style="color:var(--gray);font-size:12px">▼</span>
+              </div>
+              <div id="s6-ddmenu" class="dd-menu">
+                <div class="dd-item" id="s6-opt1"><div class="av">山</div><div><div style="font-weight:700">山田 一郎</div><div style="font-size:12px;color:var(--gray)">DRV-001 · シャトル経験5年</div></div><span class="bge g" style="margin-left:auto">空き</span></div>
+                <div class="dd-item" style="opacity:.45;cursor:not-allowed"><div class="av" style="background:#9ca3af">鈴</div><div><div style="font-weight:700">鈴木 次郎</div><div style="font-size:12px;color:var(--gray)">DRV-002 · 他便担当中</div></div><span class="bge" style="background:#f1f5f9;color:#64748b;border-color:#e2e8f0;margin-left:auto">稼働中</span></div>
+                <div class="dd-item" id="s6-opt3"><div class="av">佐</div><div><div style="font-weight:700">佐藤 三郎</div><div style="font-size:12px;color:var(--gray)">DRV-003 · シャトル経験3年</div></div><span class="bge g" style="margin-left:auto">空き</span></div>
+              </div>
+            </div>
+            <div id="s6-done" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:18px;margin-top:14px;text-align:center">
+              <div style="font-size:28px;margin-bottom:8px">✅</div>
+              <div style="font-weight:700;color:var(--green);font-size:16px">山田 一郎 にアサイン完了</div>
+              <div style="font-size:12px;color:var(--gray);margin-top:4px">ドライバーへ通知を送信しました</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════
+     SCENE 7 — END CARD
+═══════════════════════════════════════ -->
+<div class="scene" id="s7" style="background:linear-gradient(135deg,#0f1f40 0%,#1a3a6b 60%,#2a5298 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:36px;color:#fff;text-align:center">
+  <div id="s7-logo" style="width:90px;height:90px;background:rgba(255,255,255,.15);border-radius:22px;border:2px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center;font-size:34px;font-weight:900">MK</div>
+  <div id="s7-ttl" style="font-size:68px;font-weight:800">最短 <span style="color:var(--gold)">3日</span> で稼働開始</div>
+  <div id="s7-days" style="display:flex;gap:22px">
+    <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:22px 36px;width:240px"><div style="font-size:30px;font-weight:900;color:var(--gold)">Day 1</div><div style="font-size:17px;font-weight:700;margin:8px 0 4px">アカウント発行</div><div style="font-size:13px;opacity:.7">ホテル設定 · ポリシー設定</div></div>
+    <div style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:18px;padding:22px 36px;width:240px"><div style="font-size:30px;font-weight:900;color:var(--gold)">Day 2</div><div style="font-size:17px;font-weight:700;margin:8px 0 4px">スタッフ研修</div><div style="font-size:13px;opacity:.7">このガイドで30分完結</div></div>
+    <div style="background:rgba(22,163,74,.15);border:1px solid rgba(22,163,74,.4);border-radius:18px;padding:22px 36px;width:240px"><div style="font-size:30px;font-weight:900;color:#4ade80">Day 3</div><div style="font-size:17px;font-weight:700;margin:8px 0 4px">🚀 本番稼働</div><div style="font-size:13px;opacity:.7">TMKが完全サポート</div></div>
+  </div>
+  <div id="s7-cta" style="display:flex;gap:22px">
+    <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:20px 48px"><div style="font-size:12px;opacity:.65;margin-bottom:8px">お問い合わせ</div><div style="font-size:28px;font-weight:800">Wishbone LL Partners</div><div style="font-size:20px;font-weight:700;margin-top:6px;opacity:.9">八木 健太</div></div>
+    <div style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.22);border-radius:16px;padding:20px 48px"><div style="font-size:12px;opacity:.65;margin-bottom:8px">メール</div><div style="font-size:22px;font-weight:800">✉️ kenta_yagi@wishbont.tokyo</div></div>
+  </div>
+</div>
+
+<!-- CURSOR -->
+<div id="cur">
+  <svg width="32" height="40" viewBox="0 0 28 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 2L4 28L10 21L15 32L19 30L14 19.5L23 19.5L4 2Z" fill="white" stroke="#1a3a6b" stroke-width="2.5" stroke-linejoin="round"/>
+  </svg>
+</div>
+
+<!-- PROGRESS BAR -->
+<div id="prog"></div>
+
+</div><!-- #stage -->
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script>
+// ─── STAGE SCALING ───
+const stage = document.getElementById('stage')
+function scaleStage() {
+  const sx = window.innerWidth  / 1920
+  const sy = window.innerHeight / 1080
+  const s  = Math.min(sx, sy)
+  stage.style.transform = `scale(${s})`
+  stage.style.marginLeft = (window.innerWidth  - 1920*s)/2 + 'px'
+  stage.style.marginTop  = (window.innerHeight - 1080*s)/2 + 'px'
+}
+window.addEventListener('resize', scaleStage)
+scaleStage()
+
+// ─── HELPERS ───
+const g = (id) => document.getElementById(id)
+
+let activeScene = null
+function scene(id, dur=0.5) {
+  if (activeScene) gsap.to(activeScene, { opacity:0, duration:dur*0.8, pointerEvents:'none' })
+  const el = g(id)
+  activeScene = el
+  el.style.pointerEvents = 'auto'
+  gsap.to(el, { opacity:1, duration:dur })
+}
+
+// ─── CURSOR ───
+gsap.set('#cur', { x:960, y:540 })
+
+function mv(x,y,d=0.7,ease='power2.inOut') {
+  return gsap.to('#cur', { x, y, duration:d, ease })
+}
+function click(x,y) {
+  const tl = gsap.timeline()
+  if (x !== undefined) tl.add(mv(x,y,0.35))
+  tl.to('#cur', { scale:0.65, duration:0.08 })
+    .to('#cur', { scale:1.1,  duration:0.10 })
+    .to('#cur', { scale:1.0,  duration:0.06 })
+  return tl
+}
+function typeText(el, txt, spd=0.065) {
+  const tl = gsap.timeline()
+  let v = ''
+  txt.split('').forEach((ch,i) => {
+    tl.call(() => {
+      v += ch
+      el.value = (el.type==='password') ? '●'.repeat(v.length) : v
+    }, null, i*spd)
+  })
+  return tl
+}
+
+// ─── TOTAL DURATION ───
+const TOTAL = 108
+
+// ─── MAIN TIMELINE ───
+const tl = gsap.timeline({
+  onUpdate() {
+    g('prog').style.width = Math.min(tl.time()/TOTAL*100,100)+'%'
+  }
+})
+
+// ────────────────────────────────────────
+// S0: TITLE  0–9s
+// ────────────────────────────────────────
+gsap.set(['#s0-logo','#s0-h1','#s0-sub','#s0-tags'], {opacity:0, y:20})
+tl.call(()=> scene('s0'))
+  .to('#s0-logo', {opacity:1, y:0, duration:0.6, ease:'back.out(1.5)'}, 0.3)
+  .to('#s0-h1',   {opacity:1, y:0, duration:0.7}, 1.0)
+  .to('#s0-sub',  {opacity:1, y:0, duration:0.5}, 1.9)
+  .to('#s0-tags', {opacity:1, y:0, duration:0.5}, 2.6)
+  .to({},{duration:5.5})  // hold
+
+// ────────────────────────────────────────
+// S1: GUEST QR  9–22s
+// ────────────────────────────────────────
+gsap.set('#s1-right', {x:80, opacity:0})
+tl.call(()=> scene('s1'), null, 9)
+  .to('#s1-right', {x:0, opacity:1, duration:0.8, ease:'power2.out'}, 9.5)
+  .to({},{duration:2})
+  // show cancel link
+  .call(()=>{ g('s1-cancel').style.opacity='1' }, null, 12.5)
+  // cursor moves to cancel link (phone is at ~1480,590 in stage coords)
+  .add(mv(1453, 660, 0.8), 13.0)
+  .add(click(), 13.9)
+  // show OTP
+  .call(()=>{
+    g('s1-cancel').style.display='none'
+    g('s1-otp').style.display='block'
+  }, null, 14.3)
+  .to({},{duration:4})
+
+// ────────────────────────────────────────
+// S2: LOGIN  22–36s
+// ────────────────────────────────────────
+gsap.set('#s2-browser', {opacity:0, y:30})
+tl.call(()=> scene('s2'), null, 22)
+  .to('#s2-browser', {opacity:1, y:0, duration:0.6, ease:'power2.out'}, 22.4)
+  // email field: browser is 960px wide centered → left=480, email field center ≈ 960, y≈510
+  .add(mv(960, 508, 0.8), 23.4)
+  .add(click(), 24.1)
+  .call(()=>{ g('s2-email').classList.add('hi') }, null, 24.3)
+  .add(()=> typeText(g('s2-email'), 'demo-okura@tokyomk.com', 0.058), 24.5)
+  // password: y≈572
+  .add(mv(960, 573, 0.5), 26.5)
+  .add(click(), 27.0)
+  .call(()=>{
+    g('s2-email').classList.remove('hi')
+    g('s2-pass').classList.add('hi')
+  }, null, 27.2)
+  .add(()=> typeText(g('s2-pass'), 'Demo@Okura2026', 0.072), 27.4)
+  // button: y≈638
+  .add(mv(960, 639, 0.5), 29.0)
+  .add(click(), 29.6)
+  .call(()=>{
+    g('s2-pass').classList.remove('hi')
+    const btn = g('s2-btn')
+    btn.style.background = '#16a34a'
+    btn.textContent = '✓ ログインしました'
+  }, null, 29.9)
+  .to({},{duration:2})
+
+// ────────────────────────────────────────
+// S3: CALENDAR  36–55s
+// ────────────────────────────────────────
+gsap.set('#s3-browser',{opacity:0})
+gsap.set('#s3-modal',{opacity:0})
+tl.call(()=> scene('s3'), null, 36)
+  .to('#s3-browser', {opacity:1, duration:0.6}, 36.3)
+  // cursor scans calendar
+  .add(mv(340, 580, 1.2), 37.0)   // 満席9:00
+  .add(mv(730, 480, 0.8), 38.4)   // 11:30 highlighted slot
+  .to({},{duration:1.5})
+  // click 11:30 slot
+  .add(click(730, 480), 40.3)
+  .call(()=>{
+    const ov = g('s3-modal'), sh = g('s3-sheet')
+    ov.style.opacity = '1'
+    ov.style.pointerEvents = 'auto'
+    gsap.fromTo(sh,{y:'100%'},{y:0,duration:0.55,ease:'power2.out'})
+  }, null, 40.7)
+  // guest name field ~ y=618 (modal bottom-sheet, name field)
+  .add(mv(700, 618, 0.7), 41.6)
+  .add(click(), 42.2)
+  .call(()=>{ g('s3-name').classList.add('hi') }, null, 42.4)
+  .add(()=> typeText(g('s3-name'), 'YAMAMOTO YUKI', 0.07), 42.6)
+  // party + button ~ x=960, y=618
+  .add(mv(967, 618, 0.5), 44.0)
+  .add(click(), 44.5)
+  .call(()=>{ g('s3-party').value='2' }, null, 44.7)
+  // flight number ~ x=700, y=683
+  .add(mv(700, 683, 0.5), 45.2)
+  .add(click(), 45.7)
+  .call(()=>{
+    g('s3-name').classList.remove('hi')
+    g('s3-flight').classList.add('hi')
+  }, null, 45.9)
+  .add(()=> typeText(g('s3-flight'), 'NH005', 0.15), 46.1)
+  // show autocomplete dropdown
+  .call(()=>{
+    const d = g('s3-fdrop')
+    d.style.opacity='1'
+    d.style.transform='translateY(0)'
+    d.style.pointerEvents='auto'
+  }, null, 46.95)
+  // click autocomplete option ~ y=705
+  .add(mv(700, 720, 0.4), 47.2)
+  .add(click(), 47.7)
+  .call(()=>{
+    g('s3-fdrop').style.opacity='0'
+    g('s3-fdrop').style.pointerEvents='none'
+    g('s3-flight').value='NH005'
+    g('s3-flight').classList.remove('hi')
+    const t = g('s3-term')
+    t.value='第1ターミナル (T1)'
+    t.classList.add('ok')
+  }, null, 48.0)
+  .to({},{duration:1.2})
+  // confirm button ~ x=860, y=790
+  .add(mv(860, 790, 0.6), 49.4)
+  .add(click(), 50.0)
+  .call(()=>{
+    const b = g('s3-confirm')
+    b.style.background='#16a34a'
+    b.textContent='✓ 予約確定中...'
+  }, null, 50.3)
+  .to({},{duration:1.5})
+
+// ────────────────────────────────────────
+// S4: SUCCESS  55–62s
+// ────────────────────────────────────────
+gsap.set(['#s4-check','#s4-title','#s4-ref','#s4-mail'], {opacity:0, y:20})
+gsap.set('#s4-check', {scale:0.3})
+tl.call(()=> scene('s4'), null, 55)
+  .to('#s4-check', {opacity:1, scale:1, y:0, duration:0.6, ease:'back.out(2)'}, 55.4)
+  .to('#s4-title', {opacity:1, y:0, duration:0.4}, 56.2)
+  .to('#s4-ref',   {opacity:1, y:0, duration:0.4}, 56.7)
+  .to('#s4-mail',  {opacity:1, y:0, duration:0.4}, 57.2)
+  .to({},{duration:3.5})
+
+// ────────────────────────────────────────
+// S5: ADMIN DASHBOARD  62–78s
+// ────────────────────────────────────────
+gsap.set('#s5-browser',{opacity:0, y:20})
+tl.call(()=> scene('s5'), null, 62)
+  .to('#s5-browser', {opacity:1, y:0, duration:0.6}, 62.4)
+  // cursor scans stats
+  .add(mv(550, 420, 1.0), 63.4)
+  .add(mv(900, 420, 0.7), 64.6)
+  .add(mv(1260, 400, 0.7), 65.5)  // alert card
+  .to({},{duration:1.5})
+  // hover over 11:30 row
+  .add(mv(800, 700, 0.8), 67.5)
+  .call(()=>{
+    g('s5-row').style.background='#fef3c7'
+  }, null, 68.3)
+  .to({},{duration:3.5})
+  // click row → next scene
+  .add(click(800, 700), 72.2)
+  .to({},{duration:0.8})
+
+// ────────────────────────────────────────
+// S6: DRIVER ASSIGNMENT  74–98s
+// ────────────────────────────────────────
+gsap.set('#s6-browser',{opacity:0})
+tl.call(()=> scene('s6'), null, 74)
+  .to('#s6-browser', {opacity:1, duration:0.6}, 74.3)
+  // cursor scans booking list
+  .add(mv(650, 510, 1.0), 75.2)
+  .add(mv(650, 590, 0.5), 76.3)
+  .add(mv(650, 665, 0.5), 77.0)
+  // move to driver dropdown
+  .add(mv(1430, 660, 1.0), 77.8)
+  .add(click(), 78.8)
+  .call(()=>{
+    g('s6-ddtrg').classList.add('op')
+    g('s6-ddmenu').classList.add('op')
+  }, null, 79.1)
+  // scan options
+  .add(mv(1430, 685, 0.4), 79.5)
+  .call(()=>{ g('s6-opt1').classList.add('hi') }, null, 79.7)
+  .add(mv(1430, 740, 0.4), 80.4)  // scroll to 2nd (greyed out)
+  .add(mv(1430, 795, 0.4), 81.2)  // scroll to 3rd
+  .call(()=>{
+    g('s6-opt1').classList.remove('hi')
+    g('s6-opt3').classList.add('hi')
+  }, null, 81.4)
+  .to({},{duration:0.8})
+  // go back and select 1st
+  .add(mv(1430, 685, 0.5), 82.5)
+  .call(()=>{
+    g('s6-opt3').classList.remove('hi')
+    g('s6-opt1').classList.add('hi')
+  }, null, 82.8)
+  .to({},{duration:0.6})
+  .add(click(), 83.6)
+  .call(()=>{
+    g('s6-ddtrg').classList.remove('op')
+    g('s6-ddmenu').classList.remove('op')
+    g('s6-ddt-txt').textContent = '山田 一郎 (DRV-001)'
+    g('s6-ddt-txt').style.color = '#111'
+    g('s6-ddt-txt').style.fontWeight = '700'
+    g('s6-status').innerHTML = '<span style="font-size:18px">✅</span><div><div style="font-weight:700;color:#16a34a;font-size:13px">山田 一郎 アサイン済み</div><div style="font-size:12px;color:#64748b">ドライバーへ通知送信済み</div></div>'
+    g('s6-status').style.background = '#f0fdf4'
+    g('s6-status').style.borderColor = '#bbf7d0'
+    g('s6-done').style.display = 'block'
+  }, null, 84.0)
+  .to({},{duration:7.0})
+
+// ────────────────────────────────────────
+// S7: END CARD  96–108s
+// ────────────────────────────────────────
+gsap.set(['#s7-logo','#s7-ttl','#s7-days','#s7-cta'], {opacity:0, y:24})
+tl.call(()=> scene('s7'), null, 96)
+  .to('#s7-logo', {opacity:1, y:0, duration:0.6, ease:'back.out(1.5)'}, 96.5)
+  .to('#s7-ttl',  {opacity:1, y:0, duration:0.6}, 97.2)
+  .to('#s7-days', {opacity:1, y:0, duration:0.7}, 98.0)
+  .to('#s7-cta',  {opacity:1, y:0, duration:0.6}, 98.9)
+  .to({},{duration:8})
+</script>
+</body>
+</html>

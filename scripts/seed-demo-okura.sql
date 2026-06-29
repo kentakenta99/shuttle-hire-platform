@@ -97,7 +97,7 @@ BEGIN
         END
       );
 
-      -- 本日9時便（満席）に予約6件
+      -- 本日9時便（満席）に予約6件 + ドライバーアサイン済み（デモ: 「既に稼働中の便」として見せる）
       IF i = 0 AND t = '09:00' THEN
         INSERT INTO service_orders (
           booking_reference, slot_id, hotel_id,
@@ -117,6 +117,11 @@ BEGIN
            'MÜLLER HANS', 1, 'LH716', 1, 'オークラ フロント', 'completed',
            'hans.muller@example.com', now() - interval '1 day')
         ON CONFLICT (booking_reference) DO NOTHING;
+
+        -- 9時便はドライバーアサイン済み（デモ用 — 実際のドライバーUIDがあれば driver_id に設定）
+        INSERT INTO driver_assignments (slot_id, employee_code, vehicle_id, assigned_at)
+        VALUES (slot_id, 'DRV-DEMO-001', '品川 500 あ 8888', now() - interval '12 hours')
+        ON CONFLICT (slot_id) DO NOTHING;
       END IF;
 
       -- 本日11:30便（残2席）に予約4件
